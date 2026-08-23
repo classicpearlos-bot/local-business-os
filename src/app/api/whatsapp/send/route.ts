@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppMedia } from '@/lib/meta/whatsapp';
+
+async function resolveUserOrgId(userId: string): Promise<string | null> {
+  const { data: mem } = await supabaseAdmin
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return mem?.organization_id || null;
+}
 
 export async function POST(request: Request) {
   try {
@@ -11,30 +22,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: orgs } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).limit(1);
-    if (!orgs || orgs.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const orgId = await resolveUserOrgId(user.id);
+    if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     
-    const orgId = orgs[0].organization_id;
     const payload = await request.json();
 
-    // Fetch WA Account
-    const { data: account } = await supabase
+    // Fetch WA Account using admin to bypass RLS
+    const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
       .select('phone_number_id, access_token')
       .eq('organization_id', orgId)
-      .single();
+      .maybeSingle();
 
     if (!account) {
       return NextResponse.json({ error: 'Meta WhatsApp account not configured' }, { status: 400 });
     }
 
-    // Resolve Contact Phone - verifying the contact belongs to this org
-    const { data: contact } = await supabase
+    // Resolve Contact Phone using admin
+    const { data: contact } = await supabaseAdmin
       .from('contacts')
       .select('phone_number')
       .eq('id', payload.contactId)
       .eq('organization_id', orgId)
-      .single();
+      .maybeSingle();
 
     if (!contact) return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
 
@@ -83,17 +93,17 @@ export async function POST(request: Request) {
 
     const messageId = response.messages?.[0]?.id;
 
-    // Log outbound message to messages table for inbox visibility
+    // Log outbound message using admin
     try {
-      const { data: conv } = await supabase
+      const { data: conv } = await supabaseAdmin
         .from('conversations')
         .select('id')
         .eq('contact_id', payload.contactId)
         .eq('organization_id', orgId)
-        .single();
+        .maybeSingle();
 
       if (conv) {
-        await supabase.from('messages').insert({
+        await supabaseAdmin.from('messages').insert({
           organization_id: orgId,
           conversation_id: conv.id,
           contact_id: payload.contactId,
@@ -105,7 +115,7 @@ export async function POST(request: Request) {
         });
 
         // Update conversation last_message_at
-        await supabase.from('conversations')
+        await supabaseAdmin.from('conversations')
           .update({ last_message_at: new Date().toISOString() })
           .eq('id', conv.id);
       }

@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { normalizePhoneNumber, isValidWhatsAppNumber } from '@/utils/phone';
+
+async function resolveUserOrgId(userId: string): Promise<string | null> {
+  const { data: mem } = await supabaseAdmin
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return mem?.organization_id || null;
+}
 
 /**
  * GET /api/contacts - List contacts with search and pagination
@@ -11,15 +22,19 @@ export async function GET(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const orgId = await resolveUserOrgId(user.id);
+    if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const offset = (page - 1) * limit;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('contacts')
-      .select('*, contact_tag_relations(contact_tags(name, color))', { count: 'exact' })
+      .select('*', { count: 'exact' })
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -46,14 +61,8 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
-
-    if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
+    const orgId = await resolveUserOrgId(user.id);
+    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 403 });
 
     const body = await request.json();
     const { name, phone_number, attributes, opted_in } = body;
@@ -69,10 +78,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 });
     }
 
-    const { data: contact, error } = await supabase
+    const { data: contact, error } = await supabaseAdmin
       .from('contacts')
       .insert({
-        organization_id: membership.organization_id,
+        organization_id: orgId,
         phone_number: normalizedPhone,
         name: name || null,
         attributes: attributes || {},
@@ -103,30 +112,24 @@ export async function PATCH(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const orgId = await resolveUserOrgId(user.id);
+    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 403 });
+
     const body = await request.json();
     const { id, name, opted_in, attributes } = body;
 
     if (!id) return NextResponse.json({ error: 'Contact id is required' }, { status: 400 });
-
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
-
-    if (!membership) return NextResponse.json({ error: 'No organization' }, { status: 403 });
 
     const updates: any = {};
     if (name !== undefined) updates.name = name;
     if (opted_in !== undefined) updates.opted_in = opted_in;
     if (attributes !== undefined) updates.attributes = attributes;
 
-    const { data: contact, error } = await supabase
+    const { data: contact, error } = await supabaseAdmin
       .from('contacts')
       .update(updates)
       .eq('id', id)
-      .eq('organization_id', membership.organization_id) // Security: can only update own org's contacts
+      .eq('organization_id', orgId)
       .select('*')
       .single();
 
