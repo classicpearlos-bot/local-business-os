@@ -47,14 +47,26 @@ export async function POST(request: Request) {
     for (const entry of payload.entry) {
       const wabaId = entry.id;
 
-      // 1. Resolve Organization ID from WABA ID
+      // 1. Resolve Organization ID from WABA ID or active account
+      let accountOrgId: string | null = null;
       const { data: account } = await supabaseAdmin
         .from('whatsapp_accounts')
         .select('organization_id')
         .eq('waba_id', wabaId)
-        .single();
+        .maybeSingle();
 
-      if (!account) {
+      if (account?.organization_id) {
+        accountOrgId = account.organization_id;
+      } else {
+        const { data: fallbackAccount } = await supabaseAdmin
+          .from('whatsapp_accounts')
+          .select('organization_id')
+          .limit(1)
+          .maybeSingle();
+        accountOrgId = fallbackAccount?.organization_id || null;
+      }
+
+      if (!accountOrgId) {
         console.error(`WABA ID ${wabaId} not linked to any organization.`);
         continue; // Skip processing if unregistered
       }
@@ -70,7 +82,7 @@ export async function POST(request: Request) {
             const { data: contact } = await supabaseAdmin
               .from('contacts')
               .upsert({
-                organization_id: account.organization_id,
+                organization_id: accountOrgId,
                 phone_number: contactPhone,
                 name: change.value.contacts?.[0]?.profile?.name || 'Unknown'
               }, { onConflict: 'organization_id, phone_number' })
@@ -84,7 +96,7 @@ export async function POST(request: Request) {
                   .from('messages')
                   .select('id')
                   .eq('wam_id', msg.id)
-                  .eq('organization_id', account.organization_id)
+                  .eq('organization_id', accountOrgId)
                   .single();
 
                 if (existingMsg) {
@@ -94,7 +106,7 @@ export async function POST(request: Request) {
 
                 // Core Process: Conversation -> Message -> Automations -> Webhooks
                 const { conversationId, messageId } = await processConversationAndMessage(
-                  account.organization_id,
+                  accountOrgId,
                   contact.id,
                   msg.id,
                   msg.type,
@@ -105,14 +117,14 @@ export async function POST(request: Request) {
                 if (msg.type === 'text') textBody = msg.text?.body || '';
 
                 await evaluateAutomations(
-                  account.organization_id,
+                  accountOrgId,
                   conversationId,
                   messageId,
                   textBody,
                   contactPhone
                 );
 
-                await queueTenantWebhook(account.organization_id, 'message.received', msg);
+                await queueTenantWebhook(accountOrgId, 'message.received', msg);
               } catch (e) {
                 console.error('Error processing message:', e);
               }
@@ -128,13 +140,13 @@ export async function POST(request: Request) {
               .from('messages')
               .update({ status: statusUpper, error_data: status.errors || null })
               .eq('wam_id', status.id)
-              .eq('organization_id', account.organization_id);
+              .eq('organization_id', accountOrgId);
 
             // 2. Update Campaign Recipients Queue (if it belongs to a campaign)
             const { data: existingRecip } = await supabaseAdmin.from('campaign_recipients')
                .select('id, campaign_id, status')
                .eq('meta_message_id', status.id)
-               .eq('organization_id', account.organization_id)
+               .eq('organization_id', accountOrgId)
                .single();
 
             if (existingRecip && existingRecip.status !== statusUpper) {
@@ -157,7 +169,7 @@ export async function POST(request: Request) {
             }
 
             // 3. Queue Webhook Event
-            await queueTenantWebhook(account.organization_id, `message.${status.status.toLowerCase()}`, status);
+            await queueTenantWebhook(accountOrgId, `message.${status.status.toLowerCase()}`, status);
           }
         }
       }

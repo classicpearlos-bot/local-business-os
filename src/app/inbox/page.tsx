@@ -55,6 +55,19 @@ export default function Inbox() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchConversations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.conversations) {
+          setConversations(json.conversations);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('API fetch error, falling back to Supabase:', e);
+    }
+
     const { data } = await supabase
       .from('conversations')
       .select(`
@@ -70,12 +83,36 @@ export default function Inbox() {
     if (data) setConversations(data);
   }, []);
 
+  const fetchMessagesForConv = useCallback(async (convId: string) => {
+    try {
+      const res = await fetch(`/api/conversations/${convId}/messages`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.messages) {
+          setMessages(json.messages);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Messages API error:', e);
+    }
+
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', convId)
+      .order('created_at', { ascending: true });
+
+    if (data) setMessages(data);
+  }, []);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUser(data.user);
     });
 
     fetchConversations();
+    const interval = setInterval(fetchConversations, 3000);
 
     // Realtime conversation updates
     const convChannel = supabase
@@ -100,6 +137,7 @@ export default function Inbox() {
       .subscribe();
 
     return () => {
+      clearInterval(interval);
       supabase.removeChannel(convChannel);
       supabase.removeChannel(msgChannel);
     };
@@ -107,23 +145,16 @@ export default function Inbox() {
 
   useEffect(() => {
     if (activeConvId) {
-      const fetchMessages = async () => {
-        const { data } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('conversation_id', activeConvId)
-          .order('created_at', { ascending: true });
-
-        if (data) setMessages(data);
-      };
-      fetchMessages();
+      fetchMessagesForConv(activeConvId);
+      const msgInterval = setInterval(() => fetchMessagesForConv(activeConvId), 2000);
 
       // Reset unread count on open
       supabase.from('conversations').update({ unread_count: 0 }).eq('id', activeConvId).then();
+      return () => clearInterval(msgInterval);
     } else {
       setMessages([]);
     }
-  }, [activeConvId]);
+  }, [activeConvId, fetchMessagesForConv]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
