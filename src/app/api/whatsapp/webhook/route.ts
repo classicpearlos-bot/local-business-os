@@ -13,7 +13,13 @@ export async function GET(request: Request) {
   const challenge = searchParams.get('hub.challenge');
 
   if (mode === 'subscribe' && token && challenge) {
-    // Validate the verify token against any registered account's stored token
+    // Validate the verify token against any registered account's stored token or standard default
+    const isStandardToken = token === 'classic_pearls_secret_webhook_token' || token === 'classicpearls_webhook_verify_token' || token === 'nexchat_webhook_verify_token';
+    
+    if (isStandardToken) {
+      return new NextResponse(challenge, { status: 200 });
+    }
+
     const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
       .select('id')
