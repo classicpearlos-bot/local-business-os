@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { MessageSquare, ShieldCheck, Zap, Phone, CheckCircle2 } from "lucide-react";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; message?: string }>;
+}) {
+  const { error, message } = await searchParams;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Left Feature Billboard (Desktop) */}
@@ -54,6 +60,18 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {error && (
+            <div className="mb-6 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {error === 'true' ? 'Invalid email or password. Please check your credentials or create an account.' : error}
+            </div>
+          )}
+
+          {message && (
+            <div className="mb-6 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+              {message}
+            </div>
+          )}
 
           <form className="space-y-4" action="/api/auth/login" method="POST">
             <div>

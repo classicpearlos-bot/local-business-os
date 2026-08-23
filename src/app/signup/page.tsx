@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { MessageSquare, CheckCircle2 } from "lucide-react";
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Left Feature Billboard */}
@@ -54,6 +60,12 @@ export default function SignupPage() {
               </Link>
             </p>
           </div>
+
+          {error && (
+            <div className="mb-6 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {error === 'true' ? 'An error occurred during signup. Please try again.' : error}
+            </div>
+          )}
 
           <form className="space-y-4" action="/api/auth/signup" method="POST">
             <div>
