@@ -7,6 +7,7 @@ import { getWhatsAppConciergeUrl } from '@/lib/whatsapp';
 import {
   MapPin,
   Phone,
+  Mail,
   Clock,
   Calendar,
   MessageSquare,
@@ -19,7 +20,7 @@ import {
 export const metadata: Metadata = {
   title: 'Contact Us & Location Directions | Classic Pearl Unisex Salon Arekere',
   description:
-    'Visit Classic Pearl Unisex Salon at MNK Arcade, Arekere, Bengaluru. Call +91 83107 30322 or message on WhatsApp. Open 10:00 AM – 09:00 PM Everyday.',
+    'Visit Classic Pearl Unisex Salon at MNK Arcade, Arekere, Bengaluru. Call +91 74836 54138 or message on WhatsApp. Open 10:00 AM – 09:00 PM Everyday.',
 };
 
 export default function ContactPage() {
@@ -103,6 +104,24 @@ export default function ContactPage() {
                         className="font-serif text-2xl text-pearl hover:text-gold transition-colors block"
                       >
                         {businessConfig.phone}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Item */}
+                <div className="flex items-start space-x-6 border-t border-pearl/5 pt-8">
+                  <Mail className="w-5 h-5 text-gold flex-shrink-0 mt-1" />
+                  <div className="space-y-2">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-pearl/50 block">
+                      Official Email
+                    </span>
+                    <div>
+                      <a
+                        href={`mailto:${businessConfig.email}`}
+                        className="font-sans text-sm text-pearl hover:text-gold transition-colors block"
+                      >
+                        {businessConfig.email}
                       </a>
                     </div>
                   </div>

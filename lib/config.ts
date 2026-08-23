@@ -15,9 +15,10 @@ export const siteConfig = {
 export const businessConfig = {
   name: "Classic Pearl Unisex Salon",
   legalName: "Classic Pearl Unisex Salon",
-  phone: "+91 83107 30322",
-  phoneRaw: "8310730322",
-  whatsappNumber: "918310730322",
+  phone: "+91 74836 54138",
+  phoneRaw: "7483654138",
+  whatsappNumber: "917483654138",
+  email: "classicpearlsalon@gmail.com",
   
   address: {
     street: "1st floor, Tony Thomas, MNK Arcade, 36, 80ft, BDA Main Rd, beside Camry hospital, Arekere",

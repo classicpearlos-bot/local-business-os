@@ -246,7 +246,7 @@ export default function AIAssistant() {
       return;
     }
     if (reply === 'Call salon') {
-      window.open('tel:+918310730322', '_self');
+      window.open('tel:+917483654138', '_self');
       return;
     }
     if (reply === 'View refund policy') {

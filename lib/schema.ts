@@ -15,6 +15,7 @@ export function getSalonSchemaJsonLd() {
     "@id": siteConfig.url,
     "url": siteConfig.url,
     "telephone": businessConfig.phone,
+    "email": businessConfig.email,
     "priceRange": "$$$",
     "currenciesAccepted": "INR",
     "paymentAccepted": "Cash, Credit Card, UPI",
