@@ -20,18 +20,13 @@ import {
   ArrowRight,
   ShieldCheck
 } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WhatsAppPreview } from "@/components/ui/WhatsAppPreview";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);

@@ -20,15 +20,10 @@ import {
   ChevronRight,
   TrendingUp
 } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { StatCard, Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
