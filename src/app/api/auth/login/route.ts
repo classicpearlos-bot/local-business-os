@@ -22,10 +22,26 @@ export async function POST(request: Request) {
     return res;
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
+  let { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
+
+  // If email was not confirmed, automatically confirm it via admin and re-attempt login
+  if (error && (error.message.toLowerCase().includes('confirm') || error.message.toLowerCase().includes('not confirmed'))) {
+    try {
+      const { supabaseAdmin } = await import('@/lib/supabaseAdmin')
+      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers()
+      const targetUser = users?.find(u => u.email?.toLowerCase() === email)
+      if (targetUser) {
+        await supabaseAdmin.auth.admin.updateUserById(targetUser.id, { email_confirm: true })
+        const retry = await supabase.auth.signInWithPassword({ email, password })
+        error = retry.error
+      }
+    } catch (adminErr) {
+      console.error('Auto-confirm retry error:', adminErr)
+    }
+  }
 
   if (error) {
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message || 'Invalid email or password')}`, request.url), {
