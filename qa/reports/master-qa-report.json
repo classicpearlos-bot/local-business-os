@@ -1,0 +1,341 @@
+{
+  "timestamp": "2026-08-15T18:21:59.647Z",
+  "durationSeconds": 72.41,
+  "summary": {
+    "totalSuites": 11,
+    "totalTests": 60,
+    "totalPassed": 60,
+    "totalFailed": 0,
+    "passRate": "100.0%"
+  },
+  "suiteResults": [
+    {
+      "suite": "Suite 1: Authentication & Authorization Security",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Unauthenticated request to /inbox is intercepted/redirected",
+          "status": "PASS"
+        },
+        {
+          "name": "Unauthenticated request to /campaigns is protected",
+          "status": "PASS"
+        },
+        {
+          "name": "Unauthenticated request to /developers is protected",
+          "status": "PASS"
+        },
+        {
+          "name": "Login endpoint rejects missing email/password gracefully",
+          "status": "PASS"
+        },
+        {
+          "name": "Auth handles SQL injection and XSS strings safely without crashing",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 2: Database Integrity, RPCs & RLS Isolation",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "RLS: Anonymous client cannot read private campaigns across tenants",
+          "status": "PASS"
+        },
+        {
+          "name": "RLS: Anonymous client cannot read tenant API keys",
+          "status": "PASS"
+        },
+        {
+          "name": "RLS: Anonymous client cannot read tenant webhook secrets",
+          "status": "PASS"
+        },
+        {
+          "name": "Constraint: Duplicate contact phone number within same org is rejected",
+          "status": "PASS"
+        },
+        {
+          "name": "Constraint: Same phone number in DIFFERENT orgs is permitted (multi-tenant support)",
+          "status": "PASS"
+        },
+        {
+          "name": "RPC: increment_campaign_sent atomically updates total_sent",
+          "status": "PASS"
+        },
+        {
+          "name": "RPC: claim_campaign_recipients executes atomically",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 3: Developer API (/api/v1/send) & Idempotency",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "/api/v1/send rejects requests without Authorization header (401)",
+          "status": "PASS"
+        },
+        {
+          "name": "/api/v1/send rejects invalid bearer token (401)",
+          "status": "PASS"
+        },
+        {
+          "name": "/api/v1/send rejects expired API key (401)",
+          "status": "PASS"
+        },
+        {
+          "name": "/api/v1/send rejects revoked API key (401)",
+          "status": "PASS"
+        },
+        {
+          "name": "/api/v1/send rejects unsupported message types (400)",
+          "status": "PASS"
+        },
+        {
+          "name": "Idempotency: Concurrent duplicate requests with same Idempotency-Key are protected against duplicate processing",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 4: Meta Webhook Inbound & Status Tick Processing",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Meta Webhook GET: Responds with challenge on valid subscription",
+          "status": "PASS"
+        },
+        {
+          "name": "Meta Webhook GET: Rejects missing verification challenge (403)",
+          "status": "PASS"
+        },
+        {
+          "name": "Meta Webhook POST: Gracefully handles malformed / non-whatsapp payload (404)",
+          "status": "PASS"
+        },
+        {
+          "name": "Meta Webhook POST: Inbound text message auto-creates contact and conversation",
+          "status": "PASS"
+        },
+        {
+          "name": "Meta Webhook POST: Status update (DELIVERED/READ) updates message status",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 5: Keyword Automation Engine & Cooldown Logic",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "EXACT match triggers when text matches keyword exactly (case-insensitive & trimmed)",
+          "status": "PASS"
+        },
+        {
+          "name": "EXACT match does NOT trigger on sentence containing the word",
+          "status": "PASS"
+        },
+        {
+          "name": "CONTAINS match triggers when keyword is anywhere inside sentence",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 6: Campaign Queue Worker Execution",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Campaign Worker GET: Returns 200 and handles empty queue gracefully",
+          "status": "PASS"
+        },
+        {
+          "name": "Campaign Creation API rejects missing body / unauthenticated requests (401)",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 7: Outbound Tenant Webhooks Queueing",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Subscribed event (message.received) is queued into tenant_webhook_deliveries on inbound message",
+          "status": "PASS"
+        },
+        {
+          "name": "Unsubscribed event (message.failed) is NOT queued for this endpoint",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 8: Frontend Pages & Routing Integrity",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Page [Dashboard] (/) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Multi-Agent Inbox] (/inbox) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Campaigns Dashboard] (/campaigns) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Contacts CRM] (/contacts) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Message Templates] (/templates) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Keyword Automations] (/automations) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [WhatsApp Meta Settings] (/whatsapp) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Developers & Webhooks] (/developers) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Sign In] (/login) responds with HTTP 200",
+          "status": "PASS"
+        },
+        {
+          "name": "Page [Sign Up] (/signup) responds with HTTP 200",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 9: Security Attack, IDOR & Adversarial Tests",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "IDOR: Anonymous client cannot read Org1 contacts by guessing UUID",
+          "status": "PASS"
+        },
+        {
+          "name": "IDOR: Anonymous client cannot read Org1 campaigns",
+          "status": "PASS"
+        },
+        {
+          "name": "IDOR: Anonymous client cannot read Org1 API keys",
+          "status": "PASS"
+        },
+        {
+          "name": "Webhook token validation: fake token is rejected (403)",
+          "status": "PASS"
+        },
+        {
+          "name": "Webhook token validation: missing challenge is rejected (403)",
+          "status": "PASS"
+        },
+        {
+          "name": "IDOR: Cannot update Org2 contacts via PATCH /api/contacts using Org1 ID",
+          "status": "PASS"
+        },
+        {
+          "name": "Developer API: Cannot use another tenant API key for cross-tenant access",
+          "status": "PASS"
+        },
+        {
+          "name": "SQL Injection: contact search does not expose data",
+          "status": "PASS"
+        },
+        {
+          "name": "Phone normalization: duplicate contact with different format is rejected",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 10: Media Campaigns, Validation & Test Send",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Media Validation: Image sizes (5MB) and MIME types enforced according to Meta specs",
+          "status": "PASS"
+        },
+        {
+          "name": "Media Validation: Video (16MB) and Document (100MB) limits strictly enforced",
+          "status": "PASS"
+        },
+        {
+          "name": "Template Builder: Meta-compliant media header and variable array generated",
+          "status": "PASS"
+        },
+        {
+          "name": "Test Send API: Unauthenticated requests protected (401)",
+          "status": "PASS"
+        },
+        {
+          "name": "Message Debugger API: Granular recipient traces protected by authentication (401)",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 11: Excel Import, Audience & Meta Error Diagnostics",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Diagnostic Engine: Identifies \"Not on WhatsApp\" error (#131026)",
+          "status": "PASS"
+        },
+        {
+          "name": "Diagnostic Engine: Identifies 24-Hour customer service window expired (#131047)",
+          "status": "PASS"
+        },
+        {
+          "name": "Diagnostic Engine: Identifies Meta API rate limit (#131056)",
+          "status": "PASS"
+        },
+        {
+          "name": "Diagnostic Engine: Identifies Meta billing restriction (#131042)",
+          "status": "PASS"
+        },
+        {
+          "name": "Diagnostic Engine: Identifies template variable/parameter mismatch (#132000)",
+          "status": "PASS"
+        },
+        {
+          "name": "Bulk Contact Import API: Unauthenticated requests protected (401)",
+          "status": "PASS"
+        }
+      ]
+    }
+  ]
+}
