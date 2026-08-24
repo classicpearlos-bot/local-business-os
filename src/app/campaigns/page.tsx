@@ -64,10 +64,11 @@ export default function CampaignsPage() {
   const [contactCount, setContactCount] = useState<number>(0);
   const [excludedCount, setExcludedCount] = useState<number>(0);
 
-  // Audience Source Selection (CRM vs Excel/CSV)
-  const [audienceSource, setAudienceSource] = useState<'crm' | 'excel'>('crm');
+  // Audience Source Selection (CRM vs Excel/CSV vs Manual)
+  const [audienceSource, setAudienceSource] = useState<'crm' | 'excel' | 'manual'>('crm');
   const [parsedExcel, setParsedExcel] = useState<ExcelParseResult | null>(null);
   const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [manualNumbers, setManualNumbers] = useState('');
 
   // Campaign Builder Form State
   const [formData, setFormData] = useState({
@@ -260,11 +261,20 @@ export default function CampaignsPage() {
     }
   };
 
-  // Launch Full Campaign (Handles both CRM Audience and Excel Audience)
+  const getManualNumbersList = () => {
+    return manualNumbers
+      .split(',')
+      .map(n => n.trim())
+      .filter(n => n.length > 5);
+  };
+
+  // Launch Full Campaign (Handles CRM, Excel, and Manual)
   const handleLaunchCampaign = async () => {
-    const effectiveRecipientCount = audienceSource === 'excel'
-      ? (parsedExcel?.validContacts.length || 0)
-      : contactCount;
+    const manualList = getManualNumbersList();
+    const effectiveRecipientCount = 
+      audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) :
+      audienceSource === 'manual' ? manualList.length :
+      contactCount;
 
     if (effectiveRecipientCount === 0) {
       setFormError('Cannot launch broadcast: 0 valid recipients found.');
@@ -299,6 +309,31 @@ export default function CampaignsPage() {
         const importData = await importRes.json();
         if (!importRes.ok) {
           throw new Error(importData.error || 'Failed to import Excel contacts');
+        }
+
+        contactIds = (importData.contacts || []).map((c: any) => c.id);
+      } else if (audienceSource === 'manual' && manualList.length > 0) {
+        // Bulk import Manual contacts
+        const importRes = await fetch('/api/contacts/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contacts: manualList.map(phone => {
+              // naive normalization (add + if missing, strip spaces)
+              let clean = phone.replace(/[^0-9+]/g, '');
+              if (!clean.startsWith('+')) clean = '+' + clean;
+              return {
+                name: 'Manual Contact',
+                phone_number: clean,
+                opted_in: true
+              };
+            })
+          })
+        });
+
+        const importData = await importRes.json();
+        if (!importRes.ok) {
+          throw new Error(importData.error || 'Failed to import Manual contacts');
         }
 
         contactIds = (importData.contacts || []).map((c: any) => c.id);
@@ -575,7 +610,7 @@ export default function CampaignsPage() {
                               />
                             </div>
                             <span className="text-xs font-semibold text-slate-500">
-                              {campaign.total_sent || 0} / {campaign.total_recipients || 0} ({percent}%)
+                              {percent === 100 ? '100% completed' : `${campaign.total_sent || 0} sent`}
                             </span>
                           </div>
                         </td>
@@ -657,7 +692,7 @@ export default function CampaignsPage() {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Target Audience Source *
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div
                     onClick={() => setAudienceSource('crm')}
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
@@ -668,8 +703,8 @@ export default function CampaignsPage() {
                   >
                     <Users className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Existing CRM Contacts</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{contactCount} opted-in clients in database</p>
+                      <p className="text-xs font-bold text-slate-900">CRM Contacts</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{contactCount} opted-in</p>
                     </div>
                   </div>
 
@@ -683,8 +718,23 @@ export default function CampaignsPage() {
                   >
                     <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Upload Excel / CSV File</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">Import names & WhatsApp numbers instantly</p>
+                      <p className="text-xs font-bold text-slate-900">Upload Excel</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Import directly</p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setAudienceSource('manual')}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
+                      audienceSource === 'manual'
+                        ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <Terminal className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Manual Numbers</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Comma separated</p>
                     </div>
                   </div>
                 </div>
@@ -717,7 +767,7 @@ export default function CampaignsPage() {
                     Contacts with opt-out status are automatically excluded from the queue to protect your Meta quality rating.
                   </p>
                 </div>
-              ) : (
+              ) : audienceSource === 'excel' ? (
                 /* Excel / CSV Uploader & Parsing Component */
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
                   <div className="flex items-center justify-between">
@@ -740,6 +790,28 @@ export default function CampaignsPage() {
                       setParsedExcel(null);
                       setExcelFile(null);
                     }}
+                  />
+                </div>
+              ) : (
+                /* Manual Numbers Input Component */
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-amber-600" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">Manual Numbers</h4>
+                    </div>
+                    {manualNumbers.length > 0 && (
+                      <Badge variant="success" dot>{manualNumbers.split(',').filter(n => n.trim().length > 5).length} Numbers Ready</Badge>
+                    )}
+                  </div>
+
+                  <Textarea
+                    label="Enter Phone Numbers (comma separated)"
+                    placeholder="e.g. +917483654138, 9876543210, +1234567890"
+                    value={manualNumbers}
+                    onChange={(e) => setManualNumbers(e.target.value)}
+                    rows={4}
+                    helperText="Ensure country codes are included for best deliverability."
                   />
                 </div>
               )}
