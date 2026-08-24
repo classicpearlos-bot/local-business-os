@@ -1023,7 +1023,7 @@ export default function CampaignsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Launch Confirmation</span>
                   <Badge variant="warning">
-                    {audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) : contactCount} Recipients
+                    {audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) : audienceSource === 'manual' ? (manualNumbers.split(',').filter(n => n.trim().length > 5).length) : contactCount} Recipients
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
