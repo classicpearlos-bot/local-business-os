@@ -148,6 +148,40 @@ export default function TemplatesPage() {
       toast.error('Please upload an image and wait for it to process.');
       return;
     }
+
+    // Validate: name must be lowercase + underscores only
+    const cleanName = newName.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (cleanName !== newName) {
+      toast.error(`Template name auto-corrected to "${cleanName}". Only lowercase letters, numbers and underscores allowed.`);
+      setNewName(cleanName);
+      return;
+    }
+
+    // Validate: body text must NOT have markdown (**bold**, *italic*, etc.)
+    if (/\*\*.*?\*\*|\*.*?\*|__.*?__|_.*?_/.test(newBodyText)) {
+      toast.error('Body text cannot have **bold** or *italic* markdown. Meta does not support formatting — just plain text.');
+      return;
+    }
+
+    // Validate: Call buttons must have a valid phone number
+    for (const btn of newButtons) {
+      if (btn.type === 'PHONE_NUMBER') {
+        if (!btn.phone_number || !/^\+\d{7,15}$/.test(btn.phone_number.trim())) {
+          toast.error(`Call button phone number must be in international format (e.g. +917483654138). No spaces or dashes.`);
+          return;
+        }
+      }
+      if (btn.type === 'URL') {
+        if (!btn.url || !/^https?:\/\/.+/.test(btn.url.trim())) {
+          toast.error('URL button must have a valid https:// URL.');
+          return;
+        }
+      }
+      if (!btn.text || btn.text.trim().length < 1) {
+        toast.error('All buttons must have text.');
+        return;
+      }
+    }
     
     setCreating(true);
     
@@ -350,10 +384,10 @@ export default function TemplatesPage() {
                 type="text"
                 placeholder="e.g. summer_promo_01"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs"
+                onChange={(e) => setNewName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
+                className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs font-mono"
               />
-              <p className="text-[10px] text-slate-500 mt-1">Lowercase & underscores only</p>
+              <p className="text-[10px] text-slate-500 mt-1">⚠️ Lowercase, numbers and underscores ONLY — capitals auto-removed</p>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Category</label>
@@ -390,11 +424,13 @@ export default function TemplatesPage() {
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-2">Body Text</label>
             <textarea
-              placeholder="Hi {{1}}, here is your special offer!"
+              placeholder="Hi, check out our latest offers at Classic Pearl Salon! Book now: +917483654138"
               value={newBodyText}
               onChange={(e) => setNewBodyText(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs min-h-[100px]"
             />
+            <p className="text-[10px] text-amber-600 mt-1 font-semibold">⚠️ Do NOT use **bold**, *italic* or any markdown — Meta rejects it. Plain text only.</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">You can use {'{{1}}'} {'{{2}}'} for variable placeholders (e.g. customer name)</p>
           </div>
 
           <div>
