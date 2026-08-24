@@ -25,7 +25,8 @@ import {
   FileText,
   Video,
   Download,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
@@ -44,6 +45,13 @@ export default function Inbox() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [sending, setSending] = useState(false);
   const [showCustomerDrawer, setShowCustomerDrawer] = useState(false);
+
+  // New Conversation Modal State
+  const [showNewConvModal, setShowNewConvModal] = useState(false);
+  const [newConvPhone, setNewConvPhone] = useState('');
+  const [newConvName, setNewConvName] = useState('');
+  const [newConvError, setNewConvError] = useState('');
+  const [newConvLoading, setNewConvLoading] = useState(false);
 
   // Media Attachment State
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -239,6 +247,36 @@ export default function Inbox() {
     fetchConversations();
   };
 
+  const startNewConversation = async () => {
+    if (!newConvPhone.trim()) {
+      setNewConvError('Phone number is required.');
+      return;
+    }
+    setNewConvLoading(true);
+    setNewConvError('');
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone_number: newConvPhone.trim(), name: newConvName.trim() || undefined })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setNewConvError(data.error || 'Failed to create conversation.');
+        return;
+      }
+      setShowNewConvModal(false);
+      setNewConvPhone('');
+      setNewConvName('');
+      await fetchConversations();
+      setActiveConvId(data.conversation_id);
+    } catch (e: any) {
+      setNewConvError(e.message || 'Network error.');
+    } finally {
+      setNewConvLoading(false);
+    }
+  };
+
   const toggleOptIn = async () => {
     if (!activeConv?.contacts?.id) return;
     const newStatus = !activeConv.contacts.opted_in;
@@ -261,15 +299,25 @@ export default function Inbox() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Shared Inbox</h1>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">Multi-agent live WhatsApp chats</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">{conversations.length} conversations</p>
               </div>
-              <button 
-                onClick={fetchConversations} 
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                title="Refresh conversations"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={fetchConversations} 
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  title="Refresh conversations"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => { setShowNewConvModal(true); setNewConvError(''); setNewConvPhone(''); setNewConvName(''); }}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  title="Start a new conversation"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New Chat
+                </button>
+              </div>
             </div>
 
             {/* Filter Pills */}
@@ -438,7 +486,7 @@ export default function Inbox() {
               <div className="flex-1 overflow-y-auto p-6 space-y-4 wa-chat-bg">
                 <div className="text-center my-2">
                   <span className="bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[10px] font-bold text-slate-500 shadow-xs border border-slate-200/60 uppercase tracking-wider">
-                    WhatsApp End-to-End Direct API
+                    Classic Pearl Salon • End-to-End Encrypted
                   </span>
                 </div>
 
@@ -611,6 +659,53 @@ export default function Inbox() {
         )}
 
       </main>
+
+      {/* New Conversation Modal */}
+      <Modal
+        isOpen={showNewConvModal}
+        onClose={() => setShowNewConvModal(false)}
+        title="Start New Conversation"
+        description="Enter a phone number to start a new WhatsApp chat. Include the country code (e.g. +917483654138)."
+      >
+        <div className="space-y-4">
+          <Input
+            label="Phone Number *"
+            placeholder="+917483654138"
+            value={newConvPhone}
+            onChange={(e) => setNewConvPhone(e.target.value)}
+            helperText="Include country code without spaces."
+          />
+          <Input
+            label="Contact Name (Optional)"
+            placeholder="e.g. Ravi Kumar"
+            value={newConvName}
+            onChange={(e) => setNewConvName(e.target.value)}
+            helperText="Name to display in the inbox. Defaults to the phone number."
+          />
+
+          {newConvError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-semibold">
+              {newConvError}
+            </div>
+          )}
+
+          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+            <Button variant="outline" size="sm" onClick={() => setShowNewConvModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={newConvLoading}
+              disabled={!newConvPhone.trim()}
+              onClick={startNewConversation}
+              leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+            >
+              Open Chat
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Attach Media Modal */}
       <Modal
