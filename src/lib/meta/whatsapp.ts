@@ -33,8 +33,16 @@ export function buildTemplateComponents(
   // 1. Media or Text Header
   if (mediaHeader && (mediaHeader.url || mediaHeader.id)) {
     const mediaObj: any = {};
-    if (mediaHeader.url) mediaObj.link = mediaHeader.url;
-    if (mediaHeader.id) mediaObj.id = mediaHeader.id;
+    if (mediaHeader.id) {
+      mediaObj.id = mediaHeader.id;
+    } else if (mediaHeader.url && mediaHeader.url.startsWith('http')) {
+      mediaObj.link = mediaHeader.url;
+    } else {
+      // If no valid ID or HTTP URL (e.g., local blob), skip or handle error
+      // But we must provide something if we claim to have a media header.
+      // A local blob URL will crash Meta API.
+    }
+
     if (mediaHeader.type === 'document' && mediaHeader.filename) {
       mediaObj.filename = mediaHeader.filename;
     }
