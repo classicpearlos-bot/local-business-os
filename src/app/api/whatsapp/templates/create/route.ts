@@ -25,7 +25,6 @@ export async function POST(request: Request) {
     const orgId = await resolveUserOrgId(user.id);
     if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    // Fetch WA Account using admin to bypass RLS
     const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
       .select('waba_id, access_token')
@@ -37,24 +36,73 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.json();
-    
-    // Meta requires names to be lowercase and underscore only
+
+    // Validate name
     if (payload.name && !/^[a-z0-9_]+$/.test(payload.name)) {
-      return NextResponse.json({ error: 'Template name must be lowercase and contain only letters, numbers, and underscores.' }, { status: 400 });
+      return NextResponse.json({ error: 'Template name must be lowercase letters, numbers and underscores only.' }, { status: 400 });
     }
 
+    // Sanitize components before sending to Meta:
+    // - IMAGE headers: remove "example.header_handle" — that requires a special resumable upload API.
+    //   Just send format: IMAGE without example. Meta will approve it, and the actual image
+    //   is provided per-send at broadcast time.
+    // - Strip any markdown from BODY text
+    const sanitizedComponents = (payload.components || []).map((comp: any) => {
+      if (comp.type === 'HEADER' && comp.format === 'IMAGE') {
+        // Remove example entirely — just declare format IMAGE
+        return { type: 'HEADER', format: 'IMAGE' };
+      }
+      if (comp.type === 'BODY' && comp.text) {
+        // Strip markdown: **bold**, *italic*, __under__, _italic_
+        const cleanText = comp.text
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\*(.*?)\*/g, '$1')
+          .replace(/__(.*?)__/g, '$1')
+          .replace(/_(.*?)_/g, '$1');
+        return { ...comp, text: cleanText };
+      }
+      return comp;
+    });
+
+    // Validate BODY is not empty after sanitization
+    const bodyComp = sanitizedComponents.find((c: any) => c.type === 'BODY');
+    if (!bodyComp || !bodyComp.text?.trim()) {
+      return NextResponse.json({ error: 'Body text is required.' }, { status: 400 });
+    }
+
+    // Validate Call button phone numbers
+    const buttonsComp = sanitizedComponents.find((c: any) => c.type === 'BUTTONS');
+    if (buttonsComp?.buttons) {
+      for (const btn of buttonsComp.buttons) {
+        if (btn.type === 'PHONE_NUMBER') {
+          const phone = (btn.phone_number || '').trim();
+          if (!/^\+\d{7,15}$/.test(phone)) {
+            return NextResponse.json({
+              error: `Call button phone number "${phone}" is invalid. Use format: +917483654138 (plus sign + digits only, no spaces)`
+            }, { status: 400 });
+          }
+        }
+      }
+    }
+
+    const metaPayload = {
+      name: payload.name,
+      language: payload.language,
+      category: payload.category,
+      components: sanitizedComponents
+    };
+
     try {
-      // Submit to Meta
       const metaResponse = await createWhatsAppTemplate({
         wabaId: account.waba_id,
         accessToken: account.access_token
-      }, payload);
+      }, metaPayload);
 
       if (metaResponse.error) {
-        return NextResponse.json({ error: metaResponse.error.message }, { status: 400 });
+        return NextResponse.json({ error: `Meta rejected: ${metaResponse.error.message}` }, { status: 400 });
       }
 
-      // If successful, save it locally with PENDING status
+      // Save locally with PENDING status
       await supabaseAdmin
         .from('message_templates')
         .insert({
@@ -63,13 +111,16 @@ export async function POST(request: Request) {
           language: payload.language,
           category: payload.category,
           status: 'PENDING',
-          components: payload.components
+          components: sanitizedComponents
         });
 
       return NextResponse.json({ success: true, data: metaResponse }, { status: 200 });
+
     } catch (metaErr: any) {
       console.error('Meta Template Creation Error:', metaErr);
-      return NextResponse.json({ error: metaErr.message || 'Failed to create template on Meta' }, { status: 400 });
+      // Return the raw Meta error message so the user can understand exactly what failed
+      const errMsg = metaErr?.data?.error?.message || metaErr?.message || 'Failed to create template on Meta';
+      return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
   } catch (error: any) {
