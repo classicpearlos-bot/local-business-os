@@ -46,23 +46,30 @@ export async function POST(request: Request) {
     }));
 
     // Upsert using supabaseAdmin to bypass RLS
-    const { data: inserted, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('contacts')
       .upsert(records, {
         onConflict: 'organization_id,phone_number',
         ignoreDuplicates: false
-      })
-      .select('id, name, phone_number, opted_in');
+      });
 
     if (error) {
       console.error('Bulk import error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Explicitly select them back because an unmodified upsert might return an empty array
+    const phoneNumbers = records.map(r => r.phone_number);
+    const { data: finalContacts } = await supabaseAdmin
+      .from('contacts')
+      .select('id, name, phone_number, opted_in')
+      .eq('organization_id', orgId)
+      .in('phone_number', phoneNumbers);
+
     return NextResponse.json({
       success: true,
-      importedCount: inserted?.length || 0,
-      contacts: inserted || []
+      importedCount: finalContacts?.length || 0,
+      contacts: finalContacts || []
     });
 
   } catch (err: any) {

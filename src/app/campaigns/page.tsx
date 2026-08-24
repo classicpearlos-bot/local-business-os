@@ -962,7 +962,7 @@ export default function CampaignsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    {audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) : contactCount} Target Recipients
+                    {audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) : audienceSource === 'manual' ? (manualNumbers.split(',').filter(n => n.trim().length > 5).length) : contactCount} Target Recipients
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
