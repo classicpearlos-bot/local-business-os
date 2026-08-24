@@ -139,20 +139,20 @@ export function MediaUploader({
 
       {value?.url || value?.media_id || value?.handle ? (
         /* Preview Card */
-        <div className={`relative rounded-2xl border overflow-hidden group ${value.handle ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'}`}>
+        <div className={`relative rounded-2xl border overflow-hidden group ${(value.handle || value.media_id) ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'}`}>
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${value.handle ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                {value.handle ? <Check className="w-5 h-5" /> : (
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${(value.handle || value.media_id) ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                {(value.handle || value.media_id) ? <Check className="w-5 h-5" /> : (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-600" />
                 )}
               </div>
               <div className="min-w-0">
-                <p className={`text-xs font-bold truncate ${value.handle ? 'text-emerald-800' : 'text-amber-800'}`}>
-                  {value.handle ? '✅ Uploaded to Meta — Ready!' : '⏳ Uploading to Meta, please wait...'}
+                <p className={`text-xs font-bold truncate ${(value.handle || value.media_id) ? 'text-emerald-800' : 'text-amber-800'}`}>
+                  {(value.handle || value.media_id) ? '✅ Uploaded to Meta — Ready!' : '⏳ Uploading to Meta, please wait...'}
                 </p>
                 <p className="text-[10px] font-mono truncate text-slate-500">
-                  {value.handle ? `Handle ready (${value.filename || 'image'})` : value.filename || 'Processing...'}
+                  {value.handle ? `Handle ready (${value.filename || 'image'})` : value.media_id ? `Media ID: ${value.media_id}` : value.filename || 'Processing...'}
                 </p>
               </div>
             </div>
