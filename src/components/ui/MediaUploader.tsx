@@ -18,6 +18,7 @@ import { Button } from './Button';
 export interface MediaUploadValue {
   type: 'image' | 'video' | 'document';
   url: string;
+  media_id?: string;
   filename?: string;
   sizeBytes?: number;
 }
@@ -38,6 +39,7 @@ export function MediaUploader({
   const [activeTab, setActiveTab] = useState<'url' | 'file'>('url');
   const [urlInput, setUrlInput] = useState(value?.url || '');
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const limits = META_MEDIA_LIMITS[mediaType];
@@ -61,7 +63,7 @@ export function MediaUploader({
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     const file = e.target.files?.[0];
     if (!file) return;
@@ -72,14 +74,37 @@ export function MediaUploader({
       return;
     }
 
-    // Create local object URL for preview
-    const objectUrl = URL.createObjectURL(file);
-    onChange({
-      type: mediaType,
-      url: objectUrl,
-      filename: file.name,
-      sizeBytes: file.size
-    });
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      // We get a media_id back. We can still create a local blob for visual preview
+      const objectUrl = URL.createObjectURL(file);
+      
+      onChange({
+        type: mediaType,
+        url: objectUrl, // Used only for visual preview on the frontend
+        media_id: data.media_id, // Used for sending to Meta API
+        filename: file.name,
+        sizeBytes: file.size
+      });
+    } catch (err: any) {
+      setError(err.message || 'Error uploading file');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleRemove = () => {
@@ -107,7 +132,7 @@ export function MediaUploader({
         </div>
       )}
 
-      {value?.url ? (
+      {value?.url || value?.media_id ? (
         /* Preview Card */
         <div className="relative rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden group">
           <div className="p-4 flex items-center justify-between">
@@ -119,9 +144,9 @@ export function MediaUploader({
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-slate-900 truncate">
-                  {value.filename || 'Media Attached'}
+                  {value.filename || (value.media_id ? 'Uploaded to Meta' : 'Media Attached')}
                 </p>
-                <p className="text-[10px] text-slate-500 font-mono truncate">{value.url}</p>
+                <p className="text-[10px] text-slate-500 font-mono truncate">{value.media_id ? `Meta Media ID: ${value.media_id}` : value.url}</p>
               </div>
             </div>
 
@@ -137,20 +162,14 @@ export function MediaUploader({
           </div>
 
           {/* Media Preview Box */}
-          {mediaType === 'image' && (
+          {mediaType === 'image' && value.url && (
             <div className="h-44 bg-slate-900/5 border-t border-slate-200 flex items-center justify-center overflow-hidden">
               <img
                 src={value.url}
                 alt="Template media preview"
                 className="h-full w-full object-cover"
-                onError={() => setError('Image failed to load from URL. Verify it is a publicly accessible HTTPS link.')}
+                onError={() => {}}
               />
-            </div>
-          )}
-
-          {mediaType === 'video' && (
-            <div className="h-44 bg-slate-900 flex items-center justify-center border-t border-slate-200">
-              <video src={value.url} controls className="h-full max-w-full" />
             </div>
           )}
         </div>
@@ -194,11 +213,15 @@ export function MediaUploader({
             </div>
           ) : (
             <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/20 rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className={`border-2 border-dashed ${uploading ? 'border-indigo-300 bg-indigo-50/50' : 'border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/20'} rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2`}
             >
-              <UploadCloud className="w-7 h-7 text-slate-400" />
-              <p className="text-xs font-bold text-slate-700">Click to select {mediaType}</p>
+              {uploading ? (
+                <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-indigo-600"></div>
+              ) : (
+                <UploadCloud className="w-7 h-7 text-slate-400" />
+              )}
+              <p className="text-xs font-bold text-slate-700">{uploading ? 'Uploading to Meta...' : `Click to select ${mediaType}`}</p>
               <p className="text-[10px] text-slate-400">Supported: {limits.acceptedExtensions.join(', ')} (Max {limits.maxSizeMB}MB)</p>
               <input
                 ref={fileInputRef}
@@ -206,6 +229,7 @@ export function MediaUploader({
                 accept={limits.acceptedMimeTypes.join(',')}
                 onChange={handleFileChange}
                 className="hidden"
+                disabled={uploading}
               />
             </div>
           )}

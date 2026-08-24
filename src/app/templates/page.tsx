@@ -18,7 +18,9 @@ import {
   HelpCircle,
   Sparkles,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Plus,
+  X
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Badge } from "@/components/ui/Badge";
@@ -27,6 +29,8 @@ import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WhatsAppPreview } from "@/components/ui/WhatsAppPreview";
+import { MediaUploader, MediaUploadValue } from "@/components/ui/MediaUploader";
+import { toast } from 'react-hot-toast';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -34,7 +38,21 @@ export default function TemplatesPage() {
   const [syncing, setSyncing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
-  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  
+  // Create Template State
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState('MARKETING');
+  const [newLanguage, setNewLanguage] = useState('en_US');
+  const [newHeaderType, setNewHeaderType] = useState<'NONE'|'TEXT'|'IMAGE'>('NONE');
+  const [newHeaderText, setNewHeaderText] = useState('');
+  const [newMediaValue, setNewMediaValue] = useState<MediaUploadValue | null>(null);
+  const [newBodyText, setNewBodyText] = useState('');
+  
+  // Buttons
+  const [newButtons, setNewButtons] = useState<any[]>([]);
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
@@ -58,34 +76,18 @@ export default function TemplatesPage() {
 
   const handleSyncFromMeta = async () => {
     setSyncing(true);
-    setStatusMsg(null);
     try {
       const res = await fetch('/api/whatsapp/templates');
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch (jsonErr) {
-        data = { error: 'Failed to parse response from server' };
-      }
+      const data = await res.json();
 
       if (!res.ok) {
-        setStatusMsg({ 
-          type: 'error', 
-          text: data.error || 'Failed to sync templates. Please verify your WhatsApp Business Account is connected in Meta Connection settings.' 
-        });
+        toast.error(data.error || 'Failed to sync templates.');
         return;
       }
-
-      setStatusMsg({ 
-        type: 'success', 
-        text: `Successfully synced ${data.data?.length || 0} template(s) directly from your Meta WhatsApp Business Account!` 
-      });
+      toast.success(`Successfully synced ${data.data?.length || 0} template(s) from Meta!`);
       fetchTemplates();
     } catch (err: any) {
-      setStatusMsg({ 
-        type: 'error', 
-        text: 'Network error connecting to template sync endpoint. Please verify server connectivity.' 
-      });
+      toast.error('Network error connecting to template sync endpoint.');
     } finally {
       setSyncing(false);
     }
@@ -112,148 +114,195 @@ export default function TemplatesPage() {
     t.category?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleAddButton = (type: string) => {
+    if (newButtons.length >= 2) {
+      toast.error("Meta allows a maximum of 2 buttons per template.");
+      return;
+    }
+    
+    if (type === 'PHONE_NUMBER') {
+      setNewButtons([...newButtons, { type: 'PHONE_NUMBER', text: 'Call Us', phone_number: '+1234567890' }]);
+    } else if (type === 'URL') {
+      setNewButtons([...newButtons, { type: 'URL', text: 'Visit Website', url: 'https://example.com' }]);
+    } else if (type === 'QUICK_REPLY') {
+      setNewButtons([...newButtons, { type: 'QUICK_REPLY', text: 'WhatsApp' }]);
+    }
+  };
+
+  const updateButton = (index: number, key: string, value: string) => {
+    const updated = [...newButtons];
+    updated[index][key] = value;
+    setNewButtons(updated);
+  };
+
+  const removeButton = (index: number) => {
+    setNewButtons(newButtons.filter((_, i) => i !== index));
+  };
+
+  const handleSubmitTemplate = async () => {
+    if (!newName || !newBodyText) {
+      toast.error('Name and Body text are required.');
+      return;
+    }
+    if (newHeaderType === 'IMAGE' && !newMediaValue?.media_id) {
+      toast.error('Please upload an image and wait for it to process.');
+      return;
+    }
+    
+    setCreating(true);
+    
+    try {
+      const components: any[] = [];
+      
+      // Header
+      if (newHeaderType === 'TEXT' && newHeaderText) {
+        components.push({ type: 'HEADER', format: 'TEXT', text: newHeaderText });
+      } else if (newHeaderType === 'IMAGE' && newMediaValue?.media_id) {
+        components.push({ 
+          type: 'HEADER', 
+          format: 'IMAGE', 
+          example: { header_handle: [newMediaValue.media_id] } 
+        });
+      }
+      
+      // Body
+      components.push({ type: 'BODY', text: newBodyText });
+      
+      // Buttons
+      if (newButtons.length > 0) {
+        components.push({ type: 'BUTTONS', buttons: newButtons });
+      }
+
+      const payload = {
+        name: newName.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+        language: newLanguage,
+        category: newCategory,
+        components
+      };
+
+      const res = await fetch('/api/whatsapp/templates/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit template');
+      }
+      
+      toast.success('Template submitted to Meta for approval!');
+      setIsCreateOpen(false);
+      
+      // Reset form
+      setNewName('');
+      setNewBodyText('');
+      setNewMediaValue(null);
+      setNewHeaderType('NONE');
+      setNewButtons([]);
+      
+      fetchTemplates();
+      
+    } catch (err: any) {
+      toast.error(err.message || 'Error submitting template');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
           title="Message Templates"
-          subtitle="Pre-approved WhatsApp business templates synchronized directly from your Meta Business Manager."
+          subtitle="Create and manage pre-approved WhatsApp business templates."
           badge={<Badge variant="primary">{templates.length} Templates</Badge>}
           actions={
-            <Button
-              onClick={handleSyncFromMeta}
-              isLoading={syncing}
-              variant="whatsapp"
-              leftIcon={<RefreshCw className="w-4 h-4" />}
-            >
-              Sync from Meta
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setIsCreateOpen(true)}
+                variant="primary"
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                Create Template
+              </Button>
+              <Button
+                onClick={handleSyncFromMeta}
+                isLoading={syncing}
+                variant="whatsapp"
+                leftIcon={<RefreshCw className="w-4 h-4" />}
+              >
+                Sync
+              </Button>
+            </div>
           }
         />
 
         <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-6">
-          {/* Informational Banner on What Templates Are */}
           <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="text-xs text-indigo-950">
-                <p className="font-bold text-sm">Why are Message Templates required?</p>
+                <p className="font-bold text-sm">Create templates directly from NexChat</p>
                 <p className="text-slate-600 font-medium mt-0.5 leading-relaxed">
-                  WhatsApp rules require businesses to use <strong>pre-approved Meta templates</strong> whenever sending marketing offers, broadcasts, or reaching out to customers first.
+                  You can now create templates with Images and Call/WhatsApp buttons and submit them to Meta for instant approval.
                 </p>
               </div>
             </div>
-
-            <Link href="/whatsapp" className="shrink-0">
-              <Button variant="outline" size="sm" className="bg-white hover:bg-slate-50 text-indigo-700 border-indigo-200" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                Meta Connection Settings
-              </Button>
-            </Link>
           </div>
 
-          {statusMsg && (
-            <div className={`p-4 rounded-2xl border flex items-start gap-3 text-xs font-semibold ${
-              statusMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
-            }`}>
-              {statusMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
-              <div className="flex-1">
-                <p>{statusMsg.text}</p>
-                {statusMsg.type === 'error' && (
-                  <p className="text-[11px] font-normal text-rose-600 mt-1">
-                    Tip: Make sure you have entered your <strong>WABA ID</strong> and <strong>Access Token</strong> in <Link href="/whatsapp" className="underline font-bold">Meta Connection</Link> settings.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
           <Card className="overflow-hidden">
-            {/* Toolbar */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-4 bg-white">
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search template name or category..."
+                  placeholder="Search templates..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium outline-none"
                 />
               </div>
-
               <Button variant="outline" size="sm" onClick={fetchTemplates} leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />}>
                 Refresh
               </Button>
             </div>
 
-            {/* Templates Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Template Name</th>
-                    <th className="px-6 py-4">Header Format</th>
                     <th className="px-6 py-4">Category</th>
                     <th className="px-6 py-4">Language</th>
-                    <th className="px-6 py-4">Meta Status</th>
+                    <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-right">Preview</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-600">
-                  {filteredTemplates.map((template) => {
-                    const headerInfo = getTemplateHeaderInfo(template);
-
-                    return (
-                      <tr key={template.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-6 py-4 font-mono font-bold text-slate-900 text-xs">
-                          {template.name}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
-                            {headerInfo.format}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
-                          {template.category}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-xs text-slate-700">
-                          {template.language}
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge 
-                            variant={template.status === 'APPROVED' ? 'success' : template.status === 'REJECTED' ? 'danger' : 'warning'} 
-                            dot
-                          >
-                            {template.status}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedTemplate(template)}
-                            leftIcon={<Eye className="w-3.5 h-3.5" />}
-                          >
-                            Preview
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {filteredTemplates.map((template) => (
+                    <tr key={template.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-6 py-4 font-mono font-bold text-slate-900 text-xs">{template.name}</td>
+                      <td className="px-6 py-4 text-xs font-bold uppercase text-slate-500">{template.category}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-slate-700">{template.language}</td>
+                      <td className="px-6 py-4">
+                        <Badge variant={template.status === 'APPROVED' ? 'success' : template.status === 'REJECTED' ? 'danger' : 'warning'} dot>
+                          {template.status}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedTemplate(template)} leftIcon={<Eye className="w-3.5 h-3.5" />}>Preview</Button>
+                      </td>
+                    </tr>
+                  ))}
                   {filteredTemplates.length === 0 && !loading && (
                     <tr>
-                      <td colSpan={6}>
-                        <EmptyState
-                          icon={FileText}
-                          title="No message templates found"
-                          description="Connect your Meta WhatsApp Account and click 'Sync from Meta' to fetch all your approved marketing & offer templates."
-                          actionLabel="Sync from Meta"
-                          onAction={handleSyncFromMeta}
-                          actionIcon={<RefreshCw className="w-4 h-4" />}
-                        />
+                      <td colSpan={5}>
+                        <EmptyState icon={FileText} title="No message templates found" description="Create a new template or sync from Meta." actionLabel="Create Template" onAction={() => setIsCreateOpen(true)} actionIcon={<Plus className="w-4 h-4" />} />
                       </td>
                     </tr>
                   )}
@@ -264,13 +313,13 @@ export default function TemplatesPage() {
         </main>
       </div>
 
-      {/* WhatsApp Template Preview Modal */}
+      {/* Preview Modal */}
       {selectedTemplate && (
         <Modal
           isOpen={!!selectedTemplate}
           onClose={() => setSelectedTemplate(null)}
           title={`Template: ${selectedTemplate.name}`}
-          description={`Category: ${selectedTemplate.category} | Language: ${selectedTemplate.language} | Status: ${selectedTemplate.status}`}
+          description={`Status: ${selectedTemplate.status}`}
         >
           <div className="flex justify-center py-4">
             <WhatsAppPreview
@@ -280,13 +329,102 @@ export default function TemplatesPage() {
               status="read"
             />
           </div>
-          <div className="pt-4 flex justify-end border-t border-slate-100">
-            <Button variant="outline" size="sm" onClick={() => setSelectedTemplate(null)}>
-              Close
-            </Button>
+          <div className="pt-4 flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setSelectedTemplate(null)}>Close</Button>
           </div>
         </Modal>
       )}
+
+      {/* Create Template Modal */}
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => !creating && setIsCreateOpen(false)}
+        title="Create New Template"
+        description="Design a WhatsApp template and submit it to Meta for approval."
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Template Name</label>
+              <input
+                type="text"
+                placeholder="e.g. summer_promo_01"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">Lowercase & underscores only</p>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Category</label>
+              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs">
+                <option value="MARKETING">Marketing (Promotions, offers)</option>
+                <option value="UTILITY">Utility (Updates, alerts)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Header (Optional)</label>
+            <div className="flex gap-2 mb-3">
+              {['NONE', 'TEXT', 'IMAGE'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setNewHeaderType(type as any)}
+                  className={`px-3 py-1 text-xs font-bold rounded-md ${newHeaderType === type ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            
+            {newHeaderType === 'TEXT' && (
+              <input type="text" placeholder="Header text (max 60 chars)" value={newHeaderText} onChange={e => setNewHeaderText(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs" />
+            )}
+            
+            {newHeaderType === 'IMAGE' && (
+              <MediaUploader mediaType="image" value={newMediaValue} onChange={setNewMediaValue} required />
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Body Text</label>
+            <textarea
+              placeholder="Hi {{1}}, here is your special offer!"
+              value={newBodyText}
+              onChange={(e) => setNewBodyText(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs min-h-[100px]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Interactive Buttons (Max 2)</label>
+            <div className="space-y-3 mb-3">
+              {newButtons.map((btn, idx) => (
+                <div key={idx} className="flex gap-2 items-center bg-slate-50 p-2 rounded-lg border">
+                  <span className="text-xs font-bold w-20">{btn.type === 'PHONE_NUMBER' ? 'Call' : btn.type === 'URL' ? 'Link' : 'Reply'}</span>
+                  <input type="text" value={btn.text} onChange={e => updateButton(idx, 'text', e.target.value)} placeholder="Button Text" className="px-2 py-1 border rounded text-xs flex-1" />
+                  {btn.type === 'PHONE_NUMBER' && <input type="text" value={btn.phone_number} onChange={e => updateButton(idx, 'phone_number', e.target.value)} placeholder="+1234567890" className="px-2 py-1 border rounded text-xs flex-1" />}
+                  {btn.type === 'URL' && <input type="text" value={btn.url} onChange={e => updateButton(idx, 'url', e.target.value)} placeholder="https://" className="px-2 py-1 border rounded text-xs flex-1" />}
+                  <button onClick={() => removeButton(idx)} className="p-1 hover:bg-rose-100 text-rose-500 rounded"><X className="w-4 h-4"/></button>
+                </div>
+              ))}
+            </div>
+            {newButtons.length < 2 && (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => handleAddButton('PHONE_NUMBER')}>+ Call Button</Button>
+                <Button size="sm" variant="outline" onClick={() => handleAddButton('URL')}>+ URL Button</Button>
+                <Button size="sm" variant="outline" onClick={() => handleAddButton('QUICK_REPLY')}>+ Quick Reply</Button>
+              </div>
+            )}
+          </div>
+          
+          <div className="pt-4 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} disabled={creating}>Cancel</Button>
+            <Button variant="primary" onClick={handleSubmitTemplate} isLoading={creating}>Submit to Meta</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

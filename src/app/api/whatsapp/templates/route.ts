@@ -3,6 +3,16 @@ import { createClient } from '@/utils/supabase-server';
 import { getWhatsAppTemplates } from '@/lib/meta/templates';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+async function resolveUserOrgId(userId: string): Promise<string | null> {
+  const { data: mem } = await supabaseAdmin
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return mem?.organization_id || null;
+}
+
 export async function GET(request: Request) {
   try {
     const supabase = await createClient();
@@ -12,24 +22,19 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized: Please log in to sync templates.' }, { status: 401 });
     }
 
-    // Get the user's organization
-    const { data: member } = await supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
+    // Get the user's organization using admin to bypass RLS
+    const orgId = await resolveUserOrgId(user.id);
 
-    if (!member) {
+    if (!orgId) {
       return NextResponse.json({ error: 'No organization found for your account.' }, { status: 404 });
     }
 
-    // Get the WhatsApp Account configured for this organization
-    const { data: account } = await supabase
+    // Get the WhatsApp Account configured for this organization using admin
+    const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
       .select('waba_id, access_token')
-      .eq('organization_id', member.organization_id)
-      .single();
+      .eq('organization_id', orgId)
+      .maybeSingle();
 
     if (!account || !account.waba_id || !account.access_token) {
       return NextResponse.json({ 
@@ -56,7 +61,7 @@ export async function GET(request: Request) {
         await supabaseAdmin
           .from('message_templates')
           .upsert({
-            organization_id: member.organization_id,
+            organization_id: orgId,
             name: template.name,
             language: template.language,
             category: template.category,

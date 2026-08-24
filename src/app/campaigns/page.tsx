@@ -213,6 +213,7 @@ export default function CampaignsPage() {
       mediaHeaderParam = {
         type: formData.headerType,
         url: formData.mediaHeader.url,
+        id: formData.mediaHeader.media_id,
         filename: formData.mediaHeader.filename
       };
     }

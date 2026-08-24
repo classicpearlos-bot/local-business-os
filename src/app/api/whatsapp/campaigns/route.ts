@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
+async function resolveUserOrgId(userId: string): Promise<string | null> {
+  const { data: mem } = await supabaseAdmin
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return mem?.organization_id || null;
+}
 
 export async function POST(request: Request) {
   try {
@@ -26,12 +37,11 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-    const { data: orgs } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).limit(1);
-    if (!orgs || orgs.length === 0) return new NextResponse('Forbidden', { status: 403 });
-    const orgId = orgs[0].organization_id;
+    const orgId = await resolveUserOrgId(user.id);
+    if (!orgId) return new NextResponse('Forbidden', { status: 403 });
 
-    // 1. Create Campaign
-    const { data: campaign, error: campError } = await supabase
+    // 1. Create Campaign using admin to bypass RLS
+    const { data: campaign, error: campError } = await supabaseAdmin
       .from('campaigns')
       .insert({
         organization_id: orgId,
@@ -52,7 +62,7 @@ export async function POST(request: Request) {
 
     // 2. Fetch contacts to get phone numbers - ONLY opted-in contacts
     // Critical: Never broadcast to opted-out contacts (legal compliance + WhatsApp policy)
-    const { data: contacts } = await supabase
+    const { data: contacts } = await supabaseAdmin
       .from('contacts')
       .select('id, phone_number')
       .eq('organization_id', orgId)
@@ -70,9 +80,12 @@ export async function POST(request: Request) {
         scheduled_at: scheduled_at || new Date().toISOString()
       }));
 
-      const { error: recipError } = await supabase.from('campaign_recipients').insert(recipients);
+      const { error: recipError } = await supabaseAdmin.from('campaign_recipients').insert(recipients);
       if (recipError) throw new Error(recipError.message);
     }
+
+    // After creation, optionally wake up worker or just let cron handle it
+    fetch(`${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`).catch(() => {});
 
     return NextResponse.json({ success: true, campaign_id: campaign.id });
 
