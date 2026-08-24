@@ -57,12 +57,11 @@ export default function TemplatesPage() {
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('message_templates')
-        .select('*')
-        .order('name', { ascending: true });
-
-      if (data) setTemplates(data);
+      const res = await fetch('/api/whatsapp/templates/local');
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setTemplates(json.data);
+      }
     } catch (e) {
       console.error(e);
     } finally {
