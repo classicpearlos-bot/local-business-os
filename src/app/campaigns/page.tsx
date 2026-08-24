@@ -1084,7 +1084,7 @@ export default function CampaignsPage() {
                     }
                   }
                   if (builderStep === 2 && !formData.selectedTemplateId) {
-                    setFormError('Please select a Meta approved template.');
+                    setFormError('Please select a template from the list above by clicking on it.');
                     return;
                   }
                   setFormError('');
