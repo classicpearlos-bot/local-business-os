@@ -48,10 +48,6 @@ export async function POST(request: Request) {
     //   is provided per-send at broadcast time.
     // - Strip any markdown from BODY text
     const sanitizedComponents = (payload.components || []).map((comp: any) => {
-      if (comp.type === 'HEADER' && comp.format === 'IMAGE') {
-        // Remove example entirely — just declare format IMAGE
-        return { type: 'HEADER', format: 'IMAGE' };
-      }
       if (comp.type === 'BODY' && comp.text) {
         // Strip markdown: **bold**, *italic*, __under__, _italic_
         const cleanText = comp.text
