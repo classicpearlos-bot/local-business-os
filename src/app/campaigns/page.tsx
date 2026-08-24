@@ -104,12 +104,11 @@ export default function CampaignsPage() {
   const fetchCampaigns = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('campaigns')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (data) setCampaigns(data);
+      const res = await fetch('/api/whatsapp/campaigns/local');
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setCampaigns(json.data);
+      }
     } catch (e) {
       console.error(e);
     } finally {
