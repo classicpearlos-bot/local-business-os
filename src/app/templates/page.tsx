@@ -144,8 +144,8 @@ export default function TemplatesPage() {
       toast.error('Name and Body text are required.');
       return;
     }
-    if (newHeaderType === 'IMAGE' && !newMediaValue?.media_id) {
-      toast.error('Please upload an image and wait for it to process.');
+    if (newHeaderType === 'IMAGE' && !newMediaValue?.handle) {
+      toast.error('Please upload an image and wait for it to finish uploading to Meta.');
       return;
     }
 
@@ -191,11 +191,11 @@ export default function TemplatesPage() {
       // Header
       if (newHeaderType === 'TEXT' && newHeaderText) {
         components.push({ type: 'HEADER', format: 'TEXT', text: newHeaderText });
-      } else if (newHeaderType === 'IMAGE' && newMediaValue?.media_id) {
+      } else if (newHeaderType === 'IMAGE' && newMediaValue?.handle) {
         components.push({ 
           type: 'HEADER', 
-          format: 'IMAGE', 
-          example: { header_handle: [newMediaValue.media_id] } 
+          format: 'IMAGE',
+          example: { header_handle: [newMediaValue.handle] }
         });
       }
       
@@ -417,7 +417,7 @@ export default function TemplatesPage() {
             )}
             
             {newHeaderType === 'IMAGE' && (
-              <MediaUploader mediaType="image" value={newMediaValue} onChange={setNewMediaValue} required />
+              <MediaUploader mediaType="image" value={newMediaValue} onChange={setNewMediaValue} required purpose="template" />
             )}
           </div>
 

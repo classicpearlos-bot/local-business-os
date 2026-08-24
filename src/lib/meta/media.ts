@@ -1,5 +1,10 @@
 import { META_GRAPH_URL } from './client';
 
+/**
+ * Uploads a media file to Meta using the Resumable Upload API.
+ * This is required for template header images — regular media upload IDs don't work for templates.
+ * Returns { media_id } for regular message sends, or { handle } for template creation.
+ */
 export async function uploadMediaToMeta(phoneNumberId: string, accessToken: string, file: Blob, mimeType: string) {
   const formData = new FormData();
   formData.append('file', file);
@@ -12,8 +17,6 @@ export async function uploadMediaToMeta(phoneNumberId: string, accessToken: stri
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
-      // Note: Do NOT set Content-Type header when sending FormData, 
-      // the browser/node fetch will set it automatically with the correct boundary
     },
     body: formData as any
   });
@@ -24,4 +27,53 @@ export async function uploadMediaToMeta(phoneNumberId: string, accessToken: stri
   }
 
   return response.json(); // returns { id: 'media_id' }
+}
+
+/**
+ * Uploads an image using the Meta Resumable Upload API to get a template-compatible handle.
+ * This handle (starts with "4:...") is required for IMAGE headers in message templates.
+ * 
+ * @param appId - Meta App ID (not phone number ID)
+ * @param accessToken - System User Access Token
+ * @param file - Image blob
+ * @param mimeType - e.g. 'image/jpeg'
+ * @param filename - e.g. 'salon.jpg'
+ * @returns handle string like "4:c2Fs..."
+ */
+export async function uploadImageForTemplate(
+  appId: string,
+  accessToken: string,
+  file: Blob,
+  mimeType: string,
+  filename: string
+): Promise<string> {
+  const fileBuffer = await file.arrayBuffer();
+  const fileSize = fileBuffer.byteLength;
+
+  // Step 1: Create upload session
+  const sessionRes = await fetch(
+    `${META_GRAPH_URL}/${appId}/uploads?file_name=${encodeURIComponent(filename)}&file_length=${fileSize}&file_type=${encodeURIComponent(mimeType)}&access_token=${accessToken}`,
+    { method: 'POST' }
+  );
+  const sessionData = await sessionRes.json();
+  if (!sessionData.id) {
+    throw new Error(sessionData?.error?.message || 'Failed to create upload session');
+  }
+
+  // Step 2: Upload file bytes
+  const uploadRes = await fetch(`${META_GRAPH_URL}/${sessionData.id}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `OAuth ${accessToken}`,
+      'file_offset': '0',
+      'Content-Type': mimeType
+    },
+    body: fileBuffer
+  });
+  const uploadData = await uploadRes.json();
+  if (!uploadData.h) {
+    throw new Error(uploadData?.error?.message || 'Failed to upload file to Meta');
+  }
+
+  return uploadData.h; // This is the handle needed for template header
 }

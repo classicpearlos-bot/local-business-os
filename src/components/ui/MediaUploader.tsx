@@ -18,7 +18,8 @@ import { Button } from './Button';
 export interface MediaUploadValue {
   type: 'image' | 'video' | 'document';
   url: string;
-  media_id?: string;
+  media_id?: string;    // For regular message sends
+  handle?: string;      // For template header_handle (resumable upload)
   filename?: string;
   sizeBytes?: number;
 }
@@ -28,13 +29,15 @@ export interface MediaUploaderProps {
   value?: MediaUploadValue | null;
   onChange: (val: MediaUploadValue | null) => void;
   required?: boolean;
+  purpose?: 'message' | 'template'; // Controls which upload API to use
 }
 
 export function MediaUploader({
   mediaType,
   value,
   onChange,
-  required = false
+  required = false,
+  purpose = 'message'
 }: MediaUploaderProps) {
   const [activeTab, setActiveTab] = useState<'url' | 'file'>('url');
   const [urlInput, setUrlInput] = useState(value?.url || '');
@@ -78,6 +81,7 @@ export function MediaUploader({
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('purpose', purpose); // 'template' uses resumable upload for handle
 
       const res = await fetch('/api/media/upload', {
         method: 'POST',
@@ -89,13 +93,14 @@ export function MediaUploader({
         throw new Error(data.error || 'Upload failed');
       }
 
-      // We get a media_id back. We can still create a local blob for visual preview
+      // Create local blob URL for visual preview only
       const objectUrl = URL.createObjectURL(file);
-      
+
       onChange({
         type: mediaType,
-        url: objectUrl, // Used only for visual preview on the frontend
-        media_id: data.media_id, // Used for sending to Meta API
+        url: objectUrl,
+        media_id: data.media_id,  // for regular messages
+        handle: data.handle,       // for template header_handle
         filename: file.name,
         sizeBytes: file.size
       });
