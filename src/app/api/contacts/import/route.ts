@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 /**
  * POST /api/contacts/import
  * Bulk imports parsed Excel/CSV contacts into the organization's contacts table.
+ * Uses supabaseAdmin to bypass RLS on the contacts table.
  */
 export async function POST(request: Request) {
   try {
@@ -14,7 +16,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: membership } = await supabase
+    // Resolve org via admin to avoid RLS issues on organization_members too
+    const { data: membership } = await supabaseAdmin
       .from('organization_members')
       .select('organization_id')
       .eq('user_id', user.id)
@@ -42,8 +45,8 @@ export async function POST(request: Request) {
       opted_in: c.opted_in !== undefined ? c.opted_in : true
     }));
 
-    // Upsert using PostgreSQL ON CONFLICT (organization_id, phone_number)
-    const { data: inserted, error } = await supabase
+    // Upsert using supabaseAdmin to bypass RLS
+    const { data: inserted, error } = await supabaseAdmin
       .from('contacts')
       .upsert(records, {
         onConflict: 'organization_id,phone_number',

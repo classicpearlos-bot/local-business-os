@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
 import { normalizePhoneNumber, isValidWhatsAppNumber } from '@/utils/phone';
 
@@ -16,7 +17,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: membership } = await supabase
+    // Use supabaseAdmin to bypass RLS on org membership lookup
+    const { data: membership } = await supabaseAdmin
       .from('organization_members')
       .select('organization_id')
       .eq('user_id', user.id)
@@ -43,8 +45,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid phone number format. Please include country code, e.g. +91...' }, { status: 400 });
     }
 
-    // Fetch WA account credentials
-    const { data: account } = await supabase
+    // Fetch WA account credentials via admin to bypass RLS
+    const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
       .select('phone_number_id, access_token')
       .eq('organization_id', membership.organization_id)
