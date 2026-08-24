@@ -1071,6 +1071,13 @@ export default function CampaignsPage() {
                       setFormError('0 CRM contacts available. Upload an Excel file or add contacts to continue.');
                       return;
                     }
+                    if (audienceSource === 'manual') {
+                      const manualValidCount = manualNumbers.split(',').filter(n => n.trim().length > 5).length;
+                      if (manualValidCount === 0) {
+                        setFormError('Please enter at least one valid manual phone number.');
+                        return;
+                      }
+                    }
                   }
                   if (builderStep === 2 && !formData.selectedTemplateId) {
                     setFormError('Please select a Meta approved template.');
