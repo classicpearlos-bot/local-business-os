@@ -78,13 +78,16 @@ export async function evaluateAutomations(
 Information: 
 - Location: https://share.google/jJemgk5XuiTanHc7P
 - Hours: Monday to Sunday, 10:00 AM to 9:00 PM.
-Rules:
-- Be extremely polite, conversational, and helpful.
-- Keep answers very short and formatted for WhatsApp.
-- If they ask for location or hours, provide it and suggest booking an appointment for feasibility.
-- Only answer questions related to the salon.
 
-User Message: "${inboundText}"`;
+CRITICAL RULES:
+1. Be extremely polite, natural, and conversational. Think independently.
+2. Keep answers very short and formatted for WhatsApp. Use emojis sparingly.
+3. If they ask for location or hours, provide it and suggest booking an appointment for feasibility.
+4. NEVER offer any discount offers.
+5. NEVER mention or guess any prices for services. Tell them prices depend on consultation and to visit the salon.
+6. Only answer questions related to the salon.
+
+Respond directly to this User Message: "${inboundText}"`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -100,12 +103,27 @@ User Message: "${inboundText}"`;
           .single();
 
         if (account) {
-          await sendWhatsAppText({
+          const waRes = await sendWhatsAppText({
             phoneNumberId: account.phone_number_id,
             accessToken: account.access_token,
             to: contactPhone
           }, response.text);
           
+          // Save outbound AI message to chat history
+          if (waRes.messages && waRes.messages[0]) {
+             await supabaseAdmin.from('messages').insert({
+               organization_id: orgId,
+               conversation_id: conversationId,
+               wam_id: waRes.messages[0].id,
+               direction: 'outbound',
+               type: 'text',
+               content: { text: { body: response.text } },
+               status: 'SENT'
+             });
+             
+             await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+          }
+
           // Log execution for AI
           await supabaseAdmin.from('automation_executions').insert({
             organization_id: orgId,
@@ -148,27 +166,48 @@ async function executeAction(automation: any, orgId: string, convId: string, msg
   const actionConfig = automation.action_config as any;
 
   try {
+    let waRes;
+    let payloadContent = {};
+    let msgType = 'text';
+
     if (automation.action_type === 'TEXT') {
-       await sendWhatsAppText({
+       msgType = 'text';
+       payloadContent = { text: { body: actionConfig.text } };
+       waRes = await sendWhatsAppText({
          phoneNumberId: account.phone_number_id,
          accessToken: account.access_token,
          to: phone
        }, actionConfig.text);
     } else if (automation.action_type === 'LOCATION') {
-       await sendWhatsAppLocation({
+       msgType = 'location';
+       payloadContent = { location: { latitude: actionConfig.latitude, longitude: actionConfig.longitude, name: actionConfig.name } };
+       waRes = await sendWhatsAppLocation({
          phoneNumberId: account.phone_number_id,
          accessToken: account.access_token,
          to: phone
        }, actionConfig.latitude, actionConfig.longitude, actionConfig.name, actionConfig.address);
     } else if (automation.action_type === 'TEMPLATE') {
-       await sendWhatsAppTemplate({
+       msgType = 'template';
+       payloadContent = { template: { name: actionConfig.template_name } };
+       waRes = await sendWhatsAppTemplate({
          phoneNumberId: account.phone_number_id,
          accessToken: account.access_token,
          to: phone
        }, actionConfig.template_name, actionConfig.template_language, actionConfig.template_components || []);
     }
 
-    // You could also save the outbound message to the messages table here
+    if (waRes && waRes.messages && waRes.messages[0]) {
+       await supabaseAdmin.from('messages').insert({
+         organization_id: orgId,
+         conversation_id: convId,
+         wam_id: waRes.messages[0].id,
+         direction: 'outbound',
+         type: msgType,
+         content: payloadContent,
+         status: 'SENT'
+       });
+       await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', convId);
+    }
   } catch (err) {
     console.error('Failed to execute automation action', err);
   }
