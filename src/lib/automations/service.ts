@@ -73,21 +73,46 @@ export async function evaluateAutomations(
   // AI Fallback if no keywords matched
   if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 2) {
     try {
+      // Fetch recent conversation history for context
+      const { data: recentMsgs } = await supabaseAdmin
+        .from('messages')
+        .select('direction, type, content')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      let chatHistory = "";
+      if (recentMsgs && recentMsgs.length > 0) {
+        chatHistory = recentMsgs.reverse().map(m => {
+           let msgText = "";
+           if (m.type === 'text') msgText = m.content?.text?.body || '';
+           else msgText = `[Sent ${m.type}]`;
+           return `${m.direction === 'inbound' ? 'Customer' : 'Assistant'}: ${msgText}`;
+        }).join('\n');
+      }
+
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `You are the official AI WhatsApp assistant for "Classic Pearl Unisex Salon". 
+      const prompt = `You are the official AI WhatsApp assistant for "Classic Pearl Unisex Salon". Your goal is to keep the customer engaged, be extremely polite, and provide whatever information they want about the salon.
+
 Information: 
 - Location: https://share.google/jJemgk5XuiTanHc7P
 - Hours: Monday to Sunday, 10:00 AM to 9:00 PM.
 
 CRITICAL RULES:
-1. Be extremely polite, natural, and conversational. Think independently.
-2. Keep answers very short and formatted for WhatsApp. Use emojis sparingly.
+1. Be extremely polite, natural, and highly engaging. Keep the conversation flowing smoothly.
+2. Keep answers short and formatted for WhatsApp. Use emojis to be friendly.
 3. If they ask for location or hours, provide it and suggest booking an appointment for feasibility.
 4. NEVER offer any discount offers.
-5. NEVER mention or guess any prices for services. Tell them prices depend on consultation and to visit the salon.
+5. NEVER mention or guess any prices for services. Tell them prices depend on consultation and invite them to visit the salon.
 6. Only answer questions related to the salon.
 
-Respond directly to this User Message: "${inboundText}"`;
+--- CHAT HISTORY ---
+${chatHistory}
+
+--- CURRENT MESSAGE ---
+Customer: "${inboundText}"
+
+Reply as the Assistant to keep the customer engaged:`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
