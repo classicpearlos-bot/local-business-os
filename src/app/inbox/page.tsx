@@ -27,6 +27,7 @@ import {
   Download,
   X,
   Plus
+  Bell
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
