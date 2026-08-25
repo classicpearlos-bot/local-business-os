@@ -511,15 +511,34 @@ export default function Inbox() {
             </div>
 
             {/* Search Input */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined' && 'Notification' in window) {
+                    Notification.requestPermission().then(permission => {
+                      if (permission === 'granted') {
+                        new Notification('Notifications Enabled!', { body: 'You will now receive alerts for new messages.', icon: '/favicon.ico' });
+                      } else {
+                        alert("Browser notifications were blocked. Please enable them in your browser settings.");
+                      }
+                    });
+                  }
+                }}
+                className="p-2 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shrink-0"
+                title="Enable Desktop Notifications"
+              >
+                <Bell className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
