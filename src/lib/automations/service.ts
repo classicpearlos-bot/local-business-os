@@ -24,7 +24,7 @@ export async function evaluateAutomations(
 
   // If no automations, we still proceed to AI fallback
 
-  for (const automation of automations) {
+  for (const automation of (automations || [])) {
     const config = automation.trigger_config as { keywords: string[] };
     if (!config || !config.keywords) continue;
 
