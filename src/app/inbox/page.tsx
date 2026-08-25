@@ -26,7 +26,7 @@ import {
   Video,
   Download,
   X,
-  Plus
+  Plus,
   Bell
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
