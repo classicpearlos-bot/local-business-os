@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppMedia } from '@/lib/meta/whatsapp';
+import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppMedia, sendWhatsAppLocation } from '@/lib/meta/whatsapp';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -75,6 +75,14 @@ export async function POST(request: Request) {
         accessToken: account.access_token,
         to: contact.phone_number
       }, payload.mediaType, payload.mediaUrl, payload.caption || payload.text, payload.filename);
+    } else if (payload.location) {
+      msgType = 'location';
+      msgContent = { location: { name: payload.location.name, address: payload.location.address, latitude: payload.location.latitude, longitude: payload.location.longitude } };
+      response = await sendWhatsAppLocation({
+        phoneNumberId: account.phone_number_id,
+        accessToken: account.access_token,
+        to: contact.phone_number
+      }, payload.location.latitude, payload.location.longitude, payload.location.name, payload.location.address);
     } else if (payload.text) {
       msgType = 'text';
       msgContent = { text: { body: payload.text } };

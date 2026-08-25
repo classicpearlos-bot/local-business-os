@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     }
 
     // Trigger worker
-    fetch(${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker).catch(() => {});
+    fetch(`${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`).catch(() => {});
 
     return NextResponse.json({ success: true, campaign_id: campaign.id });
 

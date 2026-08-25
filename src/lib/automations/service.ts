@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../supabaseAdmin';
-import { sendWhatsAppText, sendWhatsAppTemplate } from '../meta/whatsapp';
+import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation } from '../meta/whatsapp';
+import { GoogleGenAI } from '@google/genai';
 
 export async function evaluateAutomations(
   orgId: string, 
@@ -64,8 +65,60 @@ export async function evaluateAutomations(
       // Execute Action
       await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone);
       
-      // Stop evaluating after the first match (if we only want 1 reply per message)
-      break; 
+      // Stop evaluating after the first match
+      return; 
+    }
+  }
+
+  // AI Fallback if no keywords matched
+  if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 2) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `You are the official AI WhatsApp assistant for "Classic Pearl Unisex Salon". 
+Information: 
+- Location: https://share.google/jJemgk5XuiTanHc7P
+- Hours: Monday to Sunday, 10:00 AM to 9:00 PM.
+Rules:
+- Be extremely polite, conversational, and helpful.
+- Keep answers very short and formatted for WhatsApp.
+- If they ask for location or hours, provide it and suggest booking an appointment for feasibility.
+- Only answer questions related to the salon.
+
+User Message: "${inboundText}"`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+      });
+
+      if (response.text) {
+        // Fetch Account info
+        const { data: account } = await supabaseAdmin
+          .from('whatsapp_accounts')
+          .select('phone_number_id, access_token')
+          .eq('organization_id', orgId)
+          .single();
+
+        if (account) {
+          await sendWhatsAppText({
+            phoneNumberId: account.phone_number_id,
+            accessToken: account.access_token,
+            to: contactPhone
+          }, response.text);
+          
+          // Log execution for AI
+          await supabaseAdmin.from('automation_executions').insert({
+            organization_id: orgId,
+            conversation_id: conversationId,
+            inbound_message_id: messageId,
+            matched_keyword: 'AI_FALLBACK',
+            action_type: 'TEXT',
+            status: 'EXECUTED'
+          });
+        }
+      }
+    } catch (aiErr) {
+      console.error("AI Fallback Error:", aiErr);
     }
   }
 }
@@ -101,6 +154,12 @@ async function executeAction(automation: any, orgId: string, convId: string, msg
          accessToken: account.access_token,
          to: phone
        }, actionConfig.text);
+    } else if (automation.action_type === 'LOCATION') {
+       await sendWhatsAppLocation({
+         phoneNumberId: account.phone_number_id,
+         accessToken: account.access_token,
+         to: phone
+       }, actionConfig.latitude, actionConfig.longitude, actionConfig.name, actionConfig.address);
     } else if (automation.action_type === 'TEMPLATE') {
        await sendWhatsAppTemplate({
          phoneNumberId: account.phone_number_id,

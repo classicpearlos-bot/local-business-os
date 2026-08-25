@@ -152,3 +152,45 @@ export async function sendWhatsAppTemplate(
 
   return fetchMetaAPI(`/${options.phoneNumberId}/messages`, 'POST', payload, options.accessToken);
 }
+
+/**
+ * Sends a location message via WhatsApp Cloud API
+ */
+export async function sendWhatsAppLocation(
+  options: SendMessageOptions,
+  latitude: number,
+  longitude: number,
+  name?: string,
+  address?: string
+) {
+  const payload = {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: options.to,
+    type: 'location',
+    location: {
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      name: name || undefined,
+      address: address || undefined
+    },
+  };
+
+  return fetchMetaAPI(`/${options.phoneNumberId}/messages`, 'POST', payload, options.accessToken);
+}
+
+/**
+ * Sends a read receipt to Meta for a specific message
+ */
+export async function sendWhatsAppReadReceipt(
+  options: SendMessageOptions,
+  messageId: string
+) {
+  const payload = {
+    messaging_product: 'whatsapp',
+    status: 'read',
+    message_id: messageId,
+  };
+
+  return fetchMetaAPI(`/${options.phoneNumberId}/messages`, 'POST', payload, options.accessToken);
+}

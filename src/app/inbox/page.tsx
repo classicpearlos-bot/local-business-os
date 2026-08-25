@@ -54,11 +54,29 @@ export default function Inbox() {
   const [newConvLoading, setNewConvLoading] = useState(false);
 
   // Media Attachment State
-  const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document'>('image');
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showMediaModal, setShowMediaModal] = useState(false); // Deprecated big modal, kept for fallback if needed
+  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document' | 'location'>('image');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaCaption, setMediaCaption] = useState('');
   const [mediaSending, setMediaSending] = useState(false);
+  const [localFile, setLocalFile] = useState<File | null>(null);
+  
+  // Location States
+  const [locLat, setLocLat] = useState('12.9716');
+  const [locLng, setLocLng] = useState('77.5946');
+  const [locName, setLocName] = useState('Classic Pearl Unisex Salon');
+  const [locAddress, setLocAddress] = useState('Bengaluru, Karnataka');
+
+  // Phase 1 States
+  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [quickReplies, setQuickReplies] = useState<any[]>([]);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [labels, setLabels] = useState<any[]>([]);
+  const [activeLabels, setActiveLabels] = useState<any[]>([]);
+  const [showLabelModal, setShowLabelModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +136,12 @@ export default function Inbox() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) setCurrentUser(data.user);
     });
+    
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
 
     fetchConversations();
     const interval = setInterval(fetchConversations, 3000);
@@ -154,10 +178,15 @@ export default function Inbox() {
   useEffect(() => {
     if (activeConvId) {
       fetchMessagesForConv(activeConvId);
+      fetchActiveConvLabels(activeConvId);
       const msgInterval = setInterval(() => fetchMessagesForConv(activeConvId), 2000);
 
-      // Reset unread count on open
-      supabase.from('conversations').update({ unread_count: 0 }).eq('id', activeConvId).then();
+      // Instantly clear unread count locally for UI responsiveness
+      setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, unread_count: 0 } : c));
+      
+      // Mark as read in DB & Meta
+      fetch(`/api/conversations/${activeConvId}/read`, { method: 'POST' }).catch(()=>{});
+      
       return () => clearInterval(msgInterval);
     } else {
       setMessages([]);
@@ -167,6 +196,45 @@ export default function Inbox() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+
+  const fetchQuickReplies = async () => {
+    try {
+      const res = await fetch('/api/quick-replies');
+      if (res.ok) {
+        const json = await res.json();
+        setQuickReplies(json.quick_replies || []);
+      }
+    } catch(e) {}
+  };
+
+  const fetchLabels = async () => {
+    try {
+      const res = await fetch('/api/labels');
+      if (res.ok) {
+        const json = await res.json();
+        setLabels(json.labels || []);
+      }
+    } catch(e) {}
+  };
+
+  const fetchActiveConvLabels = async (convId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('conversation_labels')
+        .select('label_id')
+        .eq('conversation_id', convId);
+      if (data) {
+        setActiveLabels(data.map(d => d.label_id));
+      }
+    } catch(e) {}
+  };
+
+  useEffect(() => {
+    fetchQuickReplies();
+    fetchLabels();
+  }, []);
+
 
   const filteredConversations = conversations.filter(c => {
     if (filter === 'unassigned' && c.assigned_to) return false;
@@ -190,45 +258,119 @@ export default function Inbox() {
     setSending(true);
 
     try {
-      const res = await fetch('/api/whatsapp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contactId: activeConv.contacts.id,
-          text: textToSend
-        })
-      });
-
-      if (!res.ok) {
-        console.error("Failed to send message:", await res.text());
+      if (isInternalNote) {
+        const res = await fetch(`/api/conversations/${activeConvId}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: textToSend })
+        });
+        if (res.ok) {
+          fetchMessagesForConv(activeConvId);
+          setIsInternalNote(false);
+        }
+      } else {
+        const res = await fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contactId: activeConv.contacts.id,
+            text: textToSend
+          })
+        });
+        if (!res.ok) console.error("Failed to send message:", await res.text());
       }
     } catch (err) {
-      console.error("Network error sending message", err);
+      console.error("Error sending", err);
     } finally {
       setSending(false);
     }
   };
 
-  const sendMediaMessage = async () => {
-    if (!mediaUrl.trim() || !activeConv || mediaSending) return;
+  const handleInstantFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'document') => {
+    if (!e.target.files || !e.target.files[0] || !activeConv || sending) return;
+    const file = e.target.files[0];
+    setShowAttachmentMenu(false);
+    setSending(true);
 
-    setMediaSending(true);
     try {
-      const res = await fetch('/api/whatsapp/send', {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage.from('whatsapp_media').upload(fileName, file);
+      if (error) throw error;
+      
+      const { data: publicUrlData } = supabase.storage.from('whatsapp_media').getPublicUrl(fileName);
+      
+      await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contactId: activeConv.contacts.id,
-          mediaType: mediaType,
-          mediaUrl: mediaUrl.trim(),
-          caption: mediaCaption.trim() || undefined
+          mediaType: type,
+          mediaUrl: publicUrlData.publicUrl,
+          filename: type === 'document' ? file.name : undefined
         })
+      });
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setSending(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const sendMediaMessage = async () => {
+    if (!activeConv || mediaSending) return;
+    if (mediaType !== 'location' && !mediaUrl.trim() && !localFile) return;
+
+    setMediaSending(true);
+    try {
+      let finalUrl = mediaUrl.trim();
+
+      // If they selected a local file, upload it first to our bucket
+      if (localFile && mediaType !== 'location') {
+         const fileExt = localFile.name.split('.').pop();
+         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+         
+         const { data, error } = await supabase.storage.from('whatsapp_media').upload(fileName, localFile);
+         if (error) {
+           console.error("Upload error", error);
+           setMediaSending(false);
+           return;
+         }
+         
+         const { data: publicUrlData } = supabase.storage.from('whatsapp_media').getPublicUrl(fileName);
+         finalUrl = publicUrlData.publicUrl;
+      }
+
+      const payload: any = {
+        contactId: activeConv.contacts.id,
+      };
+
+      if (mediaType === 'location') {
+        payload.location = {
+          latitude: parseFloat(locLat),
+          longitude: parseFloat(locLng),
+          name: locName,
+          address: locAddress
+        };
+      } else {
+        payload.mediaType = mediaType;
+        payload.mediaUrl = finalUrl;
+        payload.caption = mediaCaption.trim() || undefined;
+      }
+
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
         setShowMediaModal(false);
         setMediaUrl('');
         setMediaCaption('');
+        setLocalFile(null);
       }
     } finally {
       setMediaSending(false);
@@ -245,6 +387,26 @@ export default function Inbox() {
     if (!activeConvId) return;
     await supabase.from('conversations').update({ assigned_to: null }).eq('id', activeConvId);
     fetchConversations();
+  };
+
+  
+  const toggleLabel = async (labelId: string) => {
+    if (!activeConvId) return;
+    const isAssigned = activeLabels.includes(labelId);
+    
+    try {
+      if (isAssigned) {
+        await fetch(`/api/conversations/${activeConvId}/labels?label_id=${labelId}`, { method: 'DELETE' });
+        setActiveLabels(prev => prev.filter(id => id !== labelId));
+      } else {
+        await fetch(`/api/conversations/${activeConvId}/labels`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label_id: labelId })
+        });
+        setActiveLabels(prev => [...prev, labelId]);
+      }
+    } catch(e) {}
   };
 
   const startNewConversation = async () => {
@@ -498,13 +660,14 @@ export default function Inbox() {
                   const isImage = msg.type === 'image';
                   const isVideo = msg.type === 'video';
                   const isDocument = msg.type === 'document';
+                  const isNote = msg.type === 'internal_note';
                   const imageUrl = isImage ? (msg.content?.image?.link || msg.content?.image?.url) : null;
                   const caption = msg.content?.[msg.type]?.caption || msg.content?.text?.body;
 
                   return (
                     <div
                       key={msg.id}
-                      className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}
+                      className={`flex ${isNote ? 'justify-end' : (isInbound ? 'justify-start' : 'justify-end')}`}
                     >
                       <div
                         className={`max-w-[75%] rounded-2xl p-3 shadow-sm space-y-2 relative ${
@@ -535,7 +698,12 @@ export default function Inbox() {
                         )}
 
                         {/* Text / Caption */}
-                        {(caption || (!isImage && !isVideo && !isDocument && msg.type === 'text')) && (
+                        {(isNote) && (
+                          <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                            {msg.content}
+                          </p>
+                        )}
+                        {(caption || (!isImage && !isVideo && !isDocument && !isNote && msg.type === 'text')) && (
                           <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
                             {caption || msg.content?.text?.body}
                           </p>
@@ -660,6 +828,38 @@ export default function Inbox() {
 
       </main>
 
+
+      {/* Label Management Modal */}
+      <Modal
+        isOpen={showLabelModal}
+        onClose={() => setShowLabelModal(false)}
+        title="Manage Conversation Labels"
+        description="Select labels to apply to this conversation."
+      >
+        <div className="space-y-3">
+          {labels.length === 0 ? (
+            <div className="text-sm text-slate-500">No labels exist. Admins can create labels in settings.</div>
+          ) : (
+            labels.map(lbl => {
+              const isActive = activeLabels.includes(lbl.id);
+              return (
+                <button
+                  key={lbl.id}
+                  onClick={() => toggleLabel(lbl.id)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isActive ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-200 hover:border-indigo-300'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lbl.color }} />
+                    <span className="text-sm font-bold text-slate-800">{lbl.name}</span>
+                  </div>
+                  {isActive && <Check className="w-4 h-4 text-indigo-600" />}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </Modal>
+
       {/* New Conversation Modal */}
       <Modal
         isOpen={showNewConvModal}
@@ -702,6 +902,59 @@ export default function Inbox() {
               leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
             >
               Open Chat
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      
+      {/* Location Modal */}
+      <Modal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        title="Send Location"
+        description="Share a location with this customer."
+      >
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Input label="Latitude" value={locLat} onChange={e => setLocLat(e.target.value)} required />
+            <Input label="Longitude" value={locLng} onChange={e => setLocLng(e.target.value)} required />
+          </div>
+          <Input label="Location Name" value={locName} onChange={e => setLocName(e.target.value)} />
+          <Input label="Address" value={locAddress} onChange={e => setLocAddress(e.target.value)} />
+
+          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+            <Button variant="outline" size="sm" onClick={() => setShowLocationModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="whatsapp"
+              size="sm"
+              isLoading={sending}
+              onClick={async () => {
+                setSending(true);
+                try {
+                  const res = await fetch('/api/whatsapp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      contactId: activeConvId ? conversations.find(c => c.id === activeConvId)?.contact_id : '',
+                      location: {
+                        latitude: parseFloat(locLat),
+                        longitude: parseFloat(locLng),
+                        name: locName,
+                        address: locAddress
+                      }
+                    })
+                  });
+                  if (res.ok) setShowLocationModal(false);
+                } finally {
+                  setSending(false);
+                }
+              }}
+              leftIcon={<Send className="w-3.5 h-3.5" />}
+            >
+              Send Location
             </Button>
           </div>
         </div>
