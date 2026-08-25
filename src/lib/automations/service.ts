@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../supabaseAdmin';
 import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation } from '../meta/whatsapp';
 import { GoogleGenAI } from '@google/genai';
+import servicesData from './services.json';
 
 export async function evaluateAutomations(
   orgId: string, 
@@ -92,19 +93,26 @@ export async function evaluateAutomations(
       }
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      // Condense services data to save tokens and prevent huge unreadable blocks
+      const servicesString = JSON.stringify(servicesData);
+      
       const prompt = `You are the official AI WhatsApp assistant for "Classic Pearl Unisex Salon". Your goal is to keep the customer engaged, be extremely polite, and provide whatever information they want about the salon.
 
 Information: 
 - Location: https://share.google/jJemgk5XuiTanHc7P
 - Hours: Monday to Sunday, 10:00 AM to 9:00 PM.
 
-CRITICAL RULES:
-1. Be extremely polite, natural, and highly engaging. Keep the conversation flowing smoothly.
-2. Keep answers short and formatted for WhatsApp. Use emojis to be friendly.
-3. If they ask for location or hours, provide it and suggest booking an appointment for feasibility.
-4. NEVER offer any discount offers.
-5. NEVER mention or guess any prices for services. Tell them prices depend on consultation and invite them to visit the salon.
-6. Only answer questions related to the salon.
+--- SALON SERVICES & PRICING DATABASE ---
+${servicesString}
+
+CRITICAL RULES FOR SERVICES & PRICING:
+1. When asked about a service (e.g., "head massage"), politely say "For sure, I'll fetch that data for you" and list all matching services (Men and Women) with their exact prices.
+2. ALWAYS show both the 'Regular Price' and 'Member Price' clearly when listing a service. Do NOT guess prices. Only use the database.
+3. STRICT COMBO RULE: DO NOT show or suggest Combos randomly. If they ask for a service, only list standard services.
+4. If they explicitly ask "Do you have combos?", reply EXACTLY with: "Can I know what are the combos you are looking for? What are the services?"
+5. If they request specific services (e.g., "haircut and cleanup") and those exactly match an existing combo in the database, THEN you may share that specific combo and its price. Otherwise, NO COMBOS at all.
+6. NEVER offer any unauthorized discount offers.
+7. Be extremely polite, natural, and highly engaging. Keep the conversation flowing smoothly. Keep answers formatted nicely for WhatsApp. Use emojis.
 
 --- CHAT HISTORY ---
 ${chatHistory}

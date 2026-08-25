@@ -1,0 +1,1149 @@
+{
+  "Men": [
+    {
+      "ID": 1,
+      "Service": "Basic Hair Cut for Little Champ",
+      "Category": "Men - Haircut",
+      "Regular Price": 249,
+      "Member Price": 219
+    },
+    {
+      "ID": 2,
+      "Service": "Basic Hair Cut for Little Champ with Wash and Blast Dry",
+      "Category": "Men - Haircut",
+      "Regular Price": 349,
+      "Member Price": 299
+    },
+    {
+      "ID": 3,
+      "Service": "Men Hair Cut",
+      "Category": "Men - Haircut",
+      "Regular Price": 249,
+      "Member Price": 219
+    },
+    {
+      "ID": 4,
+      "Service": "Men Hair Cut with Wash and Blast Dry",
+      "Category": "Men - Haircut",
+      "Regular Price": 349,
+      "Member Price": 329
+    },
+    {
+      "ID": 5,
+      "Service": "Men Head Shave",
+      "Category": "Men - Haircut",
+      "Regular Price": 249,
+      "Member Price": 219
+    },
+    {
+      "ID": 6,
+      "Service": "Men Beard Shave",
+      "Category": "Men - Beard",
+      "Regular Price": 109,
+      "Member Price": 99
+    },
+    {
+      "ID": 7,
+      "Service": "Men Beard Shave twice",
+      "Category": "Men - Beard",
+      "Regular Price": 149,
+      "Member Price": 129
+    },
+    {
+      "ID": 8,
+      "Service": "Men Beard Styling",
+      "Category": "Men - Beard",
+      "Regular Price": 119,
+      "Member Price": 99
+    },
+    {
+      "ID": 9,
+      "Service": "Men Shampoo and Conditioner wash",
+      "Category": "Men - Hair Wash",
+      "Regular Price": 129,
+      "Member Price": 109
+    },
+    {
+      "ID": 10,
+      "Service": "Men Almond / Olive",
+      "Category": "Men - Head Massage",
+      "Regular Price": 399,
+      "Member Price": 369
+    },
+    {
+      "ID": 11,
+      "Service": "Men Navarathna/Coconut Oil",
+      "Category": "Men - Head Massage",
+      "Regular Price": 349,
+      "Member Price": 329
+    },
+    {
+      "ID": 12,
+      "Service": "Men Anti-Dandruff / Hair Fall Spa",
+      "Category": "Men - Hair Spa",
+      "Regular Price": 999,
+      "Member Price": 949
+    },
+    {
+      "ID": 13,
+      "Service": "Men Damage Repair Hair Spa",
+      "Category": "Men - Hair Spa",
+      "Regular Price": 779,
+      "Member Price": 729
+    },
+    {
+      "ID": 14,
+      "Service": "Men Deep Nourishing Hair Spa",
+      "Category": "Men - Hair Spa",
+      "Regular Price": 579,
+      "Member Price": 549
+    },
+    {
+      "ID": 15,
+      "Service": "Men Deluxe Hair Spa",
+      "Category": "Men - Hair Spa",
+      "Regular Price": 949,
+      "Member Price": 899
+    },
+    {
+      "ID": 16,
+      "Service": "Men Anti - Dandruff Treatment",
+      "Category": "Men - Hair Treatment",
+      "Regular Price": 1099,
+      "Member Price": 999
+    },
+    {
+      "ID": 17,
+      "Service": "Men Anti - Hair Fall Treatment",
+      "Category": "Men - Hair Treatment",
+      "Regular Price": 1099,
+      "Member Price": 999
+    },
+    {
+      "ID": 18,
+      "Service": "Men Ammonia Free Deluxe",
+      "Category": "Men - Hair Color",
+      "Regular Price": 899,
+      "Member Price": 849
+    },
+    {
+      "ID": 19,
+      "Service": "Men Ammonia Free Premium",
+      "Category": "Men - Hair Color",
+      "Regular Price": 799,
+      "Member Price": 749
+    },
+    {
+      "ID": 20,
+      "Service": "Men Beard color",
+      "Category": "Men - Hair Color",
+      "Regular Price": 299,
+      "Member Price": 249
+    },
+    {
+      "ID": 21,
+      "Service": "Men Cap Highlights",
+      "Category": "Men - Hair Color",
+      "Regular Price": 1499,
+      "Member Price": 1399
+    },
+    {
+      "ID": 22,
+      "Service": "Men BOTOX",
+      "Category": "Men - Advanced Hair Treatment",
+      "Regular Price": 3999,
+      "Member Price": 3799
+    },
+    {
+      "ID": 23,
+      "Service": "Men Keratin",
+      "Category": "Men - Advanced Hair Treatment",
+      "Regular Price": 3499,
+      "Member Price": 3299
+    },
+    {
+      "ID": 24,
+      "Service": "Men Nano Plastia",
+      "Category": "Men - Advanced Hair Treatment",
+      "Regular Price": 4999,
+      "Member Price": 4499
+    },
+    {
+      "ID": 31,
+      "Service": "Men Haircut + Anti-Dandruff/Anti-Hair Fall Spa",
+      "Category": "Men - Combo",
+      "Regular Price": 1209,
+      "Member Price": 1125
+    },
+    {
+      "ID": 32,
+      "Service": "Men Haircut + Beard + Hair Wash",
+      "Category": "Men - Combo",
+      "Regular Price": 439,
+      "Member Price": 399
+    },
+    {
+      "ID": 33,
+      "Service": "Men Haircut + De-Tan (Face & Neck)",
+      "Category": "Men - Combo",
+      "Regular Price": 849,
+      "Member Price": 799
+    },
+    {
+      "ID": 34,
+      "Service": "Men Haircut + Hair Color + Hair Wash",
+      "Category": "Men - Combo",
+      "Regular Price": 1099,
+      "Member Price": 999
+    },
+    {
+      "ID": 35,
+      "Service": "Men Haircut + Head & Neck Massage + Foot Massage",
+      "Category": "Men - Combo",
+      "Regular Price": 1099,
+      "Member Price": 999
+    },
+    {
+      "ID": 36,
+      "Service": "Men Haircut + Head Massage + Hair Wash",
+      "Category": "Men - Combo",
+      "Regular Price": 659,
+      "Member Price": 599
+    },
+    {
+      "ID": 37,
+      "Service": "Men Head & Neck Massage + Shoulder Massage + Foot Massage",
+      "Category": "Men - Combo",
+      "Regular Price": 1319,
+      "Member Price": 1199
+    }
+  ],
+  "Women": [
+    {
+      "ID": 1,
+      "Service": "Front Bangs",
+      "Category": "Women - Haircut",
+      "Regular Price": 150,
+      "Member Price": 140
+    },
+    {
+      "ID": 2,
+      "Service": "Girl Advanced Hair Cut (Below 10 years)",
+      "Category": "Women - Haircut",
+      "Regular Price": 399,
+      "Member Price": 369
+    },
+    {
+      "ID": 3,
+      "Service": "Girl Basic Hair Cut (Below 10 years)",
+      "Category": "Women - Haircut",
+      "Regular Price": 329,
+      "Member Price": 299
+    },
+    {
+      "ID": 4,
+      "Service": "Women Advance Hair Cut With Shampoo & Conditioner Wash + Blast Dry",
+      "Category": "Women - Haircut",
+      "Regular Price": 749,
+      "Member Price": 695
+    },
+    {
+      "ID": 5,
+      "Service": "Women Advance Hair Cut With Shampoo & Conditioner Wash + Blow Dry & Setting",
+      "Category": "Women - Haircut",
+      "Regular Price": 899,
+      "Member Price": 835
+    },
+    {
+      "ID": 6,
+      "Service": "Women Basic Hair Cut With Shampoo & Conditioner Wash + Blast Dry",
+      "Category": "Women - Haircut",
+      "Regular Price": 399,
+      "Member Price": 349
+    },
+    {
+      "ID": 7,
+      "Service": "Women Basic Hair Cut With Shampoo & Conditioner Wash + Blow Dry & Setting",
+      "Category": "Women - Haircut",
+      "Regular Price": 599,
+      "Member Price": 549
+    },
+    {
+      "ID": 12,
+      "Service": "Women Advanced Streaks Per Streak",
+      "Category": "Women - Hair Color",
+      "Regular Price": 349,
+      "Member Price": 329
+    },
+    {
+      "ID": 13,
+      "Service": "Women Balayage/Ombre Long",
+      "Category": "Women - Hair Color",
+      "Regular Price": 7999,
+      "Member Price": 7499
+    },
+    {
+      "ID": 14,
+      "Service": "Women Balayage/Ombre Medium",
+      "Category": "Women - Hair Color",
+      "Regular Price": 6999,
+      "Member Price": 6499
+    },
+    {
+      "ID": 15,
+      "Service": "Women Balayage/Ombre Small",
+      "Category": "Women - Hair Color",
+      "Regular Price": 5999,
+      "Member Price": 5499
+    },
+    {
+      "ID": 17,
+      "Service": "Women Creative Hair Color Long",
+      "Category": "Women - Hair Color",
+      "Regular Price": 6999,
+      "Member Price": 6499
+    },
+    {
+      "ID": 18,
+      "Service": "Women Creative Hair Color Medium",
+      "Category": "Women - Hair Color",
+      "Regular Price": 5999,
+      "Member Price": 5499
+    },
+    {
+      "ID": 19,
+      "Service": "Women Creative Hair Color Small",
+      "Category": "Women - Hair Color",
+      "Regular Price": 4999,
+      "Member Price": 4499
+    },
+    {
+      "ID": 20,
+      "Service": "Women Deluxe Root Touch Up Ammonia Free",
+      "Category": "Women - Hair Color",
+      "Regular Price": 1499,
+      "Member Price": 1449
+    },
+    {
+      "ID": 21,
+      "Service": "Women Full Highlights 16 Streaks",
+      "Category": "Women - Hair Color",
+      "Regular Price": 3999,
+      "Member Price": 3499
+    },
+    {
+      "ID": 22,
+      "Service": "Women Global Ammonia Free Long",
+      "Category": "Women - Hair Color",
+      "Regular Price": 4999,
+      "Member Price": 4699
+    },
+    {
+      "ID": 23,
+      "Service": "Women Global Ammonia Free Medium",
+      "Category": "Women - Hair Color",
+      "Regular Price": 3999,
+      "Member Price": 3699
+    },
+    {
+      "ID": 24,
+      "Service": "Women Global Ammonia Free Small",
+      "Category": "Women - Hair Color",
+      "Regular Price": 2999,
+      "Member Price": 2699
+    },
+    {
+      "ID": 25,
+      "Service": "Women Global With Ammonia Long",
+      "Category": "Women - Hair Color",
+      "Regular Price": 4999,
+      "Member Price": 4799
+    },
+    {
+      "ID": 26,
+      "Service": "Women Global With Ammonia Medium",
+      "Category": "Women - Hair Color",
+      "Regular Price": 3999,
+      "Member Price": 3499
+    },
+    {
+      "ID": 27,
+      "Service": "Women Global With Ammonia Small",
+      "Category": "Women - Hair Color",
+      "Regular Price": 2999,
+      "Member Price": 2799
+    },
+    {
+      "ID": 30,
+      "Service": "Women Partial Highlights 8 Streaks",
+      "Category": "Women - Hair Color",
+      "Regular Price": 1999,
+      "Member Price": 1860
+    },
+    {
+      "ID": 31,
+      "Service": "Women Premium Root Touch Up Ammonia Free",
+      "Category": "Women - Hair Color",
+      "Regular Price": 1249,
+      "Member Price": 1199
+    },
+    {
+      "ID": 32,
+      "Service": "Women Root Touch Up With Ammonia",
+      "Category": "Women - Hair Color",
+      "Regular Price": 1149,
+      "Member Price": 1070
+    },
+    {
+      "ID": 33,
+      "Service": "Women Streaks (Per Streaks)",
+      "Category": "Women - Hair Color",
+      "Regular Price": 249,
+      "Member Price": 219
+    },
+    {
+      "ID": 34,
+      "Service": "Women Anti Dandruff / Hair Fall Long",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1599,
+      "Member Price": 1485
+    },
+    {
+      "ID": 35,
+      "Service": "Women Anti Dandruff / Hair Fall Medium",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1399,
+      "Member Price": 1300
+    },
+    {
+      "ID": 36,
+      "Service": "Women Anti Dandruff / Hair Fall Small",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1199,
+      "Member Price": 1115
+    },
+    {
+      "ID": 37,
+      "Service": "Women Damage Repair Hair Spa Long",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1399,
+      "Member Price": 1300
+    },
+    {
+      "ID": 38,
+      "Service": "Women Damage Repair Hair Spa Medium",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1199,
+      "Member Price": 1115
+    },
+    {
+      "ID": 39,
+      "Service": "Women Damage Repair Hair Spa Small",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 899,
+      "Member Price": 835
+    },
+    {
+      "ID": 40,
+      "Service": "Women Deep Nourishing Spa Long",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 999,
+      "Member Price": 930
+    },
+    {
+      "ID": 41,
+      "Service": "Women Deep Nourishing Spa Medium",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 849,
+      "Member Price": 790
+    },
+    {
+      "ID": 42,
+      "Service": "Women Deep Nourishing Spa Small",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 699,
+      "Member Price": 665
+    },
+    {
+      "ID": 43,
+      "Service": "Women Deluxe Hair Spa Long",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1799,
+      "Member Price": 1675
+    },
+    {
+      "ID": 44,
+      "Service": "Women Deluxe Hair Spa Medium",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1499,
+      "Member Price": 1395
+    },
+    {
+      "ID": 45,
+      "Service": "Women Deluxe Hair Spa Small",
+      "Category": "Women - Hair Spa",
+      "Regular Price": 1199,
+      "Member Price": 1115
+    },
+    {
+      "ID": 46,
+      "Service": "Women Anti Dandruff/Hairfall Treatment Long",
+      "Category": "Women - Hair Treatment",
+      "Regular Price": 1499,
+      "Member Price": 1449
+    },
+    {
+      "ID": 47,
+      "Service": "Women Anti Dandruff/Hairfall Treatment Medium",
+      "Category": "Women - Hair Treatment",
+      "Regular Price": 1399,
+      "Member Price": 1349
+    },
+    {
+      "ID": 48,
+      "Service": "Women Anti Dandruff/Hairfall Treatment Small",
+      "Category": "Women - Hair Treatment",
+      "Regular Price": 1299,
+      "Member Price": 1249
+    },
+    {
+      "ID": 49,
+      "Service": "Women BOTOX Small",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 3999,
+      "Member Price": 3999
+    },
+    {
+      "ID": 50,
+      "Service": "Women Medium Botox",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 5999,
+      "Member Price": 5999
+    },
+    {
+      "ID": 51,
+      "Service": "Women Long Botox",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 6999,
+      "Member Price": 6999
+    },
+    {
+      "ID": 52,
+      "Service": "Women KERATIN Small",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 3999,
+      "Member Price": 3999
+    },
+    {
+      "ID": 53,
+      "Service": "Women KERATIN Medium",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 5699,
+      "Member Price": 5699
+    },
+    {
+      "ID": 54,
+      "Service": "Women Long Keratin",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 5999,
+      "Member Price": 5999
+    },
+    {
+      "ID": 55,
+      "Service": "Women Nano Plastia Small",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 5999,
+      "Member Price": 5999
+    },
+    {
+      "ID": 56,
+      "Service": "Women Medium Nano Plastia",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 6999,
+      "Member Price": 6999
+    },
+    {
+      "ID": 57,
+      "Service": "Women Long Nano Plastia",
+      "Category": "Women - Advanced Hair Treatment",
+      "Regular Price": 7999,
+      "Member Price": 7999
+    },
+    {
+      "ID": 58,
+      "Service": "Women Almond / Olive",
+      "Category": "Women - Head Massage",
+      "Regular Price": 499,
+      "Member Price": 449
+    },
+    {
+      "ID": 59,
+      "Service": "Women Coconut / Navarathna",
+      "Category": "Women - Head Massage",
+      "Regular Price": 499,
+      "Member Price": 449
+    },
+    {
+      "ID": 60,
+      "Service": "Women Shampoo & Conditioner Wash Add-on",
+      "Category": "Women - Head Massage",
+      "Regular Price": 249,
+      "Member Price": 235
+    },
+    {
+      "ID": 61,
+      "Service": "Hair Perming",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 5999,
+      "Member Price": 4999
+    },
+    {
+      "ID": 62,
+      "Service": "Women Ironing / Tongs Long",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 999,
+      "Member Price": 949
+    },
+    {
+      "ID": 63,
+      "Service": "Women Ironing / Tongs Medium",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 899,
+      "Member Price": 849
+    },
+    {
+      "ID": 64,
+      "Service": "Women Ironing / Tongs Small",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 699,
+      "Member Price": 649
+    },
+    {
+      "ID": 65,
+      "Service": "Women Long Shampoo and Conditioning with Blast Dry",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 529,
+      "Member Price": 505
+    },
+    {
+      "ID": 66,
+      "Service": "Women Medium Shampoo and Conditioning with Blast Dry",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 449,
+      "Member Price": 425
+    },
+    {
+      "ID": 67,
+      "Service": "Women Small Shampoo and Conditioning with Blast Dry",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 399,
+      "Member Price": 349
+    },
+    {
+      "ID": 68,
+      "Service": "Women Shampoo and Conditioning With Blow Dry & Setting Long",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 799,
+      "Member Price": 749
+    },
+    {
+      "ID": 69,
+      "Service": "Women Shampoo and Conditioning With Blow Dry & Setting Medium",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 749,
+      "Member Price": 699
+    },
+    {
+      "ID": 70,
+      "Service": "Women Shampoo and Conditioning With Blow Dry & Setting Small",
+      "Category": "Women - Styling & Makeover",
+      "Regular Price": 649,
+      "Member Price": 599
+    },
+    {
+      "ID": 71,
+      "Service": "Women Chin waxing",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 109,
+      "Member Price": 99
+    },
+    {
+      "ID": 72,
+      "Service": "Women Full Face waxing",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 449,
+      "Member Price": 399
+    },
+    {
+      "ID": 73,
+      "Service": "Women Lower lip waxing",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 55,
+      "Member Price": 49
+    },
+    {
+      "ID": 74,
+      "Service": "Women Side locks waxing",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 149,
+      "Member Price": 139
+    },
+    {
+      "ID": 75,
+      "Service": "Women Threading",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 55,
+      "Member Price": 49
+    },
+    {
+      "ID": 76,
+      "Service": "Women Upper Lips Waxing",
+      "Category": "Women - Face Waxing",
+      "Regular Price": 99,
+      "Member Price": 79
+    },
+    {
+      "ID": 78,
+      "Service": "Full Face Threading",
+      "Category": "Women - Threading",
+      "Regular Price": 399,
+      "Member Price": 369
+    },
+    {
+      "ID": 79,
+      "Service": "Women Threading",
+      "Category": "Women - Threading",
+      "Regular Price": 55,
+      "Member Price": 49
+    },
+    {
+      "ID": 80,
+      "Service": "Full Body Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 3999,
+      "Member Price": 3799
+    },
+    {
+      "ID": 81,
+      "Service": "Women Bikini Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 2699,
+      "Member Price": 2510
+    },
+    {
+      "ID": 82,
+      "Service": "Women Full Arms Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 549,
+      "Member Price": 529
+    },
+    {
+      "ID": 83,
+      "Service": "Women Full Back Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 599,
+      "Member Price": 570
+    },
+    {
+      "ID": 84,
+      "Service": "Women Full Legs Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 699,
+      "Member Price": 679
+    },
+    {
+      "ID": 85,
+      "Service": "Women Half Arms Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 319,
+      "Member Price": 299
+    },
+    {
+      "ID": 86,
+      "Service": "Women Half Legs Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 549,
+      "Member Price": 529
+    },
+    {
+      "ID": 87,
+      "Service": "Women Stomach Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 549,
+      "Member Price": 519
+    },
+    {
+      "ID": 88,
+      "Service": "Women Under - Arms Rica Waxing",
+      "Category": "Women - Rica Waxing",
+      "Regular Price": 229,
+      "Member Price": 209
+    },
+    {
+      "ID": 89,
+      "Service": "Women Bikini Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 2999,
+      "Member Price": 2799
+    },
+    {
+      "ID": 90,
+      "Service": "Women Full Arms Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 799,
+      "Member Price": 745
+    },
+    {
+      "ID": 91,
+      "Service": "Women Full Back Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 799,
+      "Member Price": 745
+    },
+    {
+      "ID": 92,
+      "Service": "Women Full Legs Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 1199,
+      "Member Price": 1115
+    },
+    {
+      "ID": 93,
+      "Service": "Women Half Arms Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 499,
+      "Member Price": 475
+    },
+    {
+      "ID": 94,
+      "Service": "Women Half Legs Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 799,
+      "Member Price": 745
+    },
+    {
+      "ID": 95,
+      "Service": "Women Stomach Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 699,
+      "Member Price": 665
+    },
+    {
+      "ID": 96,
+      "Service": "Women Under - Arms Brazzilian Waxing",
+      "Category": "Women - Brazilian Waxing",
+      "Regular Price": 349,
+      "Member Price": 329
+    },
+    {
+      "ID": 97,
+      "Service": "Women Clean Up + Eyebrow + Upper Lip",
+      "Category": "Women - Combo",
+      "Regular Price": 749,
+      "Member Price": 695
+    },
+    {
+      "ID": 98,
+      "Service": "Women Clean Up + Threading (Eye Brows + UL) + Head Massage",
+      "Category": "Women - Combo",
+      "Regular Price": 1049,
+      "Member Price": 975
+    },
+    {
+      "ID": 99,
+      "Service": "Women Facial (basic) + Threading + Head Massage",
+      "Category": "Women - Combo",
+      "Regular Price": 1599,
+      "Member Price": 1485
+    },
+    {
+      "ID": 100,
+      "Service": "Women Full Arms + Full Legs & Under Arms",
+      "Category": "Women - Combo",
+      "Regular Price": 1499,
+      "Member Price": 1395
+    },
+    {
+      "ID": 101,
+      "Service": "Women Full Arms + Half Legs & Under Arms",
+      "Category": "Women - Combo",
+      "Regular Price": 1349,
+      "Member Price": 1255
+    },
+    {
+      "ID": 102,
+      "Service": "Women Hair Spa + Haircut + Blast Dry",
+      "Category": "Women - Combo",
+      "Regular Price": 1449,
+      "Member Price": 1350
+    },
+    {
+      "ID": 103,
+      "Service": "Women Head & Neck Massage + Foot Massage",
+      "Category": "Women - Combo",
+      "Regular Price": 1099,
+      "Member Price": 1020
+    },
+    {
+      "ID": 104,
+      "Service": "Women Head & Neck Massage + Shoulder Massage + Foot Massage",
+      "Category": "Women - Combo",
+      "Regular Price": 1319,
+      "Member Price": 1225
+    },
+    {
+      "ID": 105,
+      "Service": "Women Head Massage + Foot Massage",
+      "Category": "Women - Combo",
+      "Regular Price": 949,
+      "Member Price": 885
+    }
+  ],
+  "Both": [
+    {
+      "ID": 1,
+      "Service": "Advance Whitening Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 2249,
+      "Member Price": 2090
+    },
+    {
+      "ID": 2,
+      "Service": "Fruit_Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 1399,
+      "Member Price": 1300
+    },
+    {
+      "ID": 3,
+      "Service": "Gold Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 1649,
+      "Member Price": 1535
+    },
+    {
+      "ID": 4,
+      "Service": "Hydra Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 2899,
+      "Member Price": 2695
+    },
+    {
+      "ID": 5,
+      "Service": "Korean Glass Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 2199,
+      "Member Price": 2045
+    },
+    {
+      "ID": 6,
+      "Service": "O3+ Bridal Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 4149,
+      "Member Price": 3940
+    },
+    {
+      "ID": 7,
+      "Service": "O3+ Whitening Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 3549,
+      "Member Price": 3370
+    },
+    {
+      "ID": 8,
+      "Service": "Raaga Facial",
+      "Category": "Both - Facial",
+      "Regular Price": 2899,
+      "Member Price": 2695
+    },
+    {
+      "ID": 9,
+      "Service": "Fruit Clean Up",
+      "Category": "Both - Clean Up",
+      "Regular Price": 699,
+      "Member Price": 679
+    },
+    {
+      "ID": 10,
+      "Service": "Face & Neck",
+      "Category": "Both - De-Tan",
+      "Regular Price": 599,
+      "Member Price": 549
+    },
+    {
+      "ID": 11,
+      "Service": "Face Detan",
+      "Category": "Both - De-Tan",
+      "Regular Price": 349,
+      "Member Price": 329
+    },
+    {
+      "ID": 12,
+      "Service": "Foot",
+      "Category": "Both - De-Tan",
+      "Regular Price": 339,
+      "Member Price": 329
+    },
+    {
+      "ID": 13,
+      "Service": "Full Arms",
+      "Category": "Both - De-Tan",
+      "Regular Price": 899,
+      "Member Price": 835
+    },
+    {
+      "ID": 14,
+      "Service": "Full Legs",
+      "Category": "Both - De-Tan",
+      "Regular Price": 1099,
+      "Member Price": 1020
+    },
+    {
+      "ID": 15,
+      "Service": "Half Arms",
+      "Category": "Both - De-Tan",
+      "Regular Price": 579,
+      "Member Price": 550
+    },
+    {
+      "ID": 16,
+      "Service": "Half Legs",
+      "Category": "Both - De-Tan",
+      "Regular Price": 689,
+      "Member Price": 655
+    },
+    {
+      "ID": 17,
+      "Service": "Under - Arms",
+      "Category": "Both - De-Tan",
+      "Regular Price": 219,
+      "Member Price": 210
+    },
+    {
+      "ID": 18,
+      "Service": "Basic Manicure",
+      "Category": "Both - Manicure",
+      "Regular Price": 449,
+      "Member Price": 435
+    },
+    {
+      "ID": 19,
+      "Service": "Chocolate Crystal Manicure",
+      "Category": "Both - Manicure",
+      "Regular Price": 699,
+      "Member Price": 665
+    },
+    {
+      "ID": 20,
+      "Service": "Cut File and Polish",
+      "Category": "Both - Manicure",
+      "Regular Price": 249,
+      "Member Price": 229
+    },
+    {
+      "ID": 21,
+      "Service": "De - Tan Manicure",
+      "Category": "Both - Manicure",
+      "Regular Price": 549,
+      "Member Price": 519
+    },
+    {
+      "ID": 22,
+      "Service": "Lotus Manicure",
+      "Category": "Both - Manicure",
+      "Regular Price": 649,
+      "Member Price": 619
+    },
+    {
+      "ID": 23,
+      "Service": "Sara Rose Manicure",
+      "Category": "Both - Manicure",
+      "Regular Price": 499,
+      "Member Price": 475
+    },
+    {
+      "ID": 24,
+      "Service": "Aroma Magic",
+      "Category": "Both - Manicure",
+      "Regular Price": 549,
+      "Member Price": 499
+    },
+    {
+      "ID": 25,
+      "Service": "Basic Pedicure",
+      "Category": "Both - Pedicure",
+      "Regular Price": 649,
+      "Member Price": 629
+    },
+    {
+      "ID": 26,
+      "Service": "Chocolate Crystal Pedicure",
+      "Category": "Both - Pedicure",
+      "Regular Price": 1099,
+      "Member Price": 999
+    },
+    {
+      "ID": 27,
+      "Service": "Cut File and Polish",
+      "Category": "Both - Pedicure",
+      "Regular Price": 249,
+      "Member Price": 199
+    },
+    {
+      "ID": 28,
+      "Service": "De - Tan Pedicure",
+      "Category": "Both - Pedicure",
+      "Regular Price": 799,
+      "Member Price": 745
+    },
+    {
+      "ID": 29,
+      "Service": "Lotus Pedicure",
+      "Category": "Both - Pedicure",
+      "Regular Price": 999,
+      "Member Price": 949
+    },
+    {
+      "ID": 30,
+      "Service": "Sara Rose Pedicure",
+      "Category": "Both - Pedicure",
+      "Regular Price": 749,
+      "Member Price": 699
+    },
+    {
+      "ID": 31,
+      "Service": "Aroma Magic",
+      "Category": "Both - Pedicure",
+      "Regular Price": 849,
+      "Member Price": 799
+    },
+    {
+      "ID": 32,
+      "Service": "Hand Massage",
+      "Category": "Both - Massage",
+      "Regular Price": 549,
+      "Member Price": 499
+    },
+    {
+      "ID": 33,
+      "Service": "Foot Massage",
+      "Category": "Both - Massage",
+      "Regular Price": 699,
+      "Member Price": 649
+    },
+    {
+      "ID": 34,
+      "Service": "Back Massage",
+      "Category": "Both - Massage",
+      "Regular Price": 649,
+      "Member Price": 599
+    },
+    {
+      "ID": 35,
+      "Service": "Neck and shoulder Massage",
+      "Category": "Both - Massage",
+      "Regular Price": 349,
+      "Member Price": 329
+    }
+  ]
+}
