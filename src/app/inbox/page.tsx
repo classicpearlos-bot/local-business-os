@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
-import { 
-  Search, 
+import { Search, 
   Send, 
   MoreVertical, 
   Phone, 
@@ -27,8 +26,7 @@ import {
   Download,
   X,
   Plus,
-  Bell
-} from "lucide-react";
+  Bell, Trash2 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -109,6 +107,18 @@ export default function Inbox() {
 
     if (data) setConversations(data);
   }, []);
+
+  
+  const deleteMessage = async (msgId: string) => {
+    if (!confirm('Delete this message for yourself? (Note: WhatsApp API does not allow deleting messages for the customer once sent)')) return;
+    try {
+      const res = await fetch(`/api/messages/${msgId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMessages(messages.filter(m => m.id !== msgId));
+      }
+    } catch (err) {}
+  };
+
 
   const fetchMessagesForConv = useCallback(async (convId: string) => {
     try {
@@ -696,7 +706,15 @@ export default function Inbox() {
                             : 'bg-[var(--color-cyber-purple)] text-white rounded-tr-xs neon-glow-purple border-none'
                         }`}
                       >
-                        {/* Render Media Payload */}
+                        
+                          <button
+                            onClick={() => deleteMessage(msg.id)}
+                            className={`absolute top-2 ${isInbound ? '-right-8' : '-left-8'} opacity-0 group-hover:opacity-100 p-1.5 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-all cursor-pointer z-10`}
+                            title="Delete for me"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          {/* Render Media Payload */}
                         {isImage && imageUrl && (
                           <div className="rounded-xl overflow-hidden max-h-60 bg-black/5">
                             <img src={imageUrl} alt="Attached image" className="w-full h-full object-cover" />
