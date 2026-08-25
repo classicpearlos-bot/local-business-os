@@ -12,17 +12,7 @@ export async function evaluateAutomations(
 ) {
   if (!inboundText) return;
 
-  // DEBUG LOG
-  await supabaseAdmin.from('automation_executions').insert({
-    organization_id: orgId,
-    conversation_id: conversationId,
-    inbound_message_id: messageId,
-    matched_keyword: 'DEBUG_START',
-    action_type: 'TEXT',
-    status: 'EXECUTED',
-    error: 'Gemini Key Exists: ' + !!process.env.GEMINI_API_KEY
-  });
-
+ 
 
   const normalizedInput = inboundText.trim().toLowerCase();
 
@@ -84,7 +74,16 @@ export async function evaluateAutomations(
   }
 
   // AI Fallback if no keywords matched
-  if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 0) {
+  if (!process.env.GEMINI_API_KEY) {
+    await supabaseAdmin.from('messages').insert({
+      organization_id: orgId,
+      conversation_id: conversationId,
+      direction: 'OUTBOUND',
+      type: 'internal_note',
+      content: { internal_note: { body: "SYSTEM ERROR: GEMINI_API_KEY is not set in Vercel Environment Variables. AI cannot respond." } },
+      status: 'READ'
+    });
+  } else if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 0) {
     try {
       // Fetch recent conversation history for context
       const { data: recentMsgs } = await supabaseAdmin
@@ -169,15 +168,7 @@ Reply as the Assistant to keep the customer engaged:`;
              await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
           }
 
-          // Log execution for AI
-          await supabaseAdmin.from('automation_executions').insert({
-            organization_id: orgId,
-            conversation_id: conversationId,
-            inbound_message_id: messageId,
-            matched_keyword: 'AI_FALLBACK',
-            action_type: 'TEXT',
-            status: 'EXECUTED'
-          });
+          
         }
       }
     } catch (aiErr) {
