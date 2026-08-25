@@ -693,7 +693,7 @@ export default function Inbox() {
                         className={`max-w-[75%] rounded-2xl p-3 shadow-sm space-y-2 relative ${
                           isInbound
                             ? 'bg-[var(--color-cyber-panel)] text-white rounded-tl-xs border border-white/10'
-                            : 'bg-[#DCF8C6] text-white rounded-tr-xs border border-[#C2EDB0]'
+                            : 'bg-[var(--color-cyber-purple)] text-white rounded-tr-xs neon-glow-purple border-none'
                         }`}
                       >
                         {/* Render Media Payload */}

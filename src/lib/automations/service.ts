@@ -22,7 +22,7 @@ export async function evaluateAutomations(
     .eq('active', true)
     .order('priority', { ascending: false });
 
-  if (!automations || automations.length === 0) return;
+  // If no automations, we still proceed to AI fallback
 
   for (const automation of automations) {
     const config = automation.trigger_config as { keywords: string[] };
