@@ -12,6 +12,18 @@ export async function evaluateAutomations(
 ) {
   if (!inboundText) return;
 
+  // DEBUG LOG
+  await supabaseAdmin.from('automation_executions').insert({
+    organization_id: orgId,
+    conversation_id: conversationId,
+    inbound_message_id: messageId,
+    matched_keyword: 'DEBUG_START',
+    action_type: 'TEXT',
+    status: 'EXECUTED',
+    error: 'Gemini Key Exists: ' + !!process.env.GEMINI_API_KEY
+  });
+
+
   const normalizedInput = inboundText.trim().toLowerCase();
 
   // Load active automations for the organization, ordered by priority (highest first)
