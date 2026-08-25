@@ -2,11 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-/**
- * POST /api/contacts/import
- * Bulk imports parsed Excel/CSV contacts into the organization's contacts table.
- * Uses supabaseAdmin to bypass RLS on the contacts table.
- */
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -16,7 +11,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Resolve org via admin to avoid RLS issues on organization_members too
     const { data: membership } = await supabaseAdmin
       .from('organization_members')
       .select('organization_id')
@@ -37,7 +31,6 @@ export async function POST(request: Request) {
 
     const orgId = membership.organization_id;
 
-    // Build records for upsert
     const records = contactsToImport.map((c: any) => ({
       organization_id: orgId,
       name: c.name || 'Valued Customer',
@@ -45,7 +38,7 @@ export async function POST(request: Request) {
       opted_in: c.opted_in !== undefined ? c.opted_in : true
     }));
 
-    // Upsert using supabaseAdmin to bypass RLS
+    // Upsert using supabaseAdmin
     const { error } = await supabaseAdmin
       .from('contacts')
       .upsert(records, {
@@ -58,18 +51,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Explicitly select them back because an unmodified upsert might return an empty array
+    // Batch fetch to avoid URI Too Long error
     const phoneNumbers = records.map(r => r.phone_number);
-    const { data: finalContacts } = await supabaseAdmin
-      .from('contacts')
-      .select('id, name, phone_number, opted_in')
-      .eq('organization_id', orgId)
-      .in('phone_number', phoneNumbers);
+    let finalContacts: any[] = [];
+    
+    // Process in batches of 100
+    for (let i = 0; i < phoneNumbers.length; i += 100) {
+      const batch = phoneNumbers.slice(i, i + 100);
+      const { data } = await supabaseAdmin
+        .from('contacts')
+        .select('id, name, phone_number, opted_in')
+        .eq('organization_id', orgId)
+        .in('phone_number', batch);
+      if (data) finalContacts.push(...data);
+    }
 
     return NextResponse.json({
       success: true,
-      importedCount: finalContacts?.length || 0,
-      contacts: finalContacts || []
+      importedCount: finalContacts.length,
+      contacts: finalContacts
     });
 
   } catch (err: any) {

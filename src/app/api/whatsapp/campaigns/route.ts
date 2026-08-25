@@ -33,14 +33,12 @@ export async function POST(request: Request) {
 
     const recipientIds = Array.isArray(contact_ids) ? contact_ids : [];
 
-    // Get current org
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
     const orgId = await resolveUserOrgId(user.id);
     if (!orgId) return new NextResponse('Forbidden', { status: 403 });
 
-    // 1. Create Campaign using admin to bypass RLS
     const { data: campaign, error: campError } = await supabaseAdmin
       .from('campaigns')
       .insert({
@@ -60,17 +58,21 @@ export async function POST(request: Request) {
 
     if (campError || !campaign) throw new Error(campError?.message || 'Failed to create campaign');
 
-    // 2. Fetch contacts to get phone numbers - ONLY opted-in contacts
-    // Critical: Never broadcast to opted-out contacts (legal compliance + WhatsApp policy)
-    const { data: contacts } = await supabaseAdmin
-      .from('contacts')
-      .select('id, phone_number')
-      .eq('organization_id', orgId)
-      .eq('opted_in', true)
-      .in('id', contact_ids);
+    // Batch fetch contacts to avoid URL Too Long
+    let contacts: any[] = [];
+    for (let i = 0; i < recipientIds.length; i += 100) {
+      const batch = recipientIds.slice(i, i + 100);
+      const { data } = await supabaseAdmin
+        .from('contacts')
+        .select('id, phone_number')
+        .eq('organization_id', orgId)
+        .eq('opted_in', true)
+        .in('id', batch);
+      if (data) contacts.push(...data);
+    }
 
     if (contacts && contacts.length > 0) {
-      // 3. Create Campaign Recipients
+      // Create recipients in batches to be safe
       const recipients = contacts.map(c => ({
         organization_id: orgId,
         campaign_id: campaign.id,
@@ -80,12 +82,14 @@ export async function POST(request: Request) {
         scheduled_at: scheduled_at || new Date().toISOString()
       }));
 
-      const { error: recipError } = await supabaseAdmin.from('campaign_recipients').insert(recipients);
-      if (recipError) throw new Error(recipError.message);
+      for (let i = 0; i < recipients.length; i += 500) {
+         const batch = recipients.slice(i, i + 500);
+         await supabaseAdmin.from('campaign_recipients').insert(batch);
+      }
     }
 
-    // After creation, optionally wake up worker or just let cron handle it
-    fetch(`${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`).catch(() => {});
+    // Trigger worker
+    fetch(${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker).catch(() => {});
 
     return NextResponse.json({ success: true, campaign_id: campaign.id });
 

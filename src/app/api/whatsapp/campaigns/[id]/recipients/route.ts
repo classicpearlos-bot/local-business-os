@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 
-/**
- * GET /api/whatsapp/campaigns/[id]/recipients
- * Returns recipient-level message traces and Meta error codes for debugging.
- */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +22,7 @@ export async function GET(
       .select('id, phone_number, status, meta_message_id, error_code, error_message, attempts, sent_at, delivered_at, read_at, failed_at')
       .eq('campaign_id', campaignId)
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(10000); // Increased limit to support full analytics and export
 
     if (status && status !== 'all') {
       query = query.eq('status', status.toUpperCase());
