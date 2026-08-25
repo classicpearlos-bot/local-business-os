@@ -3,10 +3,10 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const messageId = params.id;
+    const { id: messageId } = await params;
     if (!messageId) {
       return NextResponse.json({ error: 'Message ID is required' }, { status: 400 });
     }

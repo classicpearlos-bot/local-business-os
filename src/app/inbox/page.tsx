@@ -110,7 +110,7 @@ export default function Inbox() {
 
   
   const deleteMessage = async (msgId: string) => {
-    if (!confirm('Delete this message for yourself? (Note: WhatsApp API does not allow deleting messages for the customer once sent)')) return;
+    if (!window.confirm('Delete this message for yourself? (Note: WhatsApp API does not allow deleting messages for the customer once sent)')) return;
     try {
       const res = await fetch(`/api/messages/${msgId}`, { method: 'DELETE' });
       if (res.ok) {
