@@ -196,7 +196,7 @@ export default function Inbox() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages.length, activeConvId]); // Only auto-scroll on new messages or conversation change
 
 
   const fetchQuickReplies = async () => {
