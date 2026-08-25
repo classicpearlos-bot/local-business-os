@@ -90,10 +90,10 @@ export function Sidebar({ className = '' }: SidebarProps) {
   return (
     <>
       <CommandPalette />
-      <aside className={`w-64 bg-[#0B0F17] text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800/80 select-none z-20 ${className}`}>
+      <aside className={`w-64 bg-[var(--color-cyber-panel)] text-slate-300 flex flex-col justify-between shrink-0 border-r border-white/10/80 select-none z-20 ${className}`}>
         {/* Brand Header */}
         <div>
-          <div className="p-5 flex items-center justify-between border-b border-slate-800/80">
+          <div className="p-5 flex items-center justify-between border-b border-white/10/80">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
                 <MessageSquare className="w-5 h-5" />
@@ -117,7 +117,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
                 const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
                 window.dispatchEvent(event);
               }}
-              className="w-full py-2 px-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-all flex items-center justify-between text-xs font-medium cursor-pointer group shadow-xs"
+              className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-slate-200 hover:border-[var(--color-cyber-purple)] transition-all flex items-center justify-between text-xs font-medium cursor-pointer group shadow-xs"
             >
               <div className="flex items-center gap-2">
                 <Command className="w-3.5 h-3.5 text-indigo-400" />
@@ -146,8 +146,8 @@ export function Sidebar({ className = '' }: SidebarProps) {
                       href={item.href}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 group ${
                         isActive
-                          ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                          ? 'bg-[var(--color-cyber-purple)] text-white font-semibold neon-glow-purple'
+                          : 'text-slate-400 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -161,7 +161,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                           isActive
                             ? 'bg-white/20 text-white'
-                            : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                            : 'bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)]/30'
                         }`}>
                           {item.badge}
                         </span>
@@ -175,7 +175,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
         </div>
 
         {/* Account Switcher Footer */}
-        <div className="p-4 border-t border-slate-800/80 bg-black/20">
+        <div className="p-4 border-t border-white/10/80 bg-black/20">
           <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-900/60 transition-colors">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-700">

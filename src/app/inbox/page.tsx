@@ -454,27 +454,27 @@ export default function Inbox() {
       <main className="flex-1 flex overflow-hidden min-w-0">
         
         {/* Pane 1: Conversations List */}
-        <div className={`w-full md:w-[340px] lg:w-[380px] border-r border-slate-200/80 flex flex-col bg-white shrink-0 ${
+        <div className={`w-full md:w-[340px] lg:w-[380px] border-r border-white/10 flex flex-col bg-[var(--color-cyber-panel)] shrink-0 ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}>
           {/* Header & Filter Tabs */}
-          <div className="p-5 border-b border-slate-100 space-y-4">
+          <div className="p-5 border-b border-white/5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Shared Inbox</h1>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">{conversations.length} conversations</p>
+                <h1 className="text-xl font-extrabold text-white tracking-tight">Shared Inbox</h1>
+                <p className="text-xs text-gray-400 font-medium mt-0.5">{conversations.length} conversations</p>
               </div>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={fetchConversations} 
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  className="p-2 text-gray-500 hover:text-gray-300 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
                   title="Refresh conversations"
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => { setShowNewConvModal(true); setNewConvError(''); setNewConvPhone(''); setNewConvName(''); }}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[var(--color-cyber-purple)] neon-glow-purple border-none hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
                   title="Start a new conversation"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -484,11 +484,11 @@ export default function Inbox() {
             </div>
 
             {/* Filter Pills */}
-            <div className="flex bg-slate-100/80 p-1 rounded-xl">
+            <div className="flex bg-white/10/80 p-1 rounded-xl">
               <button 
                 onClick={() => setFilter('all')} 
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'all' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  filter === 'all' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 All
@@ -496,7 +496,7 @@ export default function Inbox() {
               <button 
                 onClick={() => setFilter('mine')} 
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'mine' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  filter === 'mine' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 Mine
@@ -504,7 +504,7 @@ export default function Inbox() {
               <button 
                 onClick={() => setFilter('unassigned')} 
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'unassigned' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  filter === 'unassigned' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 Unassigned
@@ -514,13 +514,13 @@ export default function Inbox() {
             {/* Search Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search conversations..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-[var(--color-cyber-bg)] border border-white/10 rounded-xl text-xs font-medium focus:bg-[var(--color-cyber-panel)] focus:ring-2 focus:ring-[var(--color-cyber-purple)]/20 focus:border-[var(--color-cyber-purple)] transition-all outline-none"
                 />
               </div>
               <button
@@ -535,7 +535,7 @@ export default function Inbox() {
                     });
                   }
                 }}
-                className="p-2 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shrink-0"
+                className="p-2 bg-[var(--color-cyber-bg)] border border-white/10 rounded-xl text-gray-500 hover:text-[var(--color-cyber-purple)] hover:bg-[var(--color-cyber-purple)]/10 transition-all shrink-0"
                 title="Enable Desktop Notifications"
               >
                 <Bell className="w-4 h-4" />
@@ -555,11 +555,11 @@ export default function Inbox() {
                   key={conv.id}
                   onClick={() => setActiveConvId(conv.id)}
                   className={`p-4 cursor-pointer transition-all duration-150 relative group ${
-                    isActive ? 'bg-indigo-50/60' : 'hover:bg-slate-50/80'
+                    isActive ? 'bg-[var(--color-cyber-purple)]/10/60' : 'hover:bg-white/5'
                   }`}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-r" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-cyber-purple)] neon-glow-purple border-none rounded-r" />
                   )}
 
                   <div className="flex items-start gap-3">
@@ -567,28 +567,28 @@ export default function Inbox() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className={`text-sm font-bold truncate ${isActive ? 'text-indigo-900' : 'text-slate-900'}`}>
+                        <p className={`text-sm font-bold truncate ${isActive ? 'text-indigo-900' : 'text-white'}`}>
                           {contactName}
                         </p>
-                        <span className="text-[10px] font-semibold text-slate-400 shrink-0">
+                        <span className="text-[10px] font-semibold text-gray-500 shrink-0">
                           {new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                      <div className="flex items-center justify-between text-xs text-gray-400 font-medium">
                         <span className="truncate flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                          <Phone className="w-3 h-3 text-gray-500 shrink-0" />
                           {phone}
                         </span>
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           {conv.assigned_to && (
-                            <span className="w-4 h-4 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] font-bold" title="Assigned">
+                            <span className="w-4 h-4 rounded-full bg-slate-200 text-gray-300 flex items-center justify-center text-[9px] font-bold" title="Assigned">
                               A
                             </span>
                           )}
                           {conv.unread_count > 0 && (
-                            <span className="px-1.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-extrabold shadow-xs">
+                            <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-cyber-purple)] neon-glow-purple border-none text-white text-[10px] font-extrabold shadow-xs">
                               {conv.unread_count}
                             </span>
                           )}
@@ -601,27 +601,27 @@ export default function Inbox() {
             })}
 
             {filteredConversations.length === 0 && (
-              <div className="p-12 text-center text-slate-400">
+              <div className="p-12 text-center text-gray-500">
                 <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs font-semibold text-slate-600">No conversations</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Incoming chats will appear here automatically.</p>
+                <p className="text-xs font-semibold text-gray-300">No conversations</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Incoming chats will appear here automatically.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Pane 2: Active Chat Canvas */}
-        <div className={`flex-1 flex flex-col bg-white min-w-0 ${
+        <div className={`flex-1 flex flex-col bg-[var(--color-cyber-panel)] min-w-0 ${
           !activeConvId ? 'hidden md:flex' : 'flex'
         }`}>
           {activeConv ? (
             <>
               {/* Active Conversation Top Bar */}
-              <header className="px-6 py-4 border-b border-slate-200/80 bg-white flex items-center justify-between gap-4 z-10">
+              <header className="px-6 py-4 border-b border-white/10 bg-[var(--color-cyber-panel)] flex items-center justify-between gap-4 z-10">
                 <div className="flex items-center gap-3 min-w-0">
                   <button 
                     onClick={() => setActiveConvId(null)}
-                    className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 rounded-lg"
+                    className="md:hidden p-1.5 text-gray-400 hover:text-white rounded-lg"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -629,10 +629,10 @@ export default function Inbox() {
                   <Avatar name={activeConv.contacts?.name} size="md" />
 
                   <div className="min-w-0">
-                    <h2 className="text-base font-extrabold text-slate-900 truncate">
+                    <h2 className="text-base font-extrabold text-white truncate">
                       {activeConv.contacts?.name || 'Unknown Contact'}
                     </h2>
-                    <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
                       <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
                       {activeConv.contacts?.phone_number}
                     </p>
@@ -655,7 +655,7 @@ export default function Inbox() {
                   <button
                     onClick={() => setShowCustomerDrawer(!showCustomerDrawer)}
                     className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-                      showCustomerDrawer ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'text-slate-400 hover:text-slate-600 border-slate-200 hover:bg-slate-50'
+                      showCustomerDrawer ? 'bg-[var(--color-cyber-purple)]/10 text-[var(--color-cyber-purple)] border-indigo-200' : 'text-gray-500 hover:text-gray-300 border-white/10 hover:bg-[var(--color-cyber-bg)]'
                     }`}
                     title="Customer profile"
                   >
@@ -667,7 +667,7 @@ export default function Inbox() {
               {/* Chat Canvas with Wallpaper */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4 wa-chat-bg">
                 <div className="text-center my-2">
-                  <span className="bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[10px] font-bold text-slate-500 shadow-xs border border-slate-200/60 uppercase tracking-wider">
+                  <span className="bg-[var(--color-cyber-panel)]/90 backdrop-blur-xs px-3 py-1 rounded-full text-[10px] font-bold text-gray-400 shadow-xs border border-white/10 uppercase tracking-wider">
                     Classic Pearl Salon • End-to-End Encrypted
                   </span>
                 </div>
@@ -692,8 +692,8 @@ export default function Inbox() {
                       <div
                         className={`max-w-[75%] rounded-2xl p-3 shadow-sm space-y-2 relative ${
                           isInbound
-                            ? 'bg-white text-slate-900 rounded-tl-xs border border-slate-200/60'
-                            : 'bg-[#DCF8C6] text-slate-900 rounded-tr-xs border border-[#C2EDB0]'
+                            ? 'bg-[var(--color-cyber-panel)] text-white rounded-tl-xs border border-white/10'
+                            : 'bg-[#DCF8C6] text-white rounded-tr-xs border border-[#C2EDB0]'
                         }`}
                       >
                         {/* Render Media Payload */}
@@ -711,7 +711,7 @@ export default function Inbox() {
                         )}
 
                         {isDocument && (
-                          <div className="p-3 bg-slate-100 rounded-xl flex items-center gap-2.5">
+                          <div className="p-3 bg-white/10 rounded-xl flex items-center gap-2.5">
                             <FileText className="w-5 h-5 text-rose-500" />
                             <span className="text-xs font-bold truncate">Document File</span>
                           </div>
@@ -735,16 +735,16 @@ export default function Inbox() {
                           </p>
                         )}
 
-                        <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400 font-medium">
+                        <div className="flex items-center justify-end gap-1 text-[10px] text-gray-500 font-medium">
                           <span>{time}</span>
                           {!isInbound && (
                             <span>
                               {msg.status === 'READ' ? (
                                 <CheckCheck className="w-3.5 h-3.5 text-sky-500" />
                               ) : msg.status === 'DELIVERED' ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-slate-400" />
+                                <CheckCheck className="w-3.5 h-3.5 text-gray-500" />
                               ) : (
-                                <Check className="w-3.5 h-3.5 text-slate-400" />
+                                <Check className="w-3.5 h-3.5 text-gray-500" />
                               )}
                             </span>
                           )}
@@ -757,12 +757,12 @@ export default function Inbox() {
               </div>
 
               {/* Chat Composer */}
-              <div className="p-4 bg-white border-t border-slate-200/80">
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 p-2 rounded-2xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all shadow-xs">
+              <div className="p-4 bg-[var(--color-cyber-panel)] border-t border-white/10">
+                <div className="flex items-center gap-2 bg-[var(--color-cyber-bg)] border border-white/10 p-2 rounded-2xl focus-within:bg-[var(--color-cyber-panel)] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all shadow-xs">
                   <button
                     type="button"
                     onClick={() => setShowMediaModal(true)}
-                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors cursor-pointer"
+                    className="p-2 text-gray-500 hover:text-[var(--color-cyber-purple)] hover:bg-[var(--color-cyber-purple)]/10 rounded-xl transition-colors cursor-pointer"
                     title="Attach Image, Video, or Document"
                   >
                     <Paperclip className="w-4 h-4" />
@@ -774,7 +774,7 @@ export default function Inbox() {
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                     placeholder="Type a message to reply..."
-                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-slate-800 placeholder:text-slate-400"
+                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-gray-100 placeholder:text-gray-500"
                   />
 
                   <Button
@@ -790,12 +790,12 @@ export default function Inbox() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-slate-50/50">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4 shadow-xs">
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[var(--color-cyber-bg)]/50">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--color-cyber-purple)]/10 border border-[var(--color-cyber-purple)]/20 flex items-center justify-center text-[var(--color-cyber-purple)] mb-4 shadow-xs">
                 <MessageSquare className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Select a Conversation</h3>
-              <p className="text-xs text-slate-500 font-medium max-w-sm mt-1">
+              <h3 className="text-lg font-bold text-white">Select a Conversation</h3>
+              <p className="text-xs text-gray-400 font-medium max-w-sm mt-1">
                 Choose a customer from the left sidebar to view message history, manage assignments, and reply in real-time.
               </p>
             </div>
@@ -804,17 +804,17 @@ export default function Inbox() {
 
         {/* Pane 3: Slide-in Customer Profile Drawer */}
         {showCustomerDrawer && activeConv && (
-          <div className="w-[300px] lg:w-[320px] border-l border-slate-200/80 bg-white p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-200">
-            <div className="text-center pb-6 border-b border-slate-100">
+          <div className="w-[300px] lg:w-[320px] border-l border-white/10 bg-[var(--color-cyber-panel)] p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-200">
+            <div className="text-center pb-6 border-b border-white/5">
               <Avatar name={activeConv.contacts?.name} size="xl" className="mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-900">{activeConv.contacts?.name || 'Unknown Contact'}</h3>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">{activeConv.contacts?.phone_number}</p>
+              <h3 className="text-base font-bold text-white">{activeConv.contacts?.name || 'Unknown Contact'}</h3>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">{activeConv.contacts?.phone_number}</p>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Marketing Opt-In</h4>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-700">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">Marketing Opt-In</h4>
+              <div className="p-3 rounded-xl bg-[var(--color-cyber-bg)] border border-white/10 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-200">
                   {activeConv.contacts?.opted_in ? 'Opted In' : 'Opted Out'}
                 </span>
                 <button
@@ -823,22 +823,22 @@ export default function Inbox() {
                     activeConv.contacts?.opted_in ? 'bg-emerald-500 justify-end' : 'bg-slate-300 justify-start'
                   }`}
                 >
-                  <div className="w-4 h-4 rounded-full bg-white shadow-xs" />
+                  <div className="w-4 h-4 rounded-full bg-[var(--color-cyber-panel)] shadow-xs" />
                 </button>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Contact Details</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">Contact Details</h4>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-400">Created At</span>
-                  <span className="font-semibold text-slate-700">
+                <div className="flex justify-between py-1.5 border-b border-white/5">
+                  <span className="text-gray-500">Created At</span>
+                  <span className="font-semibold text-gray-200">
                     {new Date(activeConv.contacts?.created_at || Date.now()).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-400">Status</span>
+                <div className="flex justify-between py-1.5 border-b border-white/5">
+                  <span className="text-gray-500">Status</span>
                   <Badge variant="success">{activeConv.status || 'OPEN'}</Badge>
                 </div>
               </div>
@@ -858,7 +858,7 @@ export default function Inbox() {
       >
         <div className="space-y-3">
           {labels.length === 0 ? (
-            <div className="text-sm text-slate-500">No labels exist. Admins can create labels in settings.</div>
+            <div className="text-sm text-gray-400">No labels exist. Admins can create labels in settings.</div>
           ) : (
             labels.map(lbl => {
               const isActive = activeLabels.includes(lbl.id);
@@ -866,13 +866,13 @@ export default function Inbox() {
                 <button
                   key={lbl.id}
                   onClick={() => toggleLabel(lbl.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isActive ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-200 hover:border-indigo-300'}`}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isActive ? 'border-indigo-500 bg-[var(--color-cyber-purple)]/10/50' : 'border-white/10 hover:border-indigo-300'}`}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lbl.color }} />
-                    <span className="text-sm font-bold text-slate-800">{lbl.name}</span>
+                    <span className="text-sm font-bold text-gray-100">{lbl.name}</span>
                   </div>
-                  {isActive && <Check className="w-4 h-4 text-indigo-600" />}
+                  {isActive && <Check className="w-4 h-4 text-[var(--color-cyber-purple)]" />}
                 </button>
               );
             })
@@ -909,7 +909,7 @@ export default function Inbox() {
             </div>
           )}
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
             <Button variant="outline" size="sm" onClick={() => setShowNewConvModal(false)}>
               Cancel
             </Button>
@@ -943,7 +943,7 @@ export default function Inbox() {
           <Input label="Location Name" value={locName} onChange={e => setLocName(e.target.value)} />
           <Input label="Address" value={locAddress} onChange={e => setLocAddress(e.target.value)} />
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
             <Button variant="outline" size="sm" onClick={() => setShowLocationModal(false)}>
               Cancel
             </Button>
@@ -988,14 +988,14 @@ export default function Inbox() {
         description="Attach an image, video, or document to send directly to this customer."
       >
         <div className="space-y-4">
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex bg-white/10 p-1 rounded-xl">
             {(['image', 'video', 'document'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setMediaType(t)}
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
-                  mediaType === t ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  mediaType === t ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
                 {t}
@@ -1019,7 +1019,7 @@ export default function Inbox() {
             onChange={(e) => setMediaCaption(e.target.value)}
           />
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
             <Button variant="outline" size="sm" onClick={() => setShowMediaModal(false)}>
               Cancel
             </Button>

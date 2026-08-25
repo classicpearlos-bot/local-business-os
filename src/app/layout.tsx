@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="antialiased selection:bg-indigo-500/30">
-      <body className={`${font.variable} font-sans bg-[#F9FAFB] text-slate-900`}>
+      <body className={`${font.variable} font-sans bg-[var(--color-cyber-bg)] text-white`}>
         {children}
         <Toaster position="bottom-right" />
       </body>

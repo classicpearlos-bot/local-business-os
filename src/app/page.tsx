@@ -119,12 +119,12 @@ export default function Dashboard() {
 
             <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0">
               <Link href="/campaigns">
-                <Button variant="whatsapp" className="px-5 py-2.5 text-sm font-bold shadow-lg shadow-emerald-600/30" leftIcon={<Megaphone className="w-4 h-4" />}>
+                <Button variant="whatsapp" className="px-5 py-2.5 text-sm font-bold shadow-lg shadow-[var(--color-cyber-purple)]/40 neon-glow-purple" leftIcon={<Megaphone className="w-4 h-4" />}>
                   Launch Broadcast
                 </Button>
               </Link>
               <Link href="/inbox">
-                <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20" leftIcon={<MessageSquare className="w-4 h-4" />}>
+                <Button variant="outline" className="bg-[var(--color-cyber-panel)]/10 text-white border-white/20 hover:bg-[var(--color-cyber-panel)]/20" leftIcon={<MessageSquare className="w-4 h-4" />}>
                   Open Inbox
                 </Button>
               </Link>
@@ -138,32 +138,32 @@ export default function Dashboard() {
               value={stats.contactsCount}
               subtitle="Opted-in clients ready to receive"
               icon={Users}
-              iconColor="text-indigo-600"
-              iconBg="bg-indigo-50 border-indigo-100"
+              iconColor="text-[var(--color-cyber-purple)]"
+              iconBg="bg-[var(--color-cyber-purple)]/10 border-[var(--color-cyber-purple)]/30"
             />
             <StatCard
               title="Delivered Rate"
               value={`${deliveryRate}%`}
               subtitle={`${stats.deliveredCount} handset deliveries`}
               icon={CheckCircle2}
-              iconColor="text-emerald-600"
-              iconBg="bg-emerald-50 border-emerald-100"
+              iconColor="text-[var(--color-cyber-cyan)]"
+              iconBg="bg-[var(--color-cyber-cyan)]/10 border-[var(--color-cyber-cyan)]/30"
             />
             <StatCard
               title="Read / Open Rate"
               value={`${readRate}%`}
               subtitle={`${stats.readCount} confirmed read ticks`}
               icon={Eye}
-              iconColor="text-sky-600"
-              iconBg="bg-sky-50 border-sky-100"
+              iconColor="text-[var(--color-cyber-cyan)]"
+              iconBg="bg-[var(--color-cyber-cyan)]/10 border-[var(--color-cyber-cyan)]/30"
             />
             <StatCard
               title="Broadcasts Launched"
               value={stats.campaignsCount}
               subtitle="Marketing & offer campaigns"
               icon={Megaphone}
-              iconColor="text-purple-600"
-              iconBg="bg-purple-50 border-purple-100"
+              iconColor="text-[var(--color-cyber-pink)]"
+              iconBg="bg-[var(--color-cyber-pink)]/10 border-[var(--color-cyber-pink)]/30"
             />
           </div>
 
@@ -172,12 +172,12 @@ export default function Dashboard() {
             {/* Recent Campaigns */}
             <Card className="overflow-hidden flex flex-col justify-between">
               <div>
-                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Megaphone className="w-4 h-4 text-indigo-600" />
-                    <h3 className="text-sm font-bold text-slate-900">Recent Campaigns</h3>
+                    <Megaphone className="w-4 h-4 text-[var(--color-cyber-purple)]" />
+                    <h3 className="text-sm font-bold text-white">Recent Campaigns</h3>
                   </div>
-                  <Link href="/campaigns" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                  <Link href="/campaigns" className="text-xs font-semibold text-[var(--color-cyber-purple)] hover:text-indigo-700 flex items-center gap-1">
                     View All <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -187,17 +187,17 @@ export default function Dashboard() {
                     const percent = Math.min(100, Math.round(((camp.total_sent || 0) / (camp.total_recipients || 1)) * 100));
 
                     return (
-                      <div key={camp.id} className="p-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors">
+                      <div key={camp.id} className="p-4 flex items-center justify-between hover:bg-[var(--color-cyber-panel)]/5 transition-colors">
                         <div className="space-y-1 min-w-0">
-                          <p className="text-xs font-bold text-slate-900 truncate">{camp.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">{camp.template_name || 'Template'}</p>
+                          <p className="text-xs font-bold text-white truncate">{camp.name}</p>
+                          <p className="text-[10px] text-gray-500 font-mono">{camp.template_name || 'Template'}</p>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
                           <Badge variant={camp.status === 'COMPLETED' ? 'success' : camp.status === 'FAILED' ? 'danger' : 'primary'} dot>
                             {camp.status}
                           </Badge>
-                          <span className="text-xs font-semibold text-slate-500">
+                          <span className="text-xs font-semibold text-gray-400">
                             {camp.total_sent || 0} / {camp.total_recipients || 0}
                           </span>
                         </div>
@@ -206,14 +206,14 @@ export default function Dashboard() {
                   })}
 
                   {recentCampaigns.length === 0 && (
-                    <div className="p-8 text-center text-slate-400 text-xs font-medium">
+                    <div className="p-8 text-center text-gray-500 text-xs font-medium">
                       No broadcast campaigns yet. Click "Launch Broadcast" to begin.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <div className="p-4 bg-[var(--color-cyber-bg)] border-t border-white/10 flex justify-end">
                 <Link href="/campaigns">
                   <Button variant="outline" size="sm">
                     Campaign Studio
@@ -225,12 +225,12 @@ export default function Dashboard() {
             {/* Live Conversations Stream */}
             <Card className="overflow-hidden flex flex-col justify-between">
               <div>
-                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <MessageSquare className="w-4 h-4 text-indigo-600" />
-                    <h3 className="text-sm font-bold text-slate-900">Live Customer Conversations</h3>
+                    <MessageSquare className="w-4 h-4 text-[var(--color-cyber-purple)]" />
+                    <h3 className="text-sm font-bold text-white">Live Customer Conversations</h3>
                   </div>
-                  <Link href="/inbox" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                  <Link href="/inbox" className="text-xs font-semibold text-[var(--color-cyber-purple)] hover:text-indigo-700 flex items-center gap-1">
                     Shared Inbox <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -240,13 +240,13 @@ export default function Dashboard() {
                     <Link
                       key={conv.id}
                       href="/inbox"
-                      className="p-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors block"
+                      className="p-4 flex items-center justify-between hover:bg-[var(--color-cyber-panel)]/5 transition-colors block"
                     >
                       <div className="space-y-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-900 truncate">
+                        <p className="text-xs font-bold text-white truncate">
                           {conv.contacts?.name || 'Customer'}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-mono">
+                        <p className="text-[10px] text-gray-500 font-mono">
                           {conv.contacts?.phone_number || '-'}
                         </p>
                       </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
                             {conv.unread_count} new
                           </span>
                         ) : (
-                          <span className="text-[10px] font-semibold text-slate-400">
+                          <span className="text-[10px] font-semibold text-gray-500">
                             {new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
@@ -266,14 +266,14 @@ export default function Dashboard() {
                   ))}
 
                   {recentConversations.length === 0 && (
-                    <div className="p-8 text-center text-slate-400 text-xs font-medium">
+                    <div className="p-8 text-center text-gray-500 text-xs font-medium">
                       No incoming conversations yet. Messages will appear automatically.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <div className="p-4 bg-[var(--color-cyber-bg)] border-t border-white/10 flex justify-end">
                 <Link href="/inbox">
                   <Button variant="outline" size="sm">
                     Open Live Inbox

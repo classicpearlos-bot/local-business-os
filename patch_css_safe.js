@@ -1,4 +1,6 @@
-@import "tailwindcss";
+const fs = require('fs');
+
+const cssContent = `@import "tailwindcss";
 
 @theme {
   --color-cyber-bg: #0F103E;
@@ -97,3 +99,7 @@
 pre, code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+`;
+
+fs.writeFileSync('src/app/globals.css', cssContent);
+console.log('globals.css updated safely.');
