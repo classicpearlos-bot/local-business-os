@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         template_name,
         template_language,
         template_components,
-        status: scheduled_at ? 'SCHEDULED' : 'QUEUED',
+        status: 'QUEUED',
         scheduled_at: scheduled_at || new Date().toISOString(),
         total_recipients: recipientIds.length,
         created_by: user.id
