@@ -12,11 +12,10 @@ import {
   Phone,
   Code2,
   BarChart3,
-  Sparkles,
   Command,
   Image as ImageIcon,
-  CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CommandPalette } from './CommandPalette';
@@ -33,10 +32,8 @@ const supabase = createClient(
 export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
   const [activeCount, setActiveCount] = useState<number>(0);
-  const [metaConnected, setMetaConnected] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check unread conversations count
     supabase
       .from('conversations')
       .select('unread_count')
@@ -54,7 +51,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
       title: 'WORKSPACE',
       items: [
         { label: 'Dashboard', href: '/', icon: BarChart3 },
-        { label: 'Live Inbox', href: '/inbox', icon: MessageSquare, badge: activeCount > 0 ? activeCount : 'Active' }
+        { label: 'Live Inbox', href: '/inbox', icon: MessageSquare, badge: activeCount > 0 ? activeCount : null }
       ]
     },
     {
@@ -90,50 +87,50 @@ export function Sidebar({ className = '' }: SidebarProps) {
   return (
     <>
       <CommandPalette />
-      <aside className={`w-64 bg-[var(--color-cyber-panel)] text-slate-300 flex flex-col justify-between shrink-0 border-r border-white/10/80 select-none z-20 ${className}`}>
+      <aside className={`w-64 bg-[#0D131F] text-slate-200 flex flex-col justify-between shrink-0 border-r border-slate-800 select-none z-20 ${className}`}>
         {/* Brand Header */}
         <div>
-          <div className="p-5 flex items-center justify-between border-b border-white/10/80">
+          <div className="p-4 border-b border-slate-800 bg-[#090D16]">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform duration-200">
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-extrabold text-base text-white tracking-tight">NexChat</span>
-                  <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 tracking-wider">
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     PRO
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-medium">WhatsApp Cloud API</p>
+                <p className="text-[11px] text-slate-400 font-medium">Classic Pearls Salon</p>
               </div>
             </Link>
           </div>
 
           {/* Quick Command Launcher */}
-          <div className="px-4 pt-4">
+          <div className="px-3 pt-3.5">
             <button
               onClick={() => {
                 const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
                 window.dispatchEvent(event);
               }}
-              className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-slate-200 hover:border-[var(--color-cyber-purple)] transition-all flex items-center justify-between text-xs font-medium cursor-pointer group shadow-xs"
+              className="w-full py-2 px-3 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 hover:bg-slate-850 transition-all flex items-center justify-between text-xs font-semibold cursor-pointer shadow-xs"
             >
               <div className="flex items-center gap-2">
                 <Command className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Command Center</span>
               </div>
-              <kbd className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-800 rounded border border-slate-700 group-hover:border-slate-600">
-                ⌘K
+              <kbd className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-800 rounded border border-slate-700">
+                ?K
               </kbd>
             </button>
           </div>
 
           {/* Grouped Navigation */}
-          <nav className="p-4 space-y-5 overflow-y-auto max-h-[calc(100vh-230px)]">
+          <nav className="p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-230px)]">
             {navGroups.map((group, idx) => (
-              <div key={idx} className="space-y-1">
-                <p className="px-3 text-[10px] font-bold text-slate-500 tracking-wider uppercase mb-1">
+              <div key={idx} className="space-y-0.5">
+                <p className="px-3 text-[10px] font-extrabold text-slate-400 tracking-wider uppercase mb-1">
                   {group.title}
                 </p>
                 {group.items.map((item) => {
@@ -144,25 +141,21 @@ export function Sidebar({ className = '' }: SidebarProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 group ${
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all duration-150 group ${
                         isActive
-                          ? 'bg-[var(--color-cyber-purple)] text-white font-semibold neon-glow-purple'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon className={`w-4 h-4 transition-colors ${
-                          isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'
+                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
                         }`} />
                         <span>{item.label}</span>
                       </div>
 
                       {item.badge && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                          isActive
-                            ? 'bg-white/20 text-white'
-                            : 'bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)]/30'
-                        }`}>
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs animate-pulse">
                           {item.badge}
                         </span>
                       )}
@@ -174,22 +167,22 @@ export function Sidebar({ className = '' }: SidebarProps) {
           </nav>
         </div>
 
-        {/* Account Switcher Footer */}
-        <div className="p-4 border-t border-white/10/80 bg-black/20">
-          <div className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-900/60 transition-colors">
+        {/* Live Meta Connection Badge Footer */}
+        <div className="p-3 border-t border-slate-800 bg-[#090D16]">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-700">
-                NX
+              <div className="w-7 h-7 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-800/40">
+                WA
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-200 truncate">NexChat Workspace</p>
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Meta Connected
+                <p className="text-xs font-bold text-slate-200 truncate">Cloud API</p>
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  Live Connected
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-600" />
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </div>
         </div>
       </aside>
