@@ -59,6 +59,56 @@ export async function GET(request: Request) {
 
           await supabaseAdmin.rpc('increment_campaign_sent', { camp_id: campaign.id });
           successCount++;
+
+          // Ensure conversation & message exist in the Inbox
+          try {
+            if (recipient.contact_id) {
+              let { data: conv } = await supabaseAdmin
+                .from('conversations')
+                .select('id')
+                .eq('organization_id', campaign.organization_id)
+                .eq('contact_id', recipient.contact_id)
+                .maybeSingle();
+
+              if (!conv) {
+                const { data: newConv } = await supabaseAdmin
+                  .from('conversations')
+                  .insert({
+                    organization_id: campaign.organization_id,
+                    contact_id: recipient.contact_id,
+                    status: 'OPEN',
+                    last_message_at: new Date().toISOString(),
+                    unread_count: 0
+                  })
+                  .select('id')
+                  .single();
+                conv = newConv;
+              } else {
+                await supabaseAdmin
+                  .from('conversations')
+                  .update({ last_message_at: new Date().toISOString() })
+                  .eq('id', conv.id);
+              }
+
+              if (conv && response.messages?.[0]?.id) {
+                await supabaseAdmin.from('messages').insert({
+                  organization_id: campaign.organization_id,
+                  contact_id: recipient.contact_id,
+                  conversation_id: conv.id,
+                  wam_id: response.messages[0].id,
+                  direction: 'OUTBOUND',
+                  type: 'template',
+                  content: { 
+                    text: { body: `[Campaign: ${campaign.name || 'Broadcast'}] Template: ${campaign.template_name}` },
+                    template: { name: campaign.template_name }
+                  },
+                  status: 'SENT'
+                });
+              }
+            }
+          } catch (e) {
+            console.error('Failed to log broadcast to conversation:', e);
+          }
         }
       } catch (err: any) {
         if (recipient.attempts < 5) {

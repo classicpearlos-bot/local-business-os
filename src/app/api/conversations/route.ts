@@ -35,14 +35,7 @@ export async function GET(request: Request) {
 
     let query = supabaseAdmin
       .from('conversations')
-      .select(`
-        *,
-        contacts(*),
-        conversation_labels(
-          label_id,
-          chat_labels(id, name, color)
-        )
-      `)
+      .select('*, contacts(*)')
       .eq('organization_id', orgId)
       .order('last_message_at', { ascending: false });
 
@@ -67,7 +60,32 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ conversations: convs || [] });
+    // Attach conversation labels safely
+    const convList = convs || [];
+    const convIds = convList.map(c => c.id);
+    if (convIds.length > 0) {
+      try {
+        const { data: convLabels } = await supabaseAdmin
+          .from('conversation_labels')
+          .select('conversation_id, label_id, chat_labels(id, name, color)')
+          .in('conversation_id', convIds);
+
+        if (convLabels) {
+          const labelsMap: Record<string, any[]> = {};
+          convLabels.forEach((cl: any) => {
+            if (!labelsMap[cl.conversation_id]) labelsMap[cl.conversation_id] = [];
+            labelsMap[cl.conversation_id].push(cl);
+          });
+          convList.forEach(c => {
+            c.conversation_labels = labelsMap[c.id] || [];
+          });
+        }
+      } catch (e) {
+        console.warn('Could not fetch labels relation:', e);
+      }
+    }
+
+    return NextResponse.json({ conversations: convList });
   } catch (err: any) {
     console.error('Conversations API error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
