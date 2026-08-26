@@ -4,6 +4,7 @@ import { processConversationAndMessage } from '@/lib/conversations/service';
 import { evaluateAutomations } from '@/lib/automations/service';
 import { queueTenantWebhook } from '@/lib/webhooks/service';
 import { normalizePhoneNumber } from '@/utils/phone';
+import { sendWhatsAppText } from '@/lib/meta/whatsapp';
 
 // Handle webhook verification challenge from Meta
 export async function GET(request: Request) {
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
                 phone_number: contactPhone,
                 name: change.value.contacts?.[0]?.profile?.name || 'Unknown'
               }, { onConflict: 'organization_id, phone_number' })
-              .select('id')
+              .select('id, opted_in')
               .single();
 
             if (contact) {
@@ -116,13 +117,89 @@ export async function POST(request: Request) {
                 let textBody = '';
                 if (msg.type === 'text') textBody = msg.text?.body || '';
 
-                await evaluateAutomations(
-                  accountOrgId,
-                  conversationId,
-                  messageId,
-                  textBody,
-                  contactPhone
-                );
+                const normalizedCommand = textBody.trim().toLowerCase();
+                const isStopCommand = ['stop', 'unsubscribe', 'cancel', 'optout', 'opt-out'].includes(normalizedCommand);
+                const isStartCommand = ['start', 'subscribe', 'unstop', 'optin', 'opt-in'].includes(normalizedCommand);
+
+                if (isStopCommand) {
+                  // Idempotent: only process and reply if currently opted in
+                  if (contact.opted_in !== false) {
+                    await supabaseAdmin
+                      .from('contacts')
+                      .update({ opted_in: false })
+                      .eq('id', contact.id);
+
+                    const { data: accountInfo } = await supabaseAdmin
+                      .from('whatsapp_accounts')
+                      .select('phone_number_id, access_token')
+                      .eq('organization_id', accountOrgId)
+                      .maybeSingle();
+
+                    if (accountInfo?.phone_number_id && accountInfo?.access_token) {
+                      const optOutReply = 'You have unsubscribed from promotional broadcasts. Reply START to opt back in.';
+                      const sendRes = await sendWhatsAppText({
+                        phoneNumberId: accountInfo.phone_number_id,
+                        accessToken: accountInfo.access_token,
+                        to: contactPhone
+                      }, optOutReply);
+
+                      if (sendRes.messages?.[0]?.id) {
+                        await supabaseAdmin.from('messages').insert({
+                          organization_id: accountOrgId,
+                          conversation_id: conversationId,
+                          direction: 'OUTBOUND',
+                          type: 'text',
+                          content: { text: { body: optOutReply } },
+                          status: 'DELIVERED',
+                          wam_id: sendRes.messages[0].id
+                        });
+                      }
+                    }
+                  }
+                } else if (isStartCommand) {
+                  // Opt back in
+                  if (contact.opted_in === false) {
+                    await supabaseAdmin
+                      .from('contacts')
+                      .update({ opted_in: true })
+                      .eq('id', contact.id);
+
+                    const { data: accountInfo } = await supabaseAdmin
+                      .from('whatsapp_accounts')
+                      .select('phone_number_id, access_token')
+                      .eq('organization_id', accountOrgId)
+                      .maybeSingle();
+
+                    if (accountInfo?.phone_number_id && accountInfo?.access_token) {
+                      const optInReply = 'You have successfully subscribed to updates and promotional broadcasts. Reply STOP anytime to opt out.';
+                      const sendRes = await sendWhatsAppText({
+                        phoneNumberId: accountInfo.phone_number_id,
+                        accessToken: accountInfo.access_token,
+                        to: contactPhone
+                      }, optInReply);
+
+                      if (sendRes.messages?.[0]?.id) {
+                        await supabaseAdmin.from('messages').insert({
+                          organization_id: accountOrgId,
+                          conversation_id: conversationId,
+                          direction: 'OUTBOUND',
+                          type: 'text',
+                          content: { text: { body: optInReply } },
+                          status: 'DELIVERED',
+                          wam_id: sendRes.messages[0].id
+                        });
+                      }
+                    }
+                  }
+                } else {
+                  await evaluateAutomations(
+                    accountOrgId,
+                    conversationId,
+                    messageId,
+                    textBody,
+                    contactPhone
+                  );
+                }
 
                 await queueTenantWebhook(accountOrgId, 'message.received', msg);
               } catch (e) {

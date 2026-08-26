@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Search, 
   Send, 
@@ -26,7 +26,8 @@ import { Search,
   Download,
   X,
   Plus,
-  Bell, Trash2 } from "lucide-react";
+  Bell, Trash2, UserCheck, AlertCircle } from "lucide-react";
+import { normalizePhoneNumber, isValidWhatsAppNumber } from '@/utils/phone';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -44,6 +45,18 @@ export default function Inbox() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [sending, setSending] = useState(false);
   const [showCustomerDrawer, setShowCustomerDrawer] = useState(false);
+  type ConversationStatus = 'OPEN' | 'PENDING' | 'RESOLVED' | 'CLOSED';
+  type StatusFilterType = 'ALL' | 'OPEN' | 'PENDING' | 'RESOLVED';
+  type AssignmentFilterType = 'all' | 'mine' | 'unassigned';
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilterType>('ALL');
+  const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilterType>('all');
+  const [selectedLabelId, setSelectedLabelId] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [allContacts, setAllContacts] = useState<any[]>([]);
+  const [contactSearchResults, setContactSearchResults] = useState<any[]>([]);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingAssignment, setUpdatingAssignment] = useState(false);
 
   // New Conversation Modal State
   const [showNewConvModal, setShowNewConvModal] = useState(false);
@@ -109,6 +122,69 @@ export default function Inbox() {
   }, []);
 
   
+
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/organization/members');
+      if (res.ok) {
+        const json = await res.json();
+        setTeamMembers(json.members || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch team members:', e);
+    }
+  }, []);
+
+  const fetchContactsList = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('contacts')
+        .select('id, name, phone_number, opted_in')
+        .limit(200);
+      if (data) setAllContacts(data);
+    } catch (e) {}
+  }, []);
+
+  const updateConversationStatus = async (newStatus: ConversationStatus) => {
+    if (!activeConvId || updatingStatus) return;
+    setUpdatingStatus(true);
+    setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, status: newStatus } : c));
+
+    try {
+      const res = await fetch(`/api/conversations/${activeConvId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) fetchConversations();
+    } catch (e) {
+      fetchConversations();
+    fetchTeamMembers();
+    fetchContactsList();
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const updateConversationAssignment = async (assignedToId: string | null) => {
+    if (!activeConvId || updatingAssignment) return;
+    setUpdatingAssignment(true);
+    setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, assigned_to: assignedToId } : c));
+
+    try {
+      const res = await fetch(`/api/conversations/${activeConvId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_to: assignedToId })
+      });
+      if (!res.ok) fetchConversations();
+    } catch (e) {
+      fetchConversations();
+    } finally {
+      setUpdatingAssignment(false);
+    }
+  };
+
   const deleteMessage = async (msgId: string) => {
     if (!window.confirm('Delete this message for yourself? (Note: WhatsApp API does not allow deleting messages for the customer once sent)')) return;
     try {
@@ -247,17 +323,30 @@ export default function Inbox() {
   }, []);
 
 
-  const filteredConversations = conversations.filter(c => {
-    if (filter === 'unassigned' && c.assigned_to) return false;
-    if (filter === 'mine' && currentUser && c.assigned_to !== currentUser.id) return false;
-    if (search) {
-      const name = c.contacts?.name?.toLowerCase() || '';
-      const phone = c.contacts?.phone_number?.toLowerCase() || '';
-      const q = search.toLowerCase();
-      return name.includes(q) || phone.includes(q);
-    }
-    return true;
-  });
+  const filteredConversations = useMemo(() => {
+    return conversations.filter(c => {
+      if (statusFilter !== 'ALL') {
+        const convStatus = (c.status || 'OPEN').toUpperCase();
+        if (convStatus !== statusFilter) return false;
+      }
+      if (assignmentFilter === 'unassigned' && c.assigned_to) return false;
+      if (assignmentFilter === 'mine' && currentUser && c.assigned_to !== currentUser.id) return false;
+
+      if (selectedLabelId) {
+        const convLabels = c.conversation_labels || [];
+        const hasLabel = convLabels.some((l: any) => l.label_id === selectedLabelId || l.chat_labels?.id === selectedLabelId);
+        if (!hasLabel) return false;
+      }
+
+      if (search) {
+        const name = c.contacts?.name?.toLowerCase() || '';
+        const phone = c.contacts?.phone_number?.toLowerCase() || '';
+        const q = search.toLowerCase();
+        return name.includes(q) || phone.includes(q);
+      }
+      return true;
+    });
+  }, [conversations, statusFilter, assignmentFilter, selectedLabelId, search, currentUser]);
 
   const activeConv = conversations.find(c => c.id === activeConvId);
 
@@ -417,30 +506,47 @@ export default function Inbox() {
         });
         setActiveLabels(prev => [...prev, labelId]);
       }
+      fetchConversations();
     } catch(e) {}
   };
 
-  const startNewConversation = async () => {
-    if (!newConvPhone.trim()) {
+  const startNewConversation = async (phoneToUse?: string, nameToUse?: string) => {
+    const rawPhone = phoneToUse || newConvPhone;
+    const contactName = nameToUse || newConvName;
+
+    if (!rawPhone.trim()) {
       setNewConvError('Phone number is required.');
       return;
     }
+
+    const normalized = normalizePhoneNumber(rawPhone.trim());
+    if (!isValidWhatsAppNumber(normalized)) {
+      setNewConvError('Please enter a valid WhatsApp phone number with country code (e.g. +917483654138).');
+      return;
+    }
+
     setNewConvLoading(true);
     setNewConvError('');
+
     try {
       const res = await fetch('/api/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone_number: newConvPhone.trim(), name: newConvName.trim() || undefined })
+        body: JSON.stringify({ 
+          phone_number: normalized, 
+          name: contactName.trim() || undefined 
+        })
       });
       const data = await res.json();
       if (!res.ok) {
-        setNewConvError(data.error || 'Failed to create conversation.');
+        setNewConvError(data.error || 'Failed to open conversation.');
         return;
       }
+
       setShowNewConvModal(false);
       setNewConvPhone('');
       setNewConvName('');
+      setContactSearchResults([]);
       await fetchConversations();
       setActiveConvId(data.conversation_id);
     } catch (e: any) {
@@ -448,6 +554,23 @@ export default function Inbox() {
     } finally {
       setNewConvLoading(false);
     }
+  };
+
+  const handleNewConvPhoneChange = (val: string) => {
+    setNewConvPhone(val);
+    setNewConvError('');
+    if (!val.trim()) {
+      setContactSearchResults([]);
+      return;
+    }
+    const q = val.toLowerCase().replace(/\D/g, '');
+    const textQ = val.toLowerCase();
+    const matches = allContacts.filter(c => {
+      const p = (c.phone_number || '').replace(/\D/g, '');
+      const n = (c.name || '').toLowerCase();
+      return (q && p.includes(q)) || n.includes(textQ);
+    }).slice(0, 5);
+    setContactSearchResults(matches);
   };
 
   const toggleOptIn = async () => {
@@ -458,7 +581,7 @@ export default function Inbox() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-[#0F103E]">
       <Sidebar className="hidden md:flex" />
 
       <main className="flex-1 flex overflow-hidden min-w-0">
@@ -493,33 +616,89 @@ export default function Inbox() {
               </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex bg-white/10/80 p-1 rounded-xl">
-              <button 
-                onClick={() => setFilter('all')} 
-                className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'all' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                All
-              </button>
-              <button 
-                onClick={() => setFilter('mine')} 
-                className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'mine' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                Mine
-              </button>
-              <button 
-                onClick={() => setFilter('unassigned')} 
-                className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all cursor-pointer ${
-                  filter === 'unassigned' ? 'bg-[var(--color-cyber-panel)] text-[var(--color-cyber-purple)] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                Unassigned
-              </button>
+            {/* Status Filter Tabs */}
+            <div className="flex bg-[#0F103E] p-1 rounded-xl border border-white/5">
+              {(['ALL', 'OPEN', 'PENDING', 'RESOLVED'] as const).map((st) => (
+                <button 
+                  key={st}
+                  onClick={() => setStatusFilter(st)} 
+                  className={`flex-1 text-[11px] font-extrabold py-1.5 rounded-lg transition-all cursor-pointer capitalize ${
+                    statusFilter === st 
+                      ? 'bg-[var(--color-cyber-purple)] text-white shadow-xs neon-glow-purple' 
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  {st.toLowerCase()}
+                </button>
+              ))}
             </div>
+
+            {/* Secondary Staff Filter */}
+            <div className="flex items-center justify-between text-xs px-1">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setAssignmentFilter('all')}
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
+                    assignmentFilter === 'all' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  All Staff
+                </button>
+                <button 
+                  onClick={() => setAssignmentFilter('mine')}
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
+                    assignmentFilter === 'mine' ? 'bg-white/10 text-[var(--color-cyber-pink)]' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  Assigned to Me
+                </button>
+                <button 
+                  onClick={() => setAssignmentFilter('unassigned')}
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
+                    assignmentFilter === 'unassigned' ? 'bg-white/10 text-amber-400' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  Unassigned
+                </button>
+              </div>
+            </div>
+
+            {/* Dynamic Label Filter Pills */}
+            {labels.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1">
+                <button
+                  onClick={() => setSelectedLabelId(null)}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold whitespace-nowrap transition-all cursor-pointer ${
+                    selectedLabelId === null
+                      ? 'bg-white/20 text-white border border-white/30'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200 border border-white/5'
+                  }`}
+                >
+                  All Labels
+                </button>
+                {labels.map((lbl) => {
+                  const isSelected = selectedLabelId === lbl.id;
+                  return (
+                    <button
+                      key={lbl.id}
+                      onClick={() => setSelectedLabelId(isSelected ? null : lbl.id)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold whitespace-nowrap transition-all cursor-pointer border ${
+                        isSelected
+                          ? 'border-white text-white shadow-xs'
+                          : 'border-transparent text-gray-300 hover:text-white'
+                      }`}
+                      style={{ 
+                        backgroundColor: isSelected ? lbl.color : `${lbl.color}22`,
+                        borderColor: isSelected ? '#ffffff' : `${lbl.color}55`
+                      }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? '#ffffff' : lbl.color }} />
+                      {lbl.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Search Input */}
             <div className="flex gap-2">
@@ -585,18 +764,23 @@ export default function Inbox() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-gray-400 font-medium">
+                      <div className="flex items-center justify-between text-xs text-gray-400 font-medium mb-1">
                         <span className="truncate flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-gray-500 shrink-0" />
+                          <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
                           {phone}
                         </span>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {conv.assigned_to && (
-                            <span className="w-4 h-4 rounded-full bg-slate-200 text-gray-300 flex items-center justify-center text-[9px] font-bold" title="Assigned">
-                              A
+                          {status === 'RESOLVED' ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-800 text-slate-400 border border-slate-700">
+                              RESOLVED
                             </span>
-                          )}
+                          ) : status === 'PENDING' ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-950/60 text-amber-400 border border-amber-800/50">
+                              PENDING
+                            </span>
+                          ) : null}
+
                           {conv.unread_count > 0 && (
                             <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-cyber-purple)] neon-glow-purple border-none text-white text-[10px] font-extrabold shadow-xs">
                               {conv.unread_count}
@@ -604,6 +788,25 @@ export default function Inbox() {
                           )}
                         </div>
                       </div>
+
+                      {/* Attached Labels */}
+                      {conv.conversation_labels && conv.conversation_labels.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {conv.conversation_labels.slice(0, 3).map((cl: any) => {
+                            const lbl = cl.chat_labels || labels.find(l => l.id === cl.label_id);
+                            if (!lbl) return null;
+                            return (
+                              <span
+                                key={lbl.id}
+                                className="px-1.5 py-0.2 rounded text-[9px] font-bold text-white/90"
+                                style={{ backgroundColor: `${lbl.color}44`, border: `1px solid ${lbl.color}88` }}
+                              >
+                                {lbl.name}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -649,25 +852,63 @@ export default function Inbox() {
                   </div>
                 </div>
 
-                {/* Assignment & Profile Info Trigger */}
-                <div className="flex items-center gap-3 shrink-0">
-                  {activeConv.assigned_to ? (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="success" dot>Assigned</Badge>
-                      <Button variant="ghost" size="sm" onClick={unassign}>Unassign</Button>
-                    </div>
-                  ) : (
-                    <Button variant="outline" size="sm" onClick={assignToMe}>
-                      Assign to Me
-                    </Button>
-                  )}
+                {/* Status Dropdown, Agent Assignment Dropdown & Controls */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  
+                  {/* Status Dropdown */}
+                  <div className="flex items-center bg-[#0F103E] border border-white/10 rounded-xl px-2 py-1">
+                    <span className="text-[11px] font-bold text-gray-400 mr-1.5 hidden sm:inline">Status:</span>
+                    <select
+                      value={(activeConv.status || 'OPEN').toUpperCase()}
+                      onChange={(e) => updateConversationStatus(e.target.value as ConversationStatus)}
+                      disabled={updatingStatus}
+                      className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer"
+                    >
+                      <option value="OPEN" className="bg-[#1E1B2E] text-emerald-400">Open</option>
+                      <option value="PENDING" className="bg-[#1E1B2E] text-amber-400">Pending</option>
+                      <option value="RESOLVED" className="bg-[#1E1B2E] text-gray-400">Resolved</option>
+                    </select>
+                  </div>
 
+                  {/* Agent Assignment Selector */}
+                  <div className="flex items-center bg-[#0F103E] border border-white/10 rounded-xl px-2 py-1">
+                    <UserCheck className="w-3.5 h-3.5 text-gray-400 mr-1.5 hidden sm:inline" />
+                    <select
+                      value={activeConv.assigned_to || ''}
+                      onChange={(e) => updateConversationAssignment(e.target.value || null)}
+                      disabled={updatingAssignment}
+                      className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer max-w-[120px] truncate"
+                    >
+                      <option value="" className="bg-[#1E1B2E] text-gray-400">Unassigned</option>
+                      {currentUser && (
+                        <option value={currentUser.id} className="bg-[#1E1B2E] text-[var(--color-cyber-purple)]">
+                          Assign to Me
+                        </option>
+                      )}
+                      {teamMembers.filter(m => m.id !== currentUser?.id).map((member) => (
+                        <option key={member.id} value={member.id} className="bg-[#1E1B2E] text-white">
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Labels Toggle Button */}
+                  <button
+                    onClick={() => setShowLabelModal(true)}
+                    className="p-2 rounded-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    title="Manage labels"
+                  >
+                    <Tag className="w-4 h-4" />
+                  </button>
+
+                  {/* Customer Profile Drawer Toggle */}
                   <button
                     onClick={() => setShowCustomerDrawer(!showCustomerDrawer)}
                     className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-                      showCustomerDrawer ? 'bg-[var(--color-cyber-purple)]/10 text-[var(--color-cyber-purple)] border-indigo-200' : 'text-gray-500 hover:text-gray-300 border-white/10 hover:bg-[var(--color-cyber-bg)]'
+                      showCustomerDrawer ? 'bg-[var(--color-cyber-purple)]/20 text-[var(--color-cyber-purple)] border-[var(--color-cyber-purple)]/50' : 'text-gray-400 hover:text-white border-white/10 hover:bg-white/5'
                     }`}
-                    title="Customer profile"
+                    title="Customer profile details"
                   >
                     <Info className="w-4 h-4" />
                   </button>
@@ -898,36 +1139,66 @@ export default function Inbox() {
         </div>
       </Modal>
 
-      {/* New Conversation Modal */}
+      {/* + START NEW CHAT MODAL with Contact Search & Duplicate Prevention */}
       <Modal
         isOpen={showNewConvModal}
         onClose={() => setShowNewConvModal(false)}
-        title="Start New Conversation"
-        description="Enter a phone number to start a new WhatsApp chat. Include the country code (e.g. +917483654138)."
+        title="Start New WhatsApp Conversation"
+        description="Search an existing customer or type a new WhatsApp number with country code."
       >
         <div className="space-y-4">
+          <div>
+            <Input
+              label="Customer Phone Number *"
+              placeholder="+917483654138"
+              value={newConvPhone}
+              onChange={(e) => handleNewConvPhoneChange(e.target.value)}
+              helperText="E.164 format: include country code (e.g. +91XXXXXXXXXX)."
+            />
+
+            {/* Autocomplete Suggestions */}
+            {contactSearchResults.length > 0 && (
+              <div className="mt-2 bg-[#0F103E] border border-white/15 rounded-xl overflow-hidden divide-y divide-white/5 shadow-md">
+                <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-400 bg-white/5">
+                  Matching Existing Contacts
+                </div>
+                {contactSearchResults.map(c => (
+                  <div
+                    key={c.id}
+                    onClick={() => {
+                      setNewConvPhone(c.phone_number);
+                      setNewConvName(c.name || '');
+                      startNewConversation(c.phone_number, c.name);
+                    }}
+                    className="p-2.5 hover:bg-[var(--color-cyber-purple)]/20 cursor-pointer flex items-center justify-between transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-white">{c.name || 'Valued Customer'}</p>
+                      <p className="text-[11px] text-gray-400">{c.phone_number}</p>
+                    </div>
+                    <Badge variant="success">Existing</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Input
-            label="Phone Number *"
-            placeholder="+917483654138"
-            value={newConvPhone}
-            onChange={(e) => setNewConvPhone(e.target.value)}
-            helperText="Include country code without spaces."
-          />
-          <Input
-            label="Contact Name (Optional)"
+            label="Customer Name (Optional for new contacts)"
             placeholder="e.g. Ravi Kumar"
             value={newConvName}
             onChange={(e) => setNewConvName(e.target.value)}
-            helperText="Name to display in the inbox. Defaults to the phone number."
+            helperText="Name to save for this contact in the CRM."
           />
 
           {newConvError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-semibold">
+            <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               {newConvError}
             </div>
           )}
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/10">
             <Button variant="outline" size="sm" onClick={() => setShowNewConvModal(false)}>
               Cancel
             </Button>
@@ -936,10 +1207,10 @@ export default function Inbox() {
               size="sm"
               isLoading={newConvLoading}
               disabled={!newConvPhone.trim()}
-              onClick={startNewConversation}
+              onClick={() => startNewConversation()}
               leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
             >
-              Open Chat
+              Open Conversation
             </Button>
           </div>
         </div>

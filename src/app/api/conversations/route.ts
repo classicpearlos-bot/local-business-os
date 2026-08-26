@@ -1,9 +1,10 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { normalizePhoneNumber, isValidWhatsAppNumber } from '@/utils/phone';
 
-// GET /api/conversations — fetch all conversations for the org
-export async function GET() {
+// GET /api/conversations - fetch all conversations for the org
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -28,11 +29,38 @@ export async function GET() {
       return NextResponse.json({ conversations: [] });
     }
 
-    const { data: convs, error } = await supabaseAdmin
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get('status');
+    const assignedParam = searchParams.get('assigned_to');
+
+    let query = supabaseAdmin
       .from('conversations')
-      .select('*, contacts(*)')
+      .select(`
+        *,
+        contacts(*),
+        conversation_labels(
+          label_id,
+          chat_labels(id, name, color)
+        )
+      `)
       .eq('organization_id', orgId)
       .order('last_message_at', { ascending: false });
+
+    if (statusParam && statusParam !== 'all') {
+      query = query.eq('status', statusParam.toUpperCase());
+    }
+
+    if (assignedParam) {
+      if (assignedParam === 'unassigned') {
+        query = query.is('assigned_to', null);
+      } else if (assignedParam === 'me' && user) {
+        query = query.eq('assigned_to', user.id);
+      } else {
+        query = query.eq('assigned_to', assignedParam);
+      }
+    }
+
+    const { data: convs, error } = await query;
 
     if (error) {
       console.error('Error fetching conversations:', error);
@@ -46,7 +74,7 @@ export async function GET() {
   }
 }
 
-// POST /api/conversations — Start a new conversation with any phone number
+// POST /api/conversations - Start a new conversation with any phone number
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -66,28 +94,41 @@ export async function POST(request: Request) {
     const payload = await request.json();
     const { phone_number, name } = payload;
 
-    if (!phone_number) return NextResponse.json({ error: 'phone_number is required' }, { status: 400 });
+    if (!phone_number) return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
 
-    let normalized = phone_number.trim().replace(/[^0-9+]/g, '');
-    if (!normalized.startsWith('+')) normalized = '+' + normalized;
-
-    // Upsert the contact
-    const { data: contact, error: contactErr } = await supabaseAdmin
-      .from('contacts')
-      .upsert({
-        organization_id: orgId,
-        phone_number: normalized,
-        name: name?.trim() || normalized,
-        opted_in: true
-      }, { onConflict: 'organization_id,phone_number' })
-      .select('id')
-      .single();
-
-    if (contactErr || !contact) {
-      return NextResponse.json({ error: contactErr?.message || 'Failed to upsert contact' }, { status: 500 });
+    const normalized = normalizePhoneNumber(phone_number);
+    if (!isValidWhatsAppNumber(normalized)) {
+      return NextResponse.json({ error: 'Please enter a valid phone number with country code (e.g. +91XXXXXXXXXX)' }, { status: 400 });
     }
 
-    // Return existing conversation if already open
+    // 1. Check if contact already exists
+    let { data: contact } = await supabaseAdmin
+      .from('contacts')
+      .select('id, name, phone_number')
+      .eq('organization_id', orgId)
+      .eq('phone_number', normalized)
+      .maybeSingle();
+
+    // 2. If not found, create contact safely
+    if (!contact) {
+      const { data: newContact, error: contactErr } = await supabaseAdmin
+        .from('contacts')
+        .insert({
+          organization_id: orgId,
+          phone_number: normalized,
+          name: name?.trim() || normalized,
+          opted_in: true
+        })
+        .select('id, name, phone_number')
+        .single();
+
+      if (contactErr || !newContact) {
+        return NextResponse.json({ error: contactErr?.message || 'Failed to create contact' }, { status: 500 });
+      }
+      contact = newContact;
+    }
+
+    // 3. Return existing conversation if already exists
     const { data: existing } = await supabaseAdmin
       .from('conversations')
       .select('id')
@@ -96,10 +137,10 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json({ conversation_id: existing.id });
+      return NextResponse.json({ conversation_id: existing.id, is_existing: true });
     }
 
-    // Create new conversation
+    // 4. Create new conversation
     const { data: conv, error: convErr } = await supabaseAdmin
       .from('conversations')
       .insert({
@@ -116,7 +157,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: convErr?.message || 'Failed to create conversation' }, { status: 500 });
     }
 
-    return NextResponse.json({ conversation_id: conv.id });
+    return NextResponse.json({ conversation_id: conv.id, is_existing: false });
   } catch (err: any) {
     console.error('Create conversation error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
