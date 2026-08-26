@@ -90,7 +90,7 @@ export async function GET(request: Request) {
     // If we claimed exactly 50 (the batch size limit), there might be more to process immediately.
     // Trigger the worker again in the background to continue processing the queue.
     if (claimed.length === 50) {
-      const origin = request.headers.get('origin') || 'http://localhost:3000';
+      const origin = new URL(request.url).origin;
       fetch(`${origin}/api/whatsapp/campaigns/worker`).catch(e => console.error('Recursive trigger failed', e));
     }
 
