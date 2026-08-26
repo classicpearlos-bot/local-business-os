@@ -79,14 +79,23 @@ export async function GET(request: Request) {
       const { count: pendingCount } = await supabaseAdmin.from('campaign_recipients')
         .select('*', { count: 'exact', head: true })
         .eq('campaign_id', campId)
-        .in('status', ['PENDING', 'PROCESSING']);
+        .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
         
       if (pendingCount === 0) {
         await supabaseAdmin.from('campaigns').update({ status: 'COMPLETED' }).eq('id', campId);
       }
     }
 
+    
+    // If we claimed exactly 50 (the batch size limit), there might be more to process immediately.
+    // Trigger the worker again in the background to continue processing the queue.
+    if (claimed.length === 50) {
+      const origin = request.headers.get('origin') || 'http://localhost:3000';
+      fetch(`${origin}/api/whatsapp/campaigns/worker`).catch(e => console.error('Recursive trigger failed', e));
+    }
+
     return NextResponse.json({ processed: claimed.length, success: successCount, failed: failureCount });
+
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
