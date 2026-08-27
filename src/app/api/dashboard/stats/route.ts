@@ -78,18 +78,44 @@ export async function GET() {
 
         let extractedText = msgRes.data?.direction === 'OUTBOUND' ? 'Sent WhatsApp Message' : 'Inbound WhatsApp Inquiry';
         if (msgRes.data?.content) {
-          if (typeof msgRes.data.content === 'object') {
-            extractedText = msgRes.data.content.text || msgRes.data.content.template || 'Media Message';
-          } else if (typeof msgRes.data.content === 'string') {
-            // Check if it is a JSON string
+          let contentObj = msgRes.data.content;
+          
+          if (typeof contentObj === 'string') {
             try {
-              const parsed = JSON.parse(msgRes.data.content);
-              extractedText = parsed.text || parsed.template || 'Media Message';
+              contentObj = JSON.parse(contentObj);
             } catch (e) {
-              extractedText = msgRes.data.content;
+              // It's just a normal string
+              extractedText = contentObj;
+            }
+          }
+
+          if (typeof contentObj === 'object' && contentObj !== null) {
+            // WhatsApp API format: { text: { body: "Hello" } }
+            if (contentObj.text && typeof contentObj.text === 'object' && contentObj.text.body) {
+              extractedText = contentObj.text.body;
+            } 
+            // Simple format: { text: "Hello" }
+            else if (typeof contentObj.text === 'string') {
+              extractedText = contentObj.text;
+            }
+            // Template format: { template: { name: "offer" } }
+            else if (contentObj.template && typeof contentObj.template === 'object' && contentObj.template.name) {
+              extractedText = contentObj.template.name;
+            }
+            else if (typeof contentObj.template === 'string') {
+              extractedText = contentObj.template;
+            }
+            else {
+              extractedText = 'Media Message';
             }
           }
         }
+        
+        // Final safety check to ENSURE it's a string so React never crashes
+        if (typeof extractedText !== 'string') {
+          extractedText = 'Message';
+        }
+
         const lastMsgText = extractedText;
         const lastMsgTime = conv.last_message_at || msgRes.data?.created_at || new Date().toISOString();
 
