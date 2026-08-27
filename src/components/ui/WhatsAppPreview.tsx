@@ -63,8 +63,8 @@ export function WhatsAppPreview({
           )}
 
           {headerType === 'video' && (
-            <div className="h-36 bg-[#F2ECE0] flex flex-col items-center justify-center text-white/70 border-b border-[#EFE3CF]">
-              <Video className="w-8 h-8 mb-1 text-white/80" />
+            <div className="h-36 bg-[#F2ECE0] flex flex-col items-center justify-center text-[#7C756D] border-b border-[#EFE3CF]">
+              <Video className="w-8 h-8 mb-1 text-[#9E968D]" />
               <span className="text-[10px] font-semibold">Video Message Header</span>
             </div>
           )}

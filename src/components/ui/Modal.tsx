@@ -61,12 +61,12 @@ export function Modal({
         {(title || description) && (
           <div className="px-6 py-5 border-b border-[#EFE3CF] flex items-start justify-between bg-[#FAF7F2]">
             <div>
-              {title && <h2 className="text-lg font-black text-white tracking-tight">{title}</h2>}
+              {title && <h2 className="text-lg font-black text-[#1E1B18] tracking-tight">{title}</h2>}
               {description && <p className="text-xs text-[#7C756D] font-medium mt-0.5">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="text-[#7C756D] hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="text-[#7C756D] hover:text-[#1E1B18] p-1.5 rounded-lg hover:bg-[#EFE3CF] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

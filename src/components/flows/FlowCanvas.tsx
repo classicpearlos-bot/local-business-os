@@ -43,7 +43,7 @@ import { Badge } from '@/components/ui/Badge';
 // --- CUSTOM FLOW NODES WITH LUXURY GLASS THEME ---
 
 const TriggerNode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-3 rounded-2xl bg-white border-2 border-indigo-500 shadow-xl min-w-[200px] text-white">
+  <div className="px-4 py-3 rounded-2xl bg-white border-2 border-[#C59E3F] shadow-xl min-w-[200px] text-[#1E1B18]">
     <div className="flex items-center gap-2 mb-1.5">
       <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
         <Zap className="w-4 h-4" />
@@ -56,7 +56,7 @@ const TriggerNode = ({ data, isConnectable }: any) => (
 );
 
 const MessageNode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-3 rounded-2xl bg-white border border-emerald-500/60 shadow-xl min-w-[220px] text-white">
+  <div className="px-4 py-3 rounded-2xl bg-white border border-emerald-500/60 shadow-xl min-w-[220px] text-[#1E1B18]">
     <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!w-3 !h-3 !bg-emerald-500" />
     <div className="flex items-center gap-2 mb-1.5">
       <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
@@ -70,7 +70,7 @@ const MessageNode = ({ data, isConnectable }: any) => (
 );
 
 const ConditionNode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-3 rounded-2xl bg-white border-2 border-amber-500/80 shadow-xl min-w-[220px] text-white">
+  <div className="px-4 py-3 rounded-2xl bg-white border-2 border-amber-500/80 shadow-xl min-w-[220px] text-[#1E1B18]">
     <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!w-3 !h-3 !bg-amber-500" />
     <div className="flex items-center gap-2 mb-1.5">
       <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
@@ -89,7 +89,7 @@ const ConditionNode = ({ data, isConnectable }: any) => (
 );
 
 const DelayNode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-3 rounded-2xl bg-white border border-cyan-500/60 shadow-xl min-w-[180px] text-white">
+  <div className="px-4 py-3 rounded-2xl bg-white border border-cyan-500/60 shadow-xl min-w-[180px] text-[#1E1B18]">
     <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!w-3 !h-3 !bg-cyan-500" />
     <div className="flex items-center gap-2 mb-1.5">
       <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
@@ -103,7 +103,7 @@ const DelayNode = ({ data, isConnectable }: any) => (
 );
 
 const APINode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-3 rounded-2xl bg-white border border-purple-500/60 shadow-xl min-w-[200px] text-white">
+  <div className="px-4 py-3 rounded-2xl bg-white border border-purple-500/60 shadow-xl min-w-[200px] text-[#1E1B18]">
     <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!w-3 !h-3 !bg-purple-500" />
     <div className="flex items-center gap-2 mb-1.5">
       <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">

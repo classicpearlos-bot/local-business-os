@@ -182,7 +182,7 @@ export default function MediaLibraryPage() {
                   {/* Asset Details */}
                   <div className="p-4 space-y-3">
                     <div>
-                      <p className="text-xs font-bold text-white truncate">{asset.name}</p>
+                      <p className="text-xs font-bold text-[#1E1B18] truncate">{asset.name}</p>
                       <p className="text-[10px] text-[#7C756D] font-mono mt-0.5">
                         {Math.round((asset.size_bytes || 150000) / 1024)} KB • {new Date(asset.created_at).toLocaleDateString()}
                       </p>
@@ -226,7 +226,7 @@ export default function MediaLibraryPage() {
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
                   {filteredMedia.map((asset) => (
                     <tr key={asset.id} className="hover:bg-[#FAF7F2]/80">
-                      <td className="px-6 py-4 font-bold text-white text-xs">
+                      <td className="px-6 py-4 font-bold text-[#1E1B18] text-xs">
                         {asset.name}
                       </td>
                       <td className="px-6 py-4">

@@ -557,7 +557,7 @@ export default function CampaignsPage() {
                   placeholder="Search campaigns or templates..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-[#1E1B18] placeholder:text-[#9E968D] text-xs font-medium focus:bg-white focus:ring-2 focus:ring-[#DFBE7E]/20 focus:border-[#DFBE7E] transition-all outline-none"
                 />
               </div>
 
@@ -585,7 +585,7 @@ export default function CampaignsPage() {
 
                     return (
                       <tr key={campaign.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
-                        <td className="px-6 py-4 text-white font-bold text-sm">
+                        <td className="px-6 py-4 text-[#1E1B18] font-bold text-sm">
                           {campaign.name}
                         </td>
                         <td className="px-6 py-4">
@@ -596,7 +596,7 @@ export default function CampaignsPage() {
                             {campaign.status}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 font-mono text-xs text-slate-700">
+                        <td className="px-6 py-4 font-mono text-xs text-[#3E2D12] font-semibold">
                           <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-[#EFE3CF]">
                             {campaign.template_name || '-'}
                           </span>
@@ -608,7 +608,7 @@ export default function CampaignsPage() {
                           <div className="flex items-center gap-3">
                             <div className="w-28 bg-slate-100 rounded-full h-2 overflow-hidden">
                               <div 
-                                className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                                 style={{ width: `${percent}%` }}
                               />
                             </div>
@@ -692,7 +692,7 @@ export default function CampaignsPage() {
 
               {/* Audience Source Selector Tabs */}
               <div className="space-y-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-[#3E2D12] font-semibold uppercase tracking-wider">
                   Target Audience Source *
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -700,13 +700,13 @@ export default function CampaignsPage() {
                     onClick={() => setAudienceSource('crm')}
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'crm'
-                        ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                        ? 'border-[#DFBE7E] bg-[#FDF6E2] ring-2 ring-[#C59E3F]/20'
                         : 'border-[#EFE3CF] hover:border-slate-300 bg-white'
                     }`}
                   >
-                    <Users className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                    <Users className="w-5 h-5 text-[#C59E3F] shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-white">CRM Contacts</p>
+                      <p className="text-xs font-bold text-[#1E1B18]">CRM Contacts</p>
                       <p className="text-[11px] text-[#9E968D] mt-0.5">{contactCount} opted-in</p>
                     </div>
                   </div>
@@ -715,13 +715,13 @@ export default function CampaignsPage() {
                     onClick={() => setAudienceSource('excel')}
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'excel'
-                        ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                        ? 'border-[#DFBE7E] bg-[#FDF6E2] ring-2 ring-[#C59E3F]/20'
                         : 'border-[#EFE3CF] hover:border-slate-300 bg-white'
                     }`}
                   >
                     <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-white">Upload Excel</p>
+                      <p className="text-xs font-bold text-[#1E1B18]">Upload Excel</p>
                       <p className="text-[11px] text-[#9E968D] mt-0.5">Import directly</p>
                     </div>
                   </div>
@@ -730,13 +730,13 @@ export default function CampaignsPage() {
                     onClick={() => setAudienceSource('manual')}
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'manual'
-                        ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                        ? 'border-[#DFBE7E] bg-[#FDF6E2] ring-2 ring-[#C59E3F]/20'
                         : 'border-[#EFE3CF] hover:border-slate-300 bg-white'
                     }`}
                   >
                     <Terminal className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-white">Manual Numbers</p>
+                      <p className="text-xs font-bold text-[#1E1B18]">Manual Numbers</p>
                       <p className="text-[11px] text-[#9E968D] mt-0.5">Comma separated</p>
                     </div>
                   </div>
@@ -849,12 +849,12 @@ export default function CampaignsPage() {
                       onClick={() => handleSelectTemplate(tpl)}
                       className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 relative ${
                         isSelected 
-                          ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20' 
+                          ? 'border-[#DFBE7E] bg-[#FDF6E2] ring-2 ring-[#C59E3F]/20' 
                           : 'border-[#EFE3CF] hover:border-slate-300 bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono text-xs font-bold text-white truncate max-w-[180px]">
+                        <span className="font-mono text-xs font-bold text-[#1E1B18] truncate max-w-[180px]">
                           {tpl.name}
                         </span>
                         <Badge variant={tpl.status === 'APPROVED' ? 'success' : 'warning'}>
@@ -955,7 +955,7 @@ export default function CampaignsPage() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-2">
                   Pre-Flight Verification Checklist
                 </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700">
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#3E2D12] font-semibold">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Campaign Name Defined
@@ -995,7 +995,7 @@ export default function CampaignsPage() {
                     placeholder="+919876543210 (include country code)"
                     value={testPhone}
                     onChange={(e) => setTestPhone(e.target.value)}
-                    className="flex-1 px-3.5 py-2 bg-white border border-[#EFE3CF] rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                    className="flex-1 px-3.5 py-2 bg-white border border-[#EFE3CF] rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#DFBE7E]/20 focus:border-[#DFBE7E] outline-none"
                   />
                   <Button
                     size="sm"
@@ -1019,9 +1019,9 @@ export default function CampaignsPage() {
               </div>
 
               {/* Confirmation Guard */}
-              <div className="p-4 rounded-2xl bg-[#F2ECE0] text-white space-y-3">
+              <div className="p-4 rounded-2xl bg-[#1E1B18] text-white space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Launch Confirmation</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#DFBE7E]">Launch Confirmation</span>
                   <Badge variant="warning">
                     {audienceSource === 'excel' ? (parsedExcel?.validContacts.length || 0) : audienceSource === 'manual' ? (manualNumbers.split(',').filter(n => n.trim().length > 5).length) : contactCount} Recipients
                   </Badge>
@@ -1034,7 +1034,7 @@ export default function CampaignsPage() {
                   placeholder="Type SEND to confirm"
                   value={confirmInput}
                   onChange={(e) => setConfirmInput(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-800 border border-[#DFBE7E]/60 rounded-xl text-xs font-mono text-white focus:ring-2 focus:ring-indigo-500/40 outline-none uppercase"
+                  className="w-full px-3.5 py-2 bg-black/50 border border-[#DFBE7E]/60 rounded-xl text-xs font-mono text-white focus:ring-2 focus:ring-indigo-500/40 outline-none uppercase"
                 />
               </div>
             </div>
@@ -1123,7 +1123,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('overview')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'overview' ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
+                  reportTab === 'overview' ? 'bg-white text-[#B88B2A] shadow-xs' : 'text-[#9E968D] hover:text-[#3E2D12] font-semibold'
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -1133,7 +1133,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('failures')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'failures' ? 'bg-white text-rose-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
+                  reportTab === 'failures' ? 'bg-white text-rose-600 shadow-xs' : 'text-[#9E968D] hover:text-[#3E2D12] font-semibold'
                 }`}
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -1143,7 +1143,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('log')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'log' ? 'bg-white text-white shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
+                  reportTab === 'log' ? 'bg-white text-[#1E1B18] shadow-xs' : 'text-[#9E968D] hover:text-[#3E2D12] font-semibold'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -1210,7 +1210,7 @@ export default function CampaignsPage() {
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-white">Failure Reasons & Remediation</h4>
+                    <h4 className="text-sm font-bold text-[#1E1B18]">Failure Reasons & Remediation</h4>
                     <p className="text-xs text-[#9E968D] font-medium">Automatic diagnosis of why undelivered messages failed to reach customers.</p>
                   </div>
 
@@ -1235,7 +1235,7 @@ export default function CampaignsPage() {
                             <Badge variant={group.diag.categoryBadgeVariant} dot>
                               {group.diag.category}
                             </Badge>
-                            <span className="font-bold text-white text-xs">{group.diag.humanTitle}</span>
+                            <span className="font-bold text-[#1E1B18] text-xs">{group.diag.humanTitle}</span>
                           </div>
                           <span className="text-xs font-extrabold text-rose-600">
                             {group.count} clients affected ({Math.round((group.count / (reportFailed || 1)) * 100)}%)
@@ -1247,8 +1247,8 @@ export default function CampaignsPage() {
                         </p>
 
                         <div className="p-2.5 bg-[#FAF7F2] rounded-xl border border-[#EFE3CF] flex items-start gap-2 text-xs">
-                          <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                          <div className="text-slate-700">
+                          <HelpCircle className="w-4 h-4 text-[#C59E3F] shrink-0 mt-0.5" />
+                          <div className="text-[#3E2D12] font-semibold">
                             <strong>Recommended Action:</strong> {group.diag.actionableRemedy}
                           </div>
                         </div>
@@ -1293,7 +1293,7 @@ export default function CampaignsPage() {
                         key={st}
                         onClick={() => setRecipientFilter(st)}
                         className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                          recipientFilter === st ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
+                          recipientFilter === st ? 'bg-white text-[#B88B2A] shadow-xs' : 'text-[#9E968D] hover:text-[#3E2D12] font-semibold'
                         }`}
                       >
                         {st}
@@ -1313,7 +1313,7 @@ export default function CampaignsPage() {
                         <th className="px-4 py-3">Diagnosis / Details</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
+                    <tbody className="divide-y divide-slate-800/60 font-medium text-[#3E2D12] font-semibold">
                       {filteredReportRecipients.map((recip) => {
                         const diag = recip.status === 'FAILED' ? diagnoseMetaError(recip.error_code, recip.error_message) : null;
 

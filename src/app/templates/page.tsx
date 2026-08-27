@@ -276,7 +276,7 @@ export default function TemplatesPage() {
         <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-6">
           <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-[#DFBE7E] text-[#1E1B18] flex items-center justify-center shrink-0 shadow-xs">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="text-xs text-indigo-950">
@@ -319,7 +319,7 @@ export default function TemplatesPage() {
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {filteredTemplates.map((template) => (
                     <tr key={template.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-white text-xs">{template.name}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-[#1E1B18] text-xs">{template.name}</td>
                       <td className="px-6 py-4 text-xs font-bold uppercase text-[#9E968D]">{template.category}</td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-700">{template.language}</td>
                       <td className="px-6 py-4">
