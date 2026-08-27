@@ -76,7 +76,21 @@ export async function GET() {
           .toUpperCase()
           .slice(0, 2) || 'CP';
 
-        const lastMsgText = msgRes.data?.content || (msgRes.data?.direction === 'OUTBOUND' ? 'Sent WhatsApp Message' : 'Inbound WhatsApp Inquiry');
+        let extractedText = msgRes.data?.direction === 'OUTBOUND' ? 'Sent WhatsApp Message' : 'Inbound WhatsApp Inquiry';
+        if (msgRes.data?.content) {
+          if (typeof msgRes.data.content === 'object') {
+            extractedText = msgRes.data.content.text || msgRes.data.content.template || 'Media Message';
+          } else if (typeof msgRes.data.content === 'string') {
+            // Check if it is a JSON string
+            try {
+              const parsed = JSON.parse(msgRes.data.content);
+              extractedText = parsed.text || parsed.template || 'Media Message';
+            } catch (e) {
+              extractedText = msgRes.data.content;
+            }
+          }
+        }
+        const lastMsgText = extractedText;
         const lastMsgTime = conv.last_message_at || msgRes.data?.created_at || new Date().toISOString();
 
         // Format friendly time e.g. "10:30 AM" or "Yesterday"
