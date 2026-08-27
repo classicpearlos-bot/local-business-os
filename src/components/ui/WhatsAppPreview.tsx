@@ -63,7 +63,7 @@ export function WhatsAppPreview({
           )}
 
           {headerType === 'video' && (
-            <div className="h-36 bg-slate-900 flex flex-col items-center justify-center text-white/70 border-b border-slate-800">
+            <div className="h-36 bg-[#F2ECE0] flex flex-col items-center justify-center text-white/70 border-b border-[#EFE3CF]">
               <Video className="w-8 h-8 mb-1 text-white/80" />
               <span className="text-[10px] font-semibold">Video Message Header</span>
             </div>
@@ -78,9 +78,9 @@ export function WhatsAppPreview({
                 <p className="text-xs font-bold text-slate-800 truncate">
                   {headerFilename || 'Document_Attachment.pdf'}
                 </p>
-                <p className="text-[9px] text-slate-400 font-medium">PDF Document</p>
+                <p className="text-[9px] text-[#7C756D] font-medium">PDF Document</p>
               </div>
-              <Download className="w-4 h-4 text-slate-400" />
+              <Download className="w-4 h-4 text-[#7C756D]" />
             </div>
           )}
 
@@ -97,20 +97,20 @@ export function WhatsAppPreview({
             </p>
 
             {footerText && (
-              <p className="text-[10px] text-slate-400 font-medium">
+              <p className="text-[10px] text-[#7C756D] font-medium">
                 {footerText}
               </p>
             )}
 
             {/* Timestamp & Ticks */}
-            <div className="flex items-center justify-end gap-1 pt-1 text-[10px] text-slate-400 font-medium">
+            <div className="flex items-center justify-end gap-1 pt-1 text-[10px] text-[#7C756D] font-medium">
               <span>{time}</span>
               {status === 'read' ? (
                 <CheckCheck className="w-3.5 h-3.5 text-sky-500" />
               ) : status === 'delivered' ? (
-                <CheckCheck className="w-3.5 h-3.5 text-slate-400" />
+                <CheckCheck className="w-3.5 h-3.5 text-[#7C756D]" />
               ) : (
-                <Check className="w-3.5 h-3.5 text-slate-400" />
+                <Check className="w-3.5 h-3.5 text-[#7C756D]" />
               )}
             </div>
           </div>

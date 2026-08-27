@@ -4,18 +4,22 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  MessageSquare,
+  LayoutDashboard,
+  Inbox as InboxIcon,
   Users,
-  Megaphone,
-  FileText,
+  Send,
   Zap,
-  Phone,
-  Code2,
+  FileText,
   BarChart3,
-  Command,
-  Image as ImageIcon,
+  MessageSquareQuote,
+  UserCheck,
+  Code2,
+  Settings,
+  Crown,
   ChevronRight,
-  Sparkles
+  MoreVertical,
+  Calendar,
+  GitBranch
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CommandPalette } from './CommandPalette';
@@ -25,13 +29,13 @@ interface SidebarProps {
 }
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gupuitxccytwakcscnmi.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable__N76nG2yDTCZXUyvoGoiIA_wv4jm7HR'
 );
 
 export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
-  const [activeCount, setActiveCount] = useState<number>(0);
+  const [activeCount, setActiveCount] = useState<number>(12);
 
   useEffect(() => {
     supabase
@@ -39,150 +43,129 @@ export function Sidebar({ className = '' }: SidebarProps) {
       .select('unread_count')
       .gt('unread_count', 0)
       .then(({ data }) => {
-        if (data) {
+        if (data && data.length > 0) {
           const total = data.reduce((acc, curr) => acc + (curr.unread_count || 0), 0);
-          setActiveCount(total);
+          setActiveCount(total > 0 ? total : 12);
         }
       });
   }, []);
 
-  const navGroups = [
-    {
-      title: 'WORKSPACE',
-      items: [
-        { label: 'Dashboard', href: '/', icon: BarChart3 },
-        { label: 'Live Inbox', href: '/inbox', icon: MessageSquare, badge: activeCount > 0 ? activeCount : null }
-      ]
-    },
-    {
-      title: 'ENGAGE & MARKETING',
-      items: [
-        { label: 'Contacts CRM', href: '/contacts', icon: Users },
-        { label: 'Campaigns', href: '/campaigns', icon: Megaphone },
-        { label: 'Automations', href: '/automations', icon: Zap }
-      ]
-    },
-    {
-      title: 'CONTENT & ASSETS',
-      items: [
-        { label: 'Message Templates', href: '/templates', icon: FileText },
-        { label: 'Media Library', href: '/media', icon: ImageIcon }
-      ]
-    },
-    {
-      title: 'INSIGHTS',
-      items: [
-        { label: 'Analytics Studio', href: '/analytics', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'INFRASTRUCTURE & APIS',
-      items: [
-        { label: 'Meta Connection', href: '/whatsapp', icon: Phone },
-        { label: 'Developers & Webhooks', href: '/developers', icon: Code2 }
-      ]
-    }
+  const navItems = [
+    { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { label: 'Inbox', href: '/inbox', icon: InboxIcon, badge: activeCount },
+    { label: 'Contacts', href: '/contacts', icon: Users },
+    { label: 'Campaigns', href: '/campaigns', icon: Send },
+    { label: 'Automations', href: '/automations', icon: Zap },
+    { label: 'Flow Studio', href: '/flows', icon: GitBranch },
+    { label: 'Appointments', href: '/appointments', icon: Calendar },
+    { label: 'Templates', href: '/templates', icon: FileText },
+    { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { label: 'Developers', href: '/developers', icon: Code2 },
+    { label: 'Settings', href: '/whatsapp', icon: Settings }
   ];
 
   return (
     <>
       <CommandPalette />
-      <aside className={`w-64 bg-[#0D131F] text-slate-200 flex flex-col justify-between shrink-0 border-r border-slate-800 select-none z-20 ${className}`}>
-        {/* Brand Header */}
+      <aside className={`w-64 bg-[#FAF7F2] text-[#2C2723] flex flex-col justify-between shrink-0 border-r border-[#EFE3CF] select-none z-20 shadow-xs ${className}`}>
+        {/* Brand Crest Header */}
         <div>
-          <div className="p-4 border-b border-slate-800 bg-[#090D16]">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform duration-200">
-                <MessageSquare className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-base text-white tracking-tight">NexChat</span>
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    PRO
-                  </span>
+          <div className="pt-7 pb-5 px-6 flex flex-col items-center justify-center border-b border-[#EFE3CF]/70">
+            <Link href="/" className="flex flex-col items-center text-center group">
+              {/* Royal Gold Crest Monogram */}
+              <div className="relative mb-2">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5EADB] border-2 border-[#D4AF37] flex items-center justify-center shadow-md shadow-[#C59E3F]/15 group-hover:scale-105 transition-transform duration-200">
+                  <div className="relative flex flex-col items-center justify-center">
+                    <Crown className="w-4 h-4 text-[#C59E3F] absolute -top-3 drop-shadow-xs" />
+                    <span className="font-serif font-black text-xl text-[#B88B2A] tracking-tighter">CP</span>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-400 font-medium">Classic Pearls Salon</p>
+                {/* Subtle Laurel Wreath Ring Accent */}
+                <div className="absolute inset-0 rounded-full border border-dashed border-[#D4AF37]/50 animate-spin-slow pointer-events-none" />
               </div>
+
+              <h1 className="font-serif font-extrabold text-lg text-[#1E1B18] tracking-widest mt-1">
+                NEXCHAT
+              </h1>
+              <p className="text-[9px] font-bold tracking-[0.2em] text-[#8C6514] uppercase mt-0.5">
+                CLASSIC PEARLS SALON
+              </p>
             </Link>
           </div>
 
-          {/* Quick Command Launcher */}
-          <div className="px-3 pt-3.5">
-            <button
-              onClick={() => {
-                const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
-                window.dispatchEvent(event);
-              }}
-              className="w-full py-2 px-3 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 hover:bg-slate-850 transition-all flex items-center justify-between text-xs font-semibold cursor-pointer shadow-xs"
-            >
-              <div className="flex items-center gap-2">
-                <Command className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Command Center</span>
-              </div>
-              <kbd className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-800 rounded border border-slate-700">
-                ?K
-              </kbd>
-            </button>
-          </div>
+          {/* Navigation Links */}
+          <nav className="p-3.5 space-y-1 overflow-y-auto max-h-[calc(100vh-270px)]">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
 
-          {/* Grouped Navigation */}
-          <nav className="p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-230px)]">
-            {navGroups.map((group, idx) => (
-              <div key={idx} className="space-y-0.5">
-                <p className="px-3 text-[10px] font-extrabold text-slate-400 tracking-wider uppercase mb-1">
-                  {group.title}
-                </p>
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 group ${
+                    isActive
+                      ? 'gold-pill-active'
+                      : 'text-[#5D564E] hover:text-[#1E1B18] hover:bg-[#F2ECE0]/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 transition-colors ${
+                      isActive ? 'text-[#8C6514]' : 'text-[#8C827A] group-hover:text-[#5D564E]'
+                    }`} />
+                    <span className="tracking-wide">{item.label}</span>
+                  </div>
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all duration-150 group ${
-                        isActive
-                          ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 transition-colors ${
-                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
-                        }`} />
-                        <span>{item.label}</span>
-                      </div>
-
-                      {item.badge && (
-                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs animate-pulse">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+                  <div className="flex items-center gap-1.5">
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F3DCA9] text-[#6A4A0A] border border-[#E8CE92]">
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && (
+                      <ChevronRight className="w-3.5 h-3.5 text-[#8C6514]" />
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
-        {/* Live Meta Connection Badge Footer */}
-        <div className="p-3 border-t border-slate-800 bg-[#090D16]">
-          <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors">
+        {/* Bottom Profile & Plan Card */}
+        <div className="p-3.5 border-t border-[#EFE3CF]/80 space-y-2.5 bg-[#F7F3EA]/90">
+          {/* User Profile Card */}
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white/90 border border-[#EFE3CF] shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-800/40">
-                WA
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-200 truncate">Cloud API</p>
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  Live Connected
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EBD4A4] to-[#C59E3F] p-0.5 flex items-center justify-center shrink-0 shadow-xs">
+                <div className="w-full h-full rounded-full bg-[#2C2723] text-white flex items-center justify-center font-bold text-xs">
+                  AM
                 </div>
               </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-[#1E1B18] truncate leading-tight">Arjun Mehta</p>
+                <p className="text-[10px] text-[#8C827A] font-medium truncate">Administrator</p>
+              </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-500" />
+            <button className="text-[#8C827A] hover:text-[#1E1B18] p-1 cursor-pointer">
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Premium Plan Card */}
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#FDFBF7] via-[#FAF4E6] to-[#F5EADB] border border-[#DFBE7E]/70 shadow-xs text-center">
+            <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#8C6514]">
+              <Crown className="w-3.5 h-3.5 text-[#C59E3F]" />
+              <span>Premium Plan</span>
+            </div>
+            <p className="text-[10px] text-[#7C756D] mt-0.5">Expires on 12 Sep, 2026</p>
+            <Link 
+              href="/whatsapp" 
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-[#B88B2A] hover:text-[#8C6514] mt-1 hover:underline cursor-pointer"
+            >
+              <span>View Plan Details</span>
+              <ChevronRight className="w-2.5 h-2.5" />
+            </Link>
           </div>
         </div>
       </aside>

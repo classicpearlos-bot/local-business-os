@@ -30,19 +30,15 @@ export async function proxy(request: NextRequest) {
   )
 
   let user = null
-  const isDummy = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy')
-
-  if (!isDummy) {
-    try {
-      const { data } = await supabase.auth.getUser()
-      user = data.user
-    } catch {
-      user = null
-    }
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data?.user || null
+  } catch {
+    user = null
   }
 
-  const hasDemoSession = request.cookies.get('demo-session')?.value === 'true'
-  const isAuthenticated = !!user || hasDemoSession
+  const isTestMode = process.env.NODE_ENV === 'test' && request.cookies.get('demo-session')?.value === 'true'
+  const isAuthenticated = !!user || isTestMode
 
   // Protect all routes except /login, /signup, and /api
   if (

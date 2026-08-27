@@ -125,7 +125,7 @@ export function MediaUploader({
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Template Media Header ({mediaType.toUpperCase()}) {required && '*'}
         </label>
-        <span className="text-[11px] text-slate-400 font-medium">
+        <span className="text-[11px] text-[#7C756D] font-medium">
           Max {limits.maxSizeMB}MB • {limits.acceptedExtensions.join(', ')}
         </span>
       </div>
@@ -151,7 +151,7 @@ export function MediaUploader({
                 <p className={`text-xs font-bold truncate ${(value.handle || value.media_id) ? 'text-emerald-800' : 'text-amber-800'}`}>
                   {(value.handle || value.media_id) ? '✅ Uploaded to Meta — Ready!' : '⏳ Uploading to Meta, please wait...'}
                 </p>
-                <p className="text-[10px] font-mono truncate text-slate-500">
+                <p className="text-[10px] font-mono truncate text-[#9E968D]">
                   {value.handle ? `Handle ready (${value.filename || 'image'})` : value.media_id ? `Media ID: ${value.media_id}` : value.filename || 'Processing...'}
                 </p>
               </div>
@@ -170,7 +170,7 @@ export function MediaUploader({
 
           {/* Media Preview Box */}
           {mediaType === 'image' && value.url && (
-            <div className="h-44 bg-slate-900/5 border-t border-slate-200 flex items-center justify-center overflow-hidden">
+            <div className="h-44 bg-[#F2ECE0]/5 border-t border-slate-200 flex items-center justify-center overflow-hidden">
               <img
                 src={value.url}
                 alt="Template media preview"
@@ -189,7 +189,7 @@ export function MediaUploader({
               type="button"
               onClick={() => setActiveTab('url')}
               className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'url' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                activeTab === 'url' ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
               }`}
             >
               Public HTTPS URL
@@ -198,7 +198,7 @@ export function MediaUploader({
               type="button"
               onClick={() => setActiveTab('file')}
               className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'file' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                activeTab === 'file' ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
               }`}
             >
               Upload Local File
@@ -226,10 +226,10 @@ export function MediaUploader({
               {uploading ? (
                 <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-indigo-600"></div>
               ) : (
-                <UploadCloud className="w-7 h-7 text-slate-400" />
+                <UploadCloud className="w-7 h-7 text-[#7C756D]" />
               )}
               <p className="text-xs font-bold text-slate-700">{uploading ? 'Uploading to Meta...' : `Click to select ${mediaType}`}</p>
-              <p className="text-[10px] text-slate-400">Supported: {limits.acceptedExtensions.join(', ')} (Max {limits.maxSizeMB}MB)</p>
+              <p className="text-[10px] text-[#7C756D]">Supported: {limits.acceptedExtensions.join(', ')} (Max {limits.maxSizeMB}MB)</p>
               <input
                 ref={fileInputRef}
                 type="file"

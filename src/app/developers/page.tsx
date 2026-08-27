@@ -163,7 +163,7 @@ print(response.json())`;
   };
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -202,7 +202,7 @@ print(response.json())`;
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B0F19]/70 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#FAF7F2]/70 border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Key Name</th>
                     <th className="px-6 py-4">Token Prefix</th>
@@ -213,12 +213,12 @@ print(response.json())`;
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {apiKeys.map((key) => (
-                    <tr key={key.id} className="hover:bg-[#0B0F19]/80 transition-colors">
+                    <tr key={key.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
                       <td className="px-6 py-4 font-bold text-white text-sm">
                         {key.name}
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-700">
-                        <span className="px-2 py-1 rounded bg-slate-100 border border-slate-800">
+                        <span className="px-2 py-1 rounded bg-slate-100 border border-[#EFE3CF]">
                           {key.key_prefix}••••••••
                         </span>
                       </td>
@@ -229,7 +229,7 @@ print(response.json())`;
                           <Badge variant="success" dot>Active</Badge>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-400">
+                      <td className="px-6 py-4 text-xs text-[#7C756D]">
                         {new Date(key.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -265,7 +265,7 @@ print(response.json())`;
           </Card>
 
           {/* Interactive Code Playground */}
-          <div className="bg-[#0B0F17] rounded-2xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl space-y-6">
+          <div className="bg-[#0B0F17] rounded-2xl p-6 sm:p-8 text-white border border-[#EFE3CF] shadow-xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
@@ -273,14 +273,14 @@ print(response.json())`;
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white tracking-tight">Interactive Endpoint Reference</h3>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">
+                  <p className="text-xs text-[#7C756D] font-medium mt-0.5">
                     <span className="text-emerald-400 font-mono font-bold">POST</span> /api/v1/send with Idempotency Protection
                   </p>
                 </div>
               </div>
 
               {/* Language Switcher */}
-              <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <div className="flex bg-[#F2ECE0] p-1 rounded-xl border border-[#EFE3CF]">
                 {(['curl', 'node', 'python'] as const).map((lang) => (
                   <button
                     key={lang}
@@ -288,7 +288,7 @@ print(response.json())`;
                     className={`px-3 py-1 text-xs font-bold rounded-lg transition-all uppercase cursor-pointer ${
                       selectedSnippet === lang
                         ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'text-slate-400 hover:text-slate-200'
+                        : 'text-[#7C756D] hover:text-[#2C2723]'
                     }`}
                   >
                     {lang}
@@ -297,7 +297,7 @@ print(response.json())`;
               </div>
             </div>
 
-            <div className="relative bg-black/60 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto">
+            <div className="relative bg-black/60 rounded-xl p-4 border border-[#EFE3CF] font-mono text-xs text-[#5D564E] overflow-x-auto">
               <pre className="leading-relaxed whitespace-pre-wrap">{getCodeSnippet()}</pre>
             </div>
           </div>
@@ -317,14 +317,14 @@ print(response.json())`;
               Copy this API secret key now. For your security, it will NEVER be displayed again.
             </div>
 
-            <div className="p-3.5 bg-slate-900 text-white rounded-xl font-mono text-xs flex items-center justify-between gap-3 break-all border border-slate-800">
+            <div className="p-3.5 bg-[#F2ECE0] text-white rounded-xl font-mono text-xs flex items-center justify-between gap-3 break-all border border-[#EFE3CF]">
               <span>{createdRawKey}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => copyToClipboard(createdRawKey)}
-                leftIcon={copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                className="bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 shrink-0"
+                leftIcon={copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-[#7C756D]" />}
+                className="bg-slate-800 text-[#2C2723] border-[#DFBE7E]/60 hover:bg-slate-700 shrink-0"
               >
                 {copiedKey ? "Copied" : "Copy"}
               </Button>
@@ -354,7 +354,7 @@ print(response.json())`;
               required
             />
 
-            <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
+            <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#EFE3CF]">
               <Button variant="outline" size="sm" type="button" onClick={() => setShowKeyModal(false)}>
                 Cancel
               </Button>

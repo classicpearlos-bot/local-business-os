@@ -26,7 +26,7 @@ export function EmptyState({
         <Icon className="w-8 h-8" />
       </div>
       <h3 className="text-base font-bold text-slate-900 tracking-tight mb-1">{title}</h3>
-      <p className="text-xs text-slate-500 font-medium max-w-sm mb-6 leading-relaxed">
+      <p className="text-xs text-[#9E968D] font-medium max-w-sm mb-6 leading-relaxed">
         {description}
       </p>
       {actionLabel && onAction && (

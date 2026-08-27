@@ -139,7 +139,7 @@ export default function AutomationsPage() {
   );
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -156,15 +156,15 @@ export default function AutomationsPage() {
         <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-6">
           <Card className="overflow-hidden">
             {/* Toolbar */}
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-4 bg-[#0D131F]">
+            <div className="p-5 border-b border-[#EFE3CF] flex items-center justify-between gap-4 bg-white">
               <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7C756D]" />
                 <input
                   type="text"
                   placeholder="Search automations by name..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium focus:bg-[#0D131F] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                 />
               </div>
 
@@ -176,7 +176,7 @@ export default function AutomationsPage() {
             {/* Automations Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B0F19]/70 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#FAF7F2]/70 border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Rule Name</th>
                     <th className="px-6 py-4">Status</th>
@@ -193,7 +193,7 @@ export default function AutomationsPage() {
                     const keywords = config.keywords || [];
 
                     return (
-                      <tr key={automation.id} className="hover:bg-[#0B0F19]/80 transition-colors">
+                      <tr key={automation.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
                         <td className="px-6 py-4 text-white font-bold text-sm">
                           {automation.name}
                         </td>
@@ -203,7 +203,7 @@ export default function AutomationsPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4 font-mono text-xs text-slate-700">
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-800">
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-[#EFE3CF]">
                             {automation.trigger_type}
                           </span>
                         </td>
@@ -219,7 +219,7 @@ export default function AutomationsPage() {
                         <td className="px-6 py-4 text-xs font-bold text-slate-700">
                           {automation.priority}
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-400">
+                        <td className="px-6 py-4 text-xs text-[#7C756D]">
                           {automation.cooldown_seconds}s
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -228,7 +228,7 @@ export default function AutomationsPage() {
                             className={`p-2 rounded-xl border transition-colors cursor-pointer ${
                               automation.active
                                 ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-[#0B0F19] text-slate-400 border-slate-800 hover:bg-slate-100'
+                                : 'bg-[#FAF7F2] text-[#7C756D] border-[#EFE3CF] hover:bg-slate-100'
                             }`}
                             title={automation.active ? 'Disable Rule' : 'Enable Rule'}
                           >
@@ -290,7 +290,7 @@ export default function AutomationsPage() {
               <select
                 value={formData.trigger_type}
                 onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-[#0D131F] border border-slate-800 rounded-xl text-sm font-medium text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#EFE3CF] rounded-xl text-sm font-medium text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="CONTAINS">Contains (Fuzzy match anywhere)</option>
                 <option value="EXACT">Exact Match (Full phrase)</option>
@@ -334,7 +334,7 @@ export default function AutomationsPage() {
             helperText="Prevents repeat replies to the same customer within this window."
           />
 
-          <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
+          <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#EFE3CF]">
             <Button variant="outline" size="sm" type="button" onClick={() => setShowModal(false)}>
               Cancel
             </Button>

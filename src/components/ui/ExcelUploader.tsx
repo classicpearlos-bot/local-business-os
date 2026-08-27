@@ -99,7 +99,7 @@ export function ExcelUploader({ onParsed, onClear, parsedResult }: ExcelUploader
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">{fileName}</p>
-                <p className="text-[10px] text-slate-500">{parsedResult.totalRows} total rows processed</p>
+                <p className="text-[10px] text-[#9E968D]">{parsedResult.totalRows} total rows processed</p>
               </div>
             </div>
 
@@ -125,7 +125,7 @@ export function ExcelUploader({ onParsed, onClear, parsedResult }: ExcelUploader
               <p className="text-lg font-extrabold text-emerald-700 mt-0.5">{parsedResult.validContacts.length}</p>
             </div>
             <div className="p-2.5 bg-white rounded-xl border border-slate-100 shadow-xs">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Duplicates Removed</p>
+              <p className="text-[10px] uppercase font-bold text-[#7C756D]">Duplicates Removed</p>
               <p className="text-lg font-extrabold text-slate-600 mt-0.5">{parsedResult.duplicateCount}</p>
             </div>
             <div className="p-2.5 bg-white rounded-xl border border-rose-100 shadow-xs">
@@ -136,7 +136,7 @@ export function ExcelUploader({ onParsed, onClear, parsedResult }: ExcelUploader
 
           {/* Sample Table */}
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="p-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="p-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-[#9E968D] uppercase tracking-wider">
               Preview (First {Math.min(3, parsedResult.validContacts.length)} contacts)
             </div>
             <div className="divide-y divide-slate-100 text-xs">
@@ -164,7 +164,7 @@ export function ExcelUploader({ onParsed, onClear, parsedResult }: ExcelUploader
             <p className="text-xs font-bold text-slate-800">
               {parsing ? 'Parsing Excel spreadsheet...' : 'Upload Excel (.xlsx, .xls) or CSV file'}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+            <p className="text-[11px] text-[#7C756D] mt-0.5 font-medium">
               Drag and drop your client list here or click to browse files
             </p>
           </div>

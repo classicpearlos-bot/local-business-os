@@ -14,9 +14,9 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
-  // If dummy Supabase or dev fallback, allow immediate login
-  const isDummy = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('dummy') || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
-  if (isDummy) {
+  // If test environment with placeholder URL, allow test bypass
+  const isTestPlaceholder = process.env.NODE_ENV === 'test' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder'));
+  if (isTestPlaceholder) {
     const res = NextResponse.redirect(new URL('/', request.url), { status: 303 });
     res.cookies.set('demo-session', 'true', { path: '/', httpOnly: false });
     return res;

@@ -245,7 +245,7 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -289,15 +289,15 @@ export default function TemplatesPage() {
           </div>
 
           <Card className="overflow-hidden">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-4 bg-[#0D131F]">
+            <div className="p-5 border-b border-[#EFE3CF] flex items-center justify-between gap-4 bg-white">
               <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7C756D]" />
                 <input
                   type="text"
                   placeholder="Search templates..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-xs font-medium outline-none"
                 />
               </div>
               <Button variant="outline" size="sm" onClick={fetchTemplates} leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />}>
@@ -307,7 +307,7 @@ export default function TemplatesPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B0F19]/70 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#FAF7F2]/70 border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Template Name</th>
                     <th className="px-6 py-4">Category</th>
@@ -318,9 +318,9 @@ export default function TemplatesPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {filteredTemplates.map((template) => (
-                    <tr key={template.id} className="hover:bg-[#0B0F19]/80 transition-colors">
+                    <tr key={template.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
                       <td className="px-6 py-4 font-mono font-bold text-white text-xs">{template.name}</td>
-                      <td className="px-6 py-4 text-xs font-bold uppercase text-slate-500">{template.category}</td>
+                      <td className="px-6 py-4 text-xs font-bold uppercase text-[#9E968D]">{template.category}</td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-700">{template.language}</td>
                       <td className="px-6 py-4">
                         <Badge variant={template.status === 'APPROVED' ? 'success' : template.status === 'REJECTED' ? 'danger' : 'warning'} dot>
@@ -384,13 +384,13 @@ export default function TemplatesPage() {
                 placeholder="e.g. summer_promo_01"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
-                className="w-full px-3 py-2 bg-[#0B0F19] border rounded-lg text-xs font-mono"
+                className="w-full px-3 py-2 bg-[#FAF7F2] border rounded-lg text-xs font-mono"
               />
-              <p className="text-[10px] text-slate-500 mt-1">⚠️ Lowercase, numbers and underscores ONLY — capitals auto-removed</p>
+              <p className="text-[10px] text-[#9E968D] mt-1">⚠️ Lowercase, numbers and underscores ONLY — capitals auto-removed</p>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Category</label>
-              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full px-3 py-2 bg-[#0B0F19] border rounded-lg text-xs">
+              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full px-3 py-2 bg-[#FAF7F2] border rounded-lg text-xs">
                 <option value="MARKETING">Marketing (Promotions, offers)</option>
                 <option value="UTILITY">Utility (Updates, alerts)</option>
               </select>
@@ -412,7 +412,7 @@ export default function TemplatesPage() {
             </div>
             
             {newHeaderType === 'TEXT' && (
-              <input type="text" placeholder="Header text (max 60 chars)" value={newHeaderText} onChange={e => setNewHeaderText(e.target.value)} className="w-full px-3 py-2 bg-[#0B0F19] border rounded-lg text-xs" />
+              <input type="text" placeholder="Header text (max 60 chars)" value={newHeaderText} onChange={e => setNewHeaderText(e.target.value)} className="w-full px-3 py-2 bg-[#FAF7F2] border rounded-lg text-xs" />
             )}
             
             {newHeaderType === 'IMAGE' && (
@@ -426,17 +426,17 @@ export default function TemplatesPage() {
               placeholder="Hi, check out our latest offers at Classic Pearl Salon! Book now: +917483654138"
               value={newBodyText}
               onChange={(e) => setNewBodyText(e.target.value)}
-              className="w-full px-3 py-2 bg-[#0B0F19] border rounded-lg text-xs min-h-[100px]"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border rounded-lg text-xs min-h-[100px]"
             />
             <p className="text-[10px] text-amber-600 mt-1 font-semibold">⚠️ Do NOT use **bold**, *italic* or any markdown — Meta rejects it. Plain text only.</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">You can use {'{{1}}'} {'{{2}}'} for variable placeholders (e.g. customer name)</p>
+            <p className="text-[10px] text-[#9E968D] mt-0.5">You can use {'{{1}}'} {'{{2}}'} for variable placeholders (e.g. customer name)</p>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-2">Interactive Buttons (Max 2)</label>
             <div className="space-y-3 mb-3">
               {newButtons.map((btn, idx) => (
-                <div key={idx} className="flex gap-2 items-center bg-[#0B0F19] p-2 rounded-lg border">
+                <div key={idx} className="flex gap-2 items-center bg-[#FAF7F2] p-2 rounded-lg border">
                   <span className="text-xs font-bold w-20">{btn.type === 'PHONE_NUMBER' ? 'Call' : btn.type === 'URL' ? 'Link' : 'Reply'}</span>
                   <input type="text" value={btn.text} onChange={e => updateButton(idx, 'text', e.target.value)} placeholder="Button Text" className="px-2 py-1 border rounded text-xs flex-1" />
                   {btn.type === 'PHONE_NUMBER' && <input type="text" value={btn.phone_number} onChange={e => updateButton(idx, 'phone_number', e.target.value)} placeholder="+1234567890" className="px-2 py-1 border rounded text-xs flex-1" />}

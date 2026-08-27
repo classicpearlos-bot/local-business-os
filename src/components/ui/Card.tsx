@@ -7,8 +7,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Card({ hover = false, className = '', children, ...props }: CardProps) {
   return (
     <div
-      className={`bg-[#0D131F]/90 backdrop-blur-xl rounded-2xl border border-slate-800/80 text-slate-100 shadow-lg shadow-black/20 ${
-        hover ? 'hover:border-indigo-500/40 hover:shadow-indigo-500/10 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer' : ''
+      className={`card-luxury text-[#1E1B18] ${
+        hover ? 'hover:border-[#DFBE7E] hover:-translate-y-0.5 cursor-pointer' : ''
       } ${className}`}
       {...props}
     >
@@ -19,7 +19,7 @@ export function Card({ hover = false, className = '', children, ...props }: Card
 
 export function CardHeader({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`p-5 sm:p-6 border-b border-slate-800/80 flex items-center justify-between ${className}`} {...props}>
+    <div className={`p-5 sm:p-6 border-b border-[#EFE3CF]/70 flex items-center justify-between ${className}`} {...props}>
       {children}
     </div>
   );
@@ -27,7 +27,7 @@ export function CardHeader({ className = '', children, ...props }: React.HTMLAtt
 
 export function CardTitle({ className = '', children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={`text-lg font-black text-white tracking-tight ${className}`} {...props}>
+    <h3 className={`text-base sm:text-lg font-bold text-[#1E1B18] tracking-tight ${className}`} {...props}>
       {children}
     </h3>
   );
@@ -35,7 +35,7 @@ export function CardTitle({ className = '', children, ...props }: React.HTMLAttr
 
 export function CardDescription({ className = '', children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-xs sm:text-sm text-slate-400 font-medium mt-0.5 ${className}`} {...props}>
+    <p className={`text-xs text-[#7C756D] font-medium mt-0.5 ${className}`} {...props}>
       {children}
     </p>
   );
@@ -51,7 +51,7 @@ export function CardContent({ className = '', children, ...props }: React.HTMLAt
 
 export function CardFooter({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`p-5 sm:p-6 border-t border-slate-800/80 bg-slate-900/40 rounded-b-2xl flex items-center justify-between ${className}`} {...props}>
+    <div className={`p-4 sm:p-5 border-t border-[#EFE3CF]/70 bg-[#FAF7F2]/60 rounded-b-2xl flex items-center justify-between ${className}`} {...props}>
       {children}
     </div>
   );
@@ -61,44 +61,66 @@ interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  trend?: string;
-  trendPositive?: boolean;
-  iconColor?: string;
+  change?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  icon: any;
   iconBg?: string;
+  iconColor?: string;
+  description?: string;
 }
 
-export function StatCard({
-  title,
-  value,
+export function StatCard({ 
+  title, 
+  value, 
   subtitle,
-  icon: Icon,
-  trend,
-  trendPositive = true,
-  iconColor = 'text-indigo-400',
-  iconBg = 'bg-indigo-950/80 border-indigo-800/50'
+  change, 
+  trend = 'up', 
+  icon, 
+  iconBg = 'bg-[#FDF4E2] text-[#C59E3F]', 
+  iconColor,
+  description 
 }: StatCardProps) {
+  let renderedIcon = null;
+  if (React.isValidElement(icon)) {
+    renderedIcon = icon;
+  } else if (typeof icon === 'function' || (icon && typeof icon === 'object' && ('$$typeof' in icon || 'render' in icon))) {
+    renderedIcon = React.createElement(icon, { className: `w-5 h-5 ${iconColor || ''}` });
+  }
+
   return (
-    <Card hover className="p-5 sm:p-6 relative overflow-hidden group">
-      <div className="flex items-start justify-between">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-md ${iconBg} ${iconColor} group-hover:scale-105 transition-transform`}>
-          <Icon className="w-6 h-6" />
+    <div className="card-luxury p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden group">
+      {/* Top row: Title and 3-dots */}
+      <div className="flex items-center justify-between text-xs font-semibold text-[#7C756D]">
+        <span>{title}</span>
+        <span className="text-[#C4BCB3] group-hover:text-[#7C756D] transition-colors cursor-pointer">•••</span>
+      </div>
+
+      {/* Main Metric Value & Icon */}
+      <div className="flex items-center justify-between my-3">
+        <div>
+          <h3 className="text-2xl sm:text-3xl font-black text-[#1E1B18] tracking-tight">{value}</h3>
+          {subtitle && (
+            <p className="text-xs text-[#7C756D] font-medium mt-0.5">{subtitle}</p>
+          )}
         </div>
-        {trend && (
-          <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${
-            trendPositive ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800/60' : 'bg-rose-950/80 text-rose-300 border-rose-800/60'
-          }`}>
-            {trend}
-          </span>
-        )}
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-xs ${iconBg}`}>
+          {renderedIcon}
+        </div>
       </div>
-      <div className="mt-4">
-        <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">{title}</p>
-        <p className="text-3xl font-black text-white tracking-tight mt-1">{value}</p>
-        {subtitle && (
-          <p className="text-xs text-slate-400 font-medium mt-1">{subtitle}</p>
-        )}
-      </div>
-    </Card>
+
+      {/* Bottom Trend */}
+      {change && (
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
+          <span>{change}</span>
+        </div>
+      )}
+
+      {description && (
+        <p className="text-[11px] text-[#7C756D] mt-1 font-medium">{description}</p>
+      )}
+
+      {/* Subtle gold bottom wave effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#EBD4A4]/50 to-transparent" />
+    </div>
   );
 }

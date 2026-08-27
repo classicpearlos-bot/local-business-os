@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { 
@@ -10,17 +10,25 @@ import {
   Eye, 
   MessageSquare, 
   AlertTriangle, 
-  Calendar,
-  Sparkles,
-  ArrowUpRight,
-  RefreshCw,
-  Send,
-  Users
+  Calendar, 
+  Sparkles, 
+  ArrowUpRight, 
+  RefreshCw, 
+  Send, 
+  Users,
+  DollarSign,
+  Crown,
+  Clock,
+  HeartCrack,
+  Cake,
+  ShieldCheck
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Card, StatCard } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { CampaignROIMetrics } from '@/lib/analytics/attribution';
+import { RFMSegmentSummary } from '@/lib/rfm/segmentation';
 
 export default function AnalyticsPage() {
   const [stats, setStats] = useState({
@@ -31,16 +39,18 @@ export default function AnalyticsPage() {
     campaignsCount: 0,
     totalContacts: 0
   });
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [roiMetrics, setRoiMetrics] = useState<CampaignROIMetrics[]>([]);
+  const [rfmSummary, setRfmSummary] = useState<RFMSegmentSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const [msgRes, campRes, contactsRes] = await Promise.all([
+      const [msgRes, contactsRes, roiRes, rfmRes] = await Promise.all([
         supabase.from('messages').select('status'),
-        supabase.from('campaigns').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('contacts').select('id', { count: 'exact', head: true })
+        supabase.from('contacts').select('id', { count: 'exact', head: true }),
+        fetch('/api/analytics/campaign-roi').then(r => r.ok ? r.json() : { roi_metrics: [] }),
+        fetch('/api/rfm').then(r => r.ok ? r.json() : { summary: null })
       ]);
 
       const messages = msgRes.data || [];
@@ -54,11 +64,14 @@ export default function AnalyticsPage() {
         delivered,
         read,
         failed,
-        campaignsCount: campRes.data?.length || 0,
+        campaignsCount: roiRes.roi_metrics?.length || 0,
         totalContacts: contactsRes.count || 0
       });
 
-      if (campRes.data) setCampaigns(campRes.data);
+      setRoiMetrics(roiRes.roi_metrics || []);
+      setRfmSummary(rfmRes.summary || null);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -70,175 +83,177 @@ export default function AnalyticsPage() {
 
   const deliveryRate = stats.totalMessages > 0 ? Math.round((stats.delivered / stats.totalMessages) * 100) : 0;
   const readRate = stats.delivered > 0 ? Math.round((stats.read / stats.delivered) * 100) : 0;
+  const totalAttributedRevenue = roiMetrics.reduce((acc, curr) => acc + (curr.attributed_revenue || 0), 0);
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA] text-white">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
-          title="Analytics Studio"
-          subtitle="Real-time WhatsApp delivery, open rates, read ticks, and campaign performance."
-          badge={<Badge variant="primary">Live Realtime Data</Badge>}
+          title="Executive Analytics & ROI Studio"
+          subtitle="Real-time WhatsApp delivery, open rates, RFM lifecycle distribution, and campaign revenue attribution."
+          badge={<Badge variant="primary">Zero-Quota Supabase Arch</Badge>}
           actions={
             <Button variant="outline" size="sm" onClick={fetchAnalytics} leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />}>
-              Refresh Data
+              Refresh Analytics
             </Button>
           }
         />
 
         <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-8 max-w-7xl">
+          
           {/* Executive Performance Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard
               title="Total Dispatched"
               value={stats.totalMessages}
-              subtitle="All outbound messages & broadcasts"
+              subtitle="All outbound templates & chats"
               icon={Send}
-              iconColor="text-indigo-600"
-              iconBg="bg-indigo-50 border-indigo-100"
+              iconColor="text-indigo-400"
+              iconBg="bg-indigo-950 border-indigo-800"
             />
             <StatCard
               title="Delivered / Reach Rate"
               value={`${deliveryRate}%`}
-              subtitle={`${stats.delivered} devices reached`}
+              subtitle={`${stats.delivered} client devices reached`}
               icon={CheckCircle2}
-              iconColor="text-emerald-600"
-              iconBg="bg-emerald-50 border-emerald-100"
+              iconColor="text-emerald-400"
+              iconBg="bg-emerald-950 border-emerald-800"
             />
             <StatCard
               title="Read / Open Rate"
               value={`${readRate}%`}
-              subtitle={`${stats.read} customers opened`}
+              subtitle={`${stats.read} customers read in WhatsApp`}
               icon={Eye}
-              iconColor="text-sky-600"
-              iconBg="bg-sky-50 border-sky-100"
+              iconColor="text-sky-400"
+              iconBg="bg-sky-950 border-sky-800"
             />
             <StatCard
-              title="Audience Pool"
-              value={stats.totalContacts}
-              subtitle="Opted-in WhatsApp clients"
-              icon={Users}
-              iconColor="text-purple-600"
-              iconBg="bg-purple-50 border-purple-100"
+              title="Attributed Revenue"
+              value={`₹${totalAttributedRevenue.toLocaleString()}`}
+              subtitle="From broadcast bookings"
+              icon={DollarSign}
+              iconColor="text-amber-400"
+              iconBg="bg-amber-950 border-amber-800"
             />
           </div>
 
-          {/* AI Insights & Funnel Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-6 rounded-2xl bg-[#0D131F] border border-slate-800 shadow-xs space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white">Message Lifecycle Funnel</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">End-to-end customer journey from queue to read tick</p>
-                </div>
-                <Badge variant="success" dot>Realtime Meta Webhook Feed</Badge>
+          {/* Salon RFM Customer Lifecycle Matrix */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-white">Salon RFM Lifecycle Health</h3>
+                <p className="text-xs text-[#7C756D]">Automated recency & spending segmentation for Classic Pearls Salon</p>
               </div>
-
-              {/* Visual Funnel */}
-              <div className="space-y-4 pt-2">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-700">1. Dispatched from Server</span>
-                    <span className="text-indigo-600 font-bold">{stats.totalMessages} (100%)</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-600 rounded-full w-full" />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-700">2. Reached Client Handset (Delivered)</span>
-                    <span className="text-emerald-600 font-bold">{stats.delivered} ({deliveryRate}%)</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${deliveryRate}%` }} />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-700">3. Opened & Read in WhatsApp (Read Tick)</span>
-                    <span className="text-sky-600 font-bold">{stats.read} ({readRate}%)</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-sky-500 rounded-full" style={{ width: `${(stats.read / (stats.totalMessages || 1)) * 100}%` }} />
-                  </div>
-                </div>
-              </div>
+              <Badge variant="success">Auto Synced</Badge>
             </div>
 
-            {/* AI Insights Card */}
-            <div className="p-6 rounded-2xl bg-[#0B0F17] text-white border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-indigo-400">
-                  <Sparkles className="w-4 h-4 text-indigo-400" />
-                  AI Engagement Insights
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-amber-500/40">
+                <div className="flex items-center justify-between text-xs font-black text-amber-400 mb-1">
+                  <span>VIP Clients</span>
+                  <Crown className="w-3.5 h-3.5" />
                 </div>
-                <h4 className="text-base font-bold text-white leading-snug">
-                  Image Broadcasts convert 3.2x faster than plain text.
-                </h4>
-                <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                  Campaigns with personalized variables (e.g. customer name) achieve an average open rate of 88% within the first 15 minutes of dispatch.
-                </p>
+                <div className="text-2xl font-black text-white">{rfmSummary?.vip_count || 0}</div>
+                <p className="text-[10px] text-[#7C756D] mt-0.5">Spend &gt; ₹5,000 / Frequent</p>
               </div>
 
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-300">
-                <strong>Next Recommendation:</strong> Schedule your next flash sale campaign between 11:00 AM – 1:00 PM for maximum click-through rates.
+              <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-emerald-500/40">
+                <div className="flex items-center justify-between text-xs font-black text-emerald-400 mb-1">
+                  <span>Active Clients</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-black text-white">{rfmSummary?.active_count || 0}</div>
+                <p className="text-[10px] text-[#7C756D] mt-0.5">Visited in last 44 days</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-orange-500/40">
+                <div className="flex items-center justify-between text-xs font-black text-orange-400 mb-1">
+                  <span>Slipping Away</span>
+                  <Clock className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-black text-white">{rfmSummary?.slipping_away_count || 0}</div>
+                <p className="text-[10px] text-[#7C756D] mt-0.5">45–89 days inactive</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-rose-500/40">
+                <div className="flex items-center justify-between text-xs font-black text-rose-400 mb-1">
+                  <span>Lost Clients</span>
+                  <HeartCrack className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-black text-white">{rfmSummary?.lost_count || 0}</div>
+                <p className="text-[10px] text-[#7C756D] mt-0.5">90+ days inactive (Winback)</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-pink-500/40">
+                <div className="flex items-center justify-between text-xs font-black text-pink-400 mb-1">
+                  <span>Birthday Club</span>
+                  <Cake className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-black text-white">{rfmSummary?.birthday_upcoming_count || 0}</div>
+                <p className="text-[10px] text-[#7C756D] mt-0.5">Upcoming in next 7 days</p>
               </div>
             </div>
           </div>
 
-          {/* Recent Campaign Performance Table */}
+          {/* Campaign ROI Attribution Table */}
           <Card className="overflow-hidden">
-            <div className="p-5 border-b border-slate-800 bg-[#0D131F] flex items-center justify-between">
+            <div className="p-5 border-b border-[#EFE3CF] bg-white flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-white">Campaign Comparison</h4>
-                <p className="text-xs text-slate-500 font-medium">Historical conversion and delivery metrics per broadcast.</p>
+                <h4 className="text-sm font-black text-white">Campaign Conversion & Revenue ROI Attribution</h4>
+                <p className="text-xs text-[#7C756D] font-medium">Tracking replies, bookings, and direct revenue generated per broadcast.</p>
               </div>
+              <Badge variant="primary">Executive Level</Badge>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B0F19] border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead className="bg-[#FAF7F2] border-b border-[#EFE3CF] text-[#7C756D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Campaign Name</th>
                     <th className="px-6 py-4">Template</th>
-                    <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Recipients</th>
                     <th className="px-6 py-4">Delivery Rate</th>
+                    <th className="px-6 py-4">Read Rate</th>
+                    <th className="px-6 py-4">Replies</th>
+                    <th className="px-6 py-4">Bookings</th>
+                    <th className="px-6 py-4">Attributed Revenue</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
-                  {campaigns.map((camp) => {
-                    const rate = Math.min(100, Math.round(((camp.total_sent || 0) / (camp.total_recipients || 1)) * 100));
-
-                    return (
-                      <tr key={camp.id} className="hover:bg-[#0B0F19]/80">
-                        <td className="px-6 py-4 font-bold text-white text-xs">
-                          {camp.name}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-xs text-slate-600">
-                          {camp.template_name}
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge variant={camp.status === 'COMPLETED' ? 'success' : camp.status === 'FAILED' ? 'danger' : 'primary'} dot>
-                            {camp.status}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-slate-800">
-                          {camp.total_recipients || 0}
-                        </td>
-                        <td className="px-6 py-4 text-xs font-bold text-emerald-600">
-                          {rate}%
-                        </td>
-                      </tr>
-                    );
-                  })}
+                <tbody className="divide-y divide-slate-800/60 font-medium">
+                  {roiMetrics.map((camp) => (
+                    <tr key={camp.campaign_id} className="hover:bg-[#FAF7F2] transition-colors">
+                      <td className="px-6 py-4 font-black text-white">
+                        {camp.campaign_name}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-[11px] text-[#7C756D]">
+                        {camp.template_name}
+                      </td>
+                      <td className="px-6 py-4 text-[#2C2723]">
+                        {camp.total_recipients}
+                      </td>
+                      <td className="px-6 py-4 font-bold text-emerald-400">
+                        {camp.delivery_rate_pct}%
+                      </td>
+                      <td className="px-6 py-4 font-bold text-sky-400">
+                        {camp.read_rate_pct}%
+                      </td>
+                      <td className="px-6 py-4 text-indigo-300 font-bold">
+                        {camp.replies_count}
+                      </td>
+                      <td className="px-6 py-4 text-emerald-300 font-bold">
+                        {camp.bookings_count}
+                      </td>
+                      <td className="px-6 py-4 font-black text-amber-400">
+                        ₹{camp.attributed_revenue.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </Card>
+
         </main>
       </div>
     </div>

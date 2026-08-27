@@ -2,16 +2,28 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
 
-export const maxDuration = 60; // Allow full 60s execution window on Vercel
+export const maxDuration = 60; // Full 60s execution window on Vercel Serverless
 
 export async function GET(request: Request) {
   const startTime = Date.now();
   let totalProcessed = 0;
   let successCount = 0;
   let failureCount = 0;
+  let skippedCount = 0;
   const processedCampaignIds = new Set<string>();
 
   try {
+    // 1. STALE CLAIM RECOVERY: Automatically reset any claims stuck in 'PROCESSING' > 5 minutes
+    const staleThreshold = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    await supabaseAdmin
+      .from('campaign_recipients')
+      .update({
+        status: 'PENDING',
+        error_message: 'Recovered from stale worker claim'
+      })
+      .eq('status', 'PROCESSING')
+      .lt('processing_at', staleThreshold);
+
     // Cache template component structures across batches
     const { data: tmplRecords } = await supabaseAdmin
       .from('message_templates')
@@ -22,12 +34,12 @@ export async function GET(request: Request) {
       tmplMap.set(`${t.organization_id}_${t.name}`, t.components);
     });
 
-    // Loop through batches sequentially until queue is drained or 45s execution limit approached
+    // 2. Continuous execution loop running until queue is drained or 45s safety limit reached
     while (Date.now() - startTime < 45000) {
       const { data: claimed, error } = await supabaseAdmin.rpc('claim_campaign_recipients', { batch_size: 50 });
       
       if (error || !claimed || claimed.length === 0) {
-        break; // Queue is fully empty
+        break; // Queue is completely drained
       }
 
       totalProcessed += claimed.length;
@@ -35,6 +47,7 @@ export async function GET(request: Request) {
       for (const recipient of claimed) {
         processedCampaignIds.add(recipient.campaign_id);
         
+        // Fetch campaign details
         const { data: campaign } = await supabaseAdmin
           .from('campaigns')
           .select('*')
@@ -42,6 +55,45 @@ export async function GET(request: Request) {
           .single();
 
         if (!campaign) continue;
+
+        // If campaign was cancelled or paused, mark recipient accordingly
+        if (campaign.status === 'CANCELLED' || campaign.status === 'PAUSED') {
+          await supabaseAdmin.from('campaign_recipients').update({
+            status: 'CANCELLED',
+            error_code: 'CAMPAIGN_CANCELLED',
+            error_message: `Campaign was marked as ${campaign.status}`
+          }).eq('id', recipient.id);
+          continue;
+        }
+
+        // DUPLICATE SEND PROTECTION: Skip if already sent or has meta_message_id
+        const { data: existingRecip } = await supabaseAdmin
+          .from('campaign_recipients')
+          .select('meta_message_id, status')
+          .eq('id', recipient.id)
+          .single();
+
+        if (existingRecip?.meta_message_id || existingRecip?.status === 'SENT' || existingRecip?.status === 'DELIVERED') {
+          continue; // Already dispatched safely
+        }
+
+        // DISPATCH-TIME OPT-IN RECHECK: Verify contact is strictly opted-in
+        const { data: contact } = await supabaseAdmin
+          .from('contacts')
+          .select('id, name, phone_number, opted_in')
+          .eq('id', recipient.contact_id)
+          .single();
+
+        if (!contact || contact.opted_in !== true) {
+          await supabaseAdmin.from('campaign_recipients').update({
+            status: 'FAILED',
+            failed_at: new Date().toISOString(),
+            error_code: 'OPTED_OUT',
+            error_message: 'Contact is not opted-in for marketing broadcasts'
+          }).eq('id', recipient.id);
+          skippedCount++;
+          continue;
+        }
 
         const { data: account } = await supabaseAdmin
           .from('whatsapp_accounts')
@@ -177,7 +229,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // After processing, check and update completion status for all touched campaigns
+    // Check and update completion status for all touched campaigns
     for (const campId of Array.from(processedCampaignIds)) {
       const { count: pendingCount } = await supabaseAdmin.from('campaign_recipients')
         .select('id', { count: 'exact', head: true })
@@ -192,7 +244,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // Check if any campaign is still active or has pending items
+    // Remaining count in queue
     const { count: totalRemaining } = await supabaseAdmin
       .from('campaign_recipients')
       .select('id', { count: 'exact', head: true })
@@ -202,6 +254,7 @@ export async function GET(request: Request) {
       processed: totalProcessed, 
       success: successCount, 
       failed: failureCount,
+      skipped: skippedCount,
       remaining: totalRemaining || 0
     });
 

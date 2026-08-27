@@ -98,7 +98,7 @@ export default function WhatsAppSettings() {
     : 'https://your-domain.com/api/whatsapp/webhook';
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -132,7 +132,7 @@ export default function WhatsAppSettings() {
                   Enter credentials from your Meta Developer App & WhatsApp Business Account.
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+              <div className="flex items-center gap-1.5 text-xs text-[#7C756D] font-medium">
                 <Lock className="w-3.5 h-3.5" />
                 Server-Side Encrypted
               </div>
@@ -169,8 +169,8 @@ export default function WhatsAppSettings() {
                 />
               </CardContent>
 
-              <div className="p-6 border-t border-slate-800 bg-[#0B0F19]/50 rounded-b-2xl flex items-center justify-between">
-                <p className="text-xs text-slate-400 font-medium">
+              <div className="p-6 border-t border-[#EFE3CF] bg-[#FAF7F2]/50 rounded-b-2xl flex items-center justify-between">
+                <p className="text-xs text-[#7C756D] font-medium">
                   Credentials are strictly bound to your organization workspace via RLS.
                 </p>
                 <Button variant="whatsapp" type="submit" isLoading={saving} leftIcon={<CheckCircle2 className="w-4 h-4" />}>
@@ -181,47 +181,47 @@ export default function WhatsAppSettings() {
           </Card>
 
           {/* Webhook Configuration Station */}
-          <div className="bg-[#0B0F17] rounded-2xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl space-y-6">
+          <div className="bg-[#0B0F17] rounded-2xl p-6 sm:p-8 text-white border border-[#EFE3CF] shadow-xl space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
                 <Key className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-white tracking-tight">Meta Webhook Configuration</h3>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                <p className="text-xs text-[#7C756D] font-medium mt-0.5">
                   Paste these values into Meta Developer App to receive real-time messages and delivery status ticks.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-xl bg-[#F2ECE0]/90 border border-[#EFE3CF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Callback URL</p>
-                  <p className="font-mono text-xs text-slate-200 mt-1 break-all">{webhookUrl}</p>
+                  <p className="font-mono text-xs text-[#2C2723] mt-1 break-all">{webhookUrl}</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => copyText('url', webhookUrl)}
                   leftIcon={copiedField === 'url' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  className="bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 shrink-0"
+                  className="bg-slate-800 text-[#2C2723] border-[#DFBE7E]/60 hover:bg-slate-700 shrink-0"
                 >
                   {copiedField === 'url' ? 'Copied' : 'Copy URL'}
                 </Button>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-xl bg-[#F2ECE0]/90 border border-[#EFE3CF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Verify Token</p>
-                  <p className="font-mono text-xs text-slate-200 mt-1">{verifyToken || 'nx_verify_token'}</p>
+                  <p className="font-mono text-xs text-[#2C2723] mt-1">{verifyToken || 'nx_verify_token'}</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => copyText('token', verifyToken || 'nx_verify_token')}
                   leftIcon={copiedField === 'token' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  className="bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 shrink-0"
+                  className="bg-slate-800 text-[#2C2723] border-[#DFBE7E]/60 hover:bg-slate-700 shrink-0"
                 >
                   {copiedField === 'token' ? 'Copied' : 'Copy Token'}
                 </Button>

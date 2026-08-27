@@ -532,31 +532,31 @@ export default function Inbox() {
   };
 
   return (
-    <div className="flex h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="flex h-screen bg-[#06080F] text-[#1E1B18] font-sans antialiased selection:bg-indigo-500 selection:text-white">
       <Sidebar className="hidden md:flex" />
 
       <main className="flex-1 flex overflow-hidden min-w-0">
         
         {/* Pane 1: Luxury Conversations List & Filters */}
-        <div className={`w-full md:w-[350px] lg:w-[380px] border-r border-slate-800/90 flex flex-col bg-[#0B0F19] shrink-0 ${
+        <div className={`w-full md:w-[350px] lg:w-[380px] border-r border-[#EFE3CF]/90 flex flex-col bg-[#0B0F19] shrink-0 ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}>
           {/* Header & Main Toolbar */}
-          <div className="p-4 border-b border-slate-800 bg-[#080C14] space-y-3">
+          <div className="p-4 border-b border-[#EFE3CF] bg-[#080C14] space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
                   <span>Conversations</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-black border border-slate-700">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-[#5D564E] font-black border border-[#DFBE7E]/60">
                     {filteredConversations.length}
                   </span>
                 </h1>
-                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Classic Pearls Salon WhatsApp</p>
+                <p className="text-[11px] text-[#7C756D] font-medium mt-0.5">Classic Pearls Salon WhatsApp</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button 
                   onClick={fetchConversations} 
-                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-[#7C756D] hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                   title="Refresh conversations"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -579,15 +579,15 @@ export default function Inbox() {
             </div>
 
             {/* Status Tabs: ALL / OPEN / PENDING / RESOLVED */}
-            <div className="flex bg-[#05070D] p-1 rounded-xl border border-slate-800">
+            <div className="flex bg-[#05070D] p-1 rounded-xl border border-[#EFE3CF]">
               {(['ALL', 'OPEN', 'PENDING', 'RESOLVED'] as const).map((st) => (
                 <button 
                   key={st}
                   onClick={() => setStatusFilter(st)} 
                   className={`flex-1 text-[11px] font-black py-1.5 rounded-lg transition-all cursor-pointer capitalize ${
                     statusFilter === st 
-                      ? 'bg-slate-800 text-white shadow-xs border border-slate-700 font-black' 
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-slate-800 text-white shadow-xs border border-[#DFBE7E]/60 font-black' 
+                      : 'text-[#7C756D] hover:text-[#2C2723]'
                   }`}
                 >
                   {st.toLowerCase()}
@@ -601,7 +601,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('all')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-300'
+                    assignmentFilter === 'all' ? 'bg-slate-800 text-white' : 'text-[#7C756D] hover:text-[#5D564E]'
                   }`}
                 >
                   All Staff
@@ -609,7 +609,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('mine')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'mine' ? 'bg-indigo-950 text-indigo-300 border border-indigo-800/60' : 'text-slate-400 hover:text-slate-300'
+                    assignmentFilter === 'mine' ? 'bg-indigo-950 text-indigo-300 border border-indigo-800/60' : 'text-[#7C756D] hover:text-[#5D564E]'
                   }`}
                 >
                   Assigned to Me
@@ -617,7 +617,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('unassigned')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'unassigned' ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : 'text-slate-400 hover:text-slate-300'
+                    assignmentFilter === 'unassigned' ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : 'text-[#7C756D] hover:text-[#5D564E]'
                   }`}
                 >
                   Unassigned
@@ -632,8 +632,8 @@ export default function Inbox() {
                   onClick={() => setSelectedLabelId(null)}
                   className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                     selectedLabelId === null
-                      ? 'bg-slate-800 text-white border border-slate-700'
-                      : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800'
+                      ? 'bg-slate-800 text-white border border-[#DFBE7E]/60'
+                      : 'bg-[#FAF7F2] text-[#7C756D] hover:bg-slate-800 hover:text-[#2C2723] border border-[#EFE3CF]'
                   }`}
                 >
                   All Labels
@@ -647,7 +647,7 @@ export default function Inbox() {
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
                         isSelected
                           ? 'border-indigo-400 bg-indigo-950 text-indigo-200 shadow-xs'
-                          : 'border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-700'
+                          : 'border-[#EFE3CF] bg-[#F2ECE0]/50 text-[#5D564E] hover:border-[#DFBE7E]/60'
                       }`}
                     >
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: lbl.color || '#6366f1' }} />
@@ -661,13 +661,13 @@ export default function Inbox() {
             {/* Search Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7C756D]" />
                 <input
                   type="text"
                   placeholder="Search name, phone, message..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-[#05070D] border border-slate-800 rounded-lg text-xs font-semibold text-white focus:bg-[#0B0F19] focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder:text-slate-500"
+                  className="w-full pl-8 pr-3 py-1.5 bg-[#05070D] border border-[#EFE3CF] rounded-lg text-xs font-semibold text-white focus:bg-[#0B0F19] focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder:text-[#9E968D]"
                 />
               </div>
             </div>
@@ -698,15 +698,15 @@ export default function Inbox() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className={`text-sm font-extrabold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
+                        <p className={`text-sm font-extrabold truncate ${isActive ? 'text-white' : 'text-[#2C2723]'}`}>
                           {contactName}
                         </p>
-                        <span className="text-[10px] font-bold text-slate-400 shrink-0">
+                        <span className="text-[10px] font-bold text-[#7C756D] shrink-0">
                           {new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-1">
+                      <div className="flex items-center justify-between text-xs text-[#7C756D] font-medium mb-1">
                         <span className="truncate flex items-center gap-1 text-[11px] font-semibold">
                           <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
                           {phone}
@@ -714,7 +714,7 @@ export default function Inbox() {
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           {status === 'RESOLVED' ? (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-[#7C756D] border border-[#DFBE7E]/60">
                               Resolved
                             </span>
                           ) : status === 'PENDING' ? (
@@ -740,7 +740,7 @@ export default function Inbox() {
                             return (
                               <span
                                 key={lbl.id}
-                                className="px-1.5 py-0.2 rounded text-[9px] font-bold text-slate-200 bg-slate-800/80 border border-slate-700/80"
+                                className="px-1.5 py-0.2 rounded text-[9px] font-bold text-[#2C2723] bg-slate-800/80 border border-[#DFBE7E]/60/80"
                               >
                                 {lbl.name}
                               </span>
@@ -755,10 +755,10 @@ export default function Inbox() {
             })}
 
             {filteredConversations.length === 0 && (
-              <div className="p-12 text-center text-slate-500">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
-                <p className="text-xs font-bold text-slate-300">No conversations in this view</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Click "New Chat" to start messaging a client.</p>
+              <div className="p-12 text-center text-[#9E968D]">
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#7C756D]" />
+                <p className="text-xs font-bold text-[#5D564E]">No conversations in this view</p>
+                <p className="text-[11px] text-[#9E968D] mt-0.5">Click "New Chat" to start messaging a client.</p>
               </div>
             )}
           </div>
@@ -771,11 +771,11 @@ export default function Inbox() {
           {activeConv ? (
             <>
               {/* Active Conversation Header */}
-              <header className="px-6 py-3.5 border-b border-slate-800 bg-[#0B0F19] flex items-center justify-between gap-4 z-10">
+              <header className="px-6 py-3.5 border-b border-[#EFE3CF] bg-[#0B0F19] flex items-center justify-between gap-4 z-10">
                 <div className="flex items-center gap-3 min-w-0">
                   <button 
                     onClick={() => setActiveConvId(null)}
-                    className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                    className="md:hidden p-1.5 text-[#7C756D] hover:text-white rounded-lg cursor-pointer"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -793,7 +793,7 @@ export default function Inbox() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs text-[#7C756D] font-semibold flex items-center gap-1.5 mt-0.5">
                       <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
                       {activeConv.contacts?.phone_number}
                     </p>
@@ -804,37 +804,37 @@ export default function Inbox() {
                 <div className="flex items-center gap-2 shrink-0">
                   
                   {/* Status Dropdown */}
-                  <div className="flex items-center bg-[#05070D] border border-slate-700 rounded-lg px-2.5 py-1">
-                    <span className="text-[11px] font-bold text-slate-400 mr-1.5 hidden sm:inline">Status:</span>
+                  <div className="flex items-center bg-[#05070D] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
+                    <span className="text-[11px] font-bold text-[#7C756D] mr-1.5 hidden sm:inline">Status:</span>
                     <select
                       value={(activeConv.status || 'OPEN').toUpperCase()}
                       onChange={(e) => updateConversationStatus(e.target.value as ConversationStatus)}
                       disabled={updatingStatus}
                       className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer"
                     >
-                      <option value="OPEN" className="bg-[#0D131F] text-emerald-400">Open</option>
-                      <option value="PENDING" className="bg-[#0D131F] text-amber-400">Pending</option>
-                      <option value="RESOLVED" className="bg-[#0D131F] text-slate-400">Resolved</option>
+                      <option value="OPEN" className="bg-white text-emerald-400">Open</option>
+                      <option value="PENDING" className="bg-white text-amber-400">Pending</option>
+                      <option value="RESOLVED" className="bg-white text-[#7C756D]">Resolved</option>
                     </select>
                   </div>
 
                   {/* Agent Assignment Selector */}
-                  <div className="flex items-center bg-[#05070D] border border-slate-700 rounded-lg px-2.5 py-1">
-                    <UserCheck className="w-3.5 h-3.5 text-slate-400 mr-1.5 hidden sm:inline" />
+                  <div className="flex items-center bg-[#05070D] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
+                    <UserCheck className="w-3.5 h-3.5 text-[#7C756D] mr-1.5 hidden sm:inline" />
                     <select
                       value={activeConv.assigned_to || ''}
                       onChange={(e) => updateConversationAssignment(e.target.value || null)}
                       disabled={updatingAssignment}
                       className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer max-w-[120px] truncate"
                     >
-                      <option value="" className="bg-[#0D131F] text-slate-400">Unassigned</option>
+                      <option value="" className="bg-white text-[#7C756D]">Unassigned</option>
                       {currentUser && (
-                        <option value={currentUser.id} className="bg-[#0D131F] text-indigo-400">
+                        <option value={currentUser.id} className="bg-white text-indigo-400">
                           Assign to Me
                         </option>
                       )}
                       {teamMembers.filter(m => m.id !== currentUser?.id).map((member) => (
-                        <option key={member.id} value={member.id} className="bg-[#0D131F] text-white">
+                        <option key={member.id} value={member.id} className="bg-white text-white">
                           {member.name}
                         </option>
                       ))}
@@ -844,7 +844,7 @@ export default function Inbox() {
                   {/* Labels Toggle Button */}
                   <button
                     onClick={() => setShowLabelModal(true)}
-                    className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg border border-[#DFBE7E]/60 text-[#7C756D] hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                     title="Manage labels"
                   >
                     <Tag className="w-4 h-4" />
@@ -854,7 +854,7 @@ export default function Inbox() {
                   <button
                     onClick={() => setShowCustomerDrawer(!showCustomerDrawer)}
                     className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                      showCustomerDrawer ? 'bg-indigo-950 text-indigo-300 border-indigo-600' : 'text-slate-400 hover:text-white border-slate-700 hover:bg-slate-800'
+                      showCustomerDrawer ? 'bg-indigo-950 text-indigo-300 border-indigo-600' : 'text-[#7C756D] hover:text-white border-[#DFBE7E]/60 hover:bg-slate-800'
                     }`}
                     title="Customer profile details"
                   >
@@ -866,7 +866,7 @@ export default function Inbox() {
               {/* Chat Canvas with Ultra Luxury Wallpaper */}
               <div className="flex-1 overflow-y-auto p-6 space-y-3 wa-chat-bg">
                 <div className="text-center my-1">
-                  <span className="bg-[#0B0F19]/90 px-3 py-1 rounded-full text-[10px] font-bold text-slate-400 border border-slate-800 shadow-sm">
+                  <span className="bg-[#0B0F19]/90 px-3 py-1 rounded-full text-[10px] font-bold text-[#7C756D] border border-[#EFE3CF] shadow-sm">
                     Classic Pearl Unisex Salon • WhatsApp Business Encrypted
                   </span>
                 </div>
@@ -895,13 +895,13 @@ export default function Inbox() {
                           isNote
                             ? 'bg-gradient-to-r from-amber-950/90 to-amber-900/80 text-amber-200 border border-amber-600/50 rounded-tr-xs'
                             : isInbound
-                            ? 'bg-[#121927] text-white rounded-tl-xs border border-slate-700/80 shadow-md shadow-black/30'
+                            ? 'bg-[#121927] text-white rounded-tl-xs border border-[#DFBE7E]/60/80 shadow-md shadow-black/30'
                             : 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-white rounded-tr-xs shadow-md shadow-emerald-950/40'
                         }`}
                       >
                         <button
                           onClick={() => deleteMessage(msg.id)}
-                          className={`absolute top-2 ${isInbound ? '-right-7' : '-left-7'} opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all cursor-pointer z-10`}
+                          className={`absolute top-2 ${isInbound ? '-right-7' : '-left-7'} opacity-0 group-hover:opacity-100 p-1 text-[#9E968D] hover:text-red-400 transition-all cursor-pointer z-10`}
                           title="Delete for me"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -978,16 +978,16 @@ export default function Inbox() {
                           </div>
                         )}
 
-                        <div className="flex items-center justify-end gap-1 text-[10px] text-slate-300 font-bold pt-0.5">
+                        <div className="flex items-center justify-end gap-1 text-[10px] text-[#5D564E] font-bold pt-0.5">
                           <span>{time}</span>
                           {!isInbound && !isNote && (
                             <span>
                               {msg.status === 'READ' ? (
                                 <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
                               ) : msg.status === 'DELIVERED' ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-slate-300" />
+                                <CheckCheck className="w-3.5 h-3.5 text-[#5D564E]" />
                               ) : (
-                                <Check className="w-3.5 h-3.5 text-slate-300" />
+                                <Check className="w-3.5 h-3.5 text-[#5D564E]" />
                               )}
                             </span>
                           )}
@@ -1000,7 +1000,7 @@ export default function Inbox() {
               </div>
 
               {/* Chat Composer with WhatsApp Multiline Shift+Enter Support */}
-              <div className="p-4 bg-[#0B0F19] border-t border-slate-800">
+              <div className="p-4 bg-[#0B0F19] border-t border-[#EFE3CF]">
                 
                 {/* Note Indicator Banner */}
                 {isInternalNote && (
@@ -1015,13 +1015,13 @@ export default function Inbox() {
                   </div>
                 )}
 
-                <div className="flex items-end gap-2 bg-[#05070D] border border-slate-700/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
+                <div className="flex items-end gap-2 bg-[#05070D] border border-[#DFBE7E]/60/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
                   
                   {/* Media Attachment Trigger */}
                   <button
                     type="button"
                     onClick={() => setShowMediaModal(true)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
+                    className="p-2 text-[#7C756D] hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Attach Image, Video, or Document"
                   >
                     <Paperclip className="w-4 h-4" />
@@ -1031,7 +1031,7 @@ export default function Inbox() {
                   <button
                     type="button"
                     onClick={() => setShowQuickReplies(true)}
-                    className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
+                    className="p-2 text-[#7C756D] hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Quick Replies"
                   >
                     <Sparkles className="w-4 h-4" />
@@ -1042,7 +1042,7 @@ export default function Inbox() {
                     type="button"
                     onClick={() => setIsInternalNote(!isInternalNote)}
                     className={`p-2 rounded-lg transition-colors cursor-pointer mb-0.5 ${
-                      isInternalNote ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800'
+                      isInternalNote ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'text-[#7C756D] hover:text-amber-400 hover:bg-slate-800'
                     }`}
                     title="Toggle Internal Staff Note"
                   >
@@ -1066,7 +1066,7 @@ export default function Inbox() {
                       }
                     }}
                     placeholder={isInternalNote ? "Write an internal note for team members..." : "Type a message (Shift+Enter for new line)..."}
-                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-white placeholder:text-slate-500 resize-none max-h-32 min-h-[36px]"
+                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-white placeholder:text-[#9E968D] resize-none max-h-32 min-h-[36px]"
                   />
 
                   <Button
@@ -1083,11 +1083,11 @@ export default function Inbox() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#06080F]">
-              <div className="w-14 h-14 rounded-2xl bg-[#0D131F] border border-slate-800 flex items-center justify-center text-slate-400 mb-3 shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-white border border-[#EFE3CF] flex items-center justify-center text-[#7C756D] mb-3 shadow-md">
                 <MessageSquare className="w-7 h-7" />
               </div>
               <h3 className="text-base font-black text-white">Select a Conversation</h3>
-              <p className="text-xs text-slate-400 font-medium max-w-sm mt-1">
+              <p className="text-xs text-[#7C756D] font-medium max-w-sm mt-1">
                 Choose a customer from the left sidebar or click "New Chat" above to start messaging.
               </p>
               <Button
@@ -1111,21 +1111,21 @@ export default function Inbox() {
 
         {/* Pane 3: Customer Profile Drawer */}
         {showCustomerDrawer && activeConv && (
-          <div className="w-[300px] border-l border-slate-800 bg-[#0B0F19] p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-150">
-            <div className="text-center pb-5 border-b border-slate-800">
+          <div className="w-[300px] border-l border-[#EFE3CF] bg-[#0B0F19] p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-150">
+            <div className="text-center pb-5 border-b border-[#EFE3CF]">
               <Avatar name={activeConv.contacts?.name} size="xl" className="mx-auto mb-3" />
               <h3 className="text-sm font-black text-white">{activeConv.contacts?.name || 'Customer'}</h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">{activeConv.contacts?.phone_number}</p>
+              <p className="text-xs text-[#7C756D] font-semibold mt-0.5">{activeConv.contacts?.phone_number}</p>
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Marketing Consent</h4>
-              <div className="p-3 rounded-xl bg-[#05070D] border border-slate-800 flex items-center justify-between">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Marketing Consent</h4>
+              <div className="p-3 rounded-xl bg-[#05070D] border border-[#EFE3CF] flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-white block">
                     {activeConv.contacts?.opted_in !== false ? 'Opted In' : 'Opted Out'}
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-[#7C756D]">
                     {activeConv.contacts?.opted_in !== false ? 'Receives promotional broadcasts' : 'Excluded from marketing broadcasts'}
                   </span>
                 </div>
@@ -1141,16 +1141,16 @@ export default function Inbox() {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Details</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Details</h4>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-slate-800/60">
-                  <span className="text-slate-400">Created At</span>
+                <div className="flex justify-between py-1.5 border-b border-[#EFE3CF]/60">
+                  <span className="text-[#7C756D]">Created At</span>
                   <span className="font-bold text-white">
                     {new Date(activeConv.contacts?.created_at || Date.now()).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800/60">
-                  <span className="text-slate-400">Status</span>
+                <div className="flex justify-between py-1.5 border-b border-[#EFE3CF]/60">
+                  <span className="text-[#7C756D]">Status</span>
                   <span className="font-extrabold text-emerald-400">
                     {activeConv.status || 'OPEN'}
                   </span>
@@ -1181,8 +1181,8 @@ export default function Inbox() {
 
             {/* Autocomplete Suggestions */}
             {contactSearchResults.length > 0 && (
-              <div className="mt-2 bg-[#05070D] border border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-800 shadow-md">
-                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-900/50">
+              <div className="mt-2 bg-[#05070D] border border-[#EFE3CF] rounded-xl overflow-hidden divide-y divide-slate-800 shadow-md">
+                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#7C756D] bg-[#F2ECE0]/50">
                   Matching Existing Contacts
                 </div>
                 {contactSearchResults.map(c => (
@@ -1197,7 +1197,7 @@ export default function Inbox() {
                   >
                     <div>
                       <p className="text-xs font-bold text-white">{c.name || 'Valued Customer'}</p>
-                      <p className="text-[11px] text-slate-400">{c.phone_number}</p>
+                      <p className="text-[11px] text-[#7C756D]">{c.phone_number}</p>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded-full border border-emerald-800/40">Existing</span>
                   </div>
@@ -1221,7 +1221,7 @@ export default function Inbox() {
             </div>
           )}
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-800">
+          <div className="pt-3 flex justify-end gap-2 border-t border-[#EFE3CF]">
             <Button variant="outline" size="sm" onClick={() => setShowNewConvModal(false)}>
               Cancel
             </Button>
@@ -1248,7 +1248,7 @@ export default function Inbox() {
       >
         <div className="space-y-2">
           {labels.length === 0 ? (
-            <div className="text-sm text-slate-400">No labels created yet.</div>
+            <div className="text-sm text-[#7C756D]">No labels created yet.</div>
           ) : (
             labels.map(lbl => {
               const isActive = activeLabels.includes(lbl.id);
@@ -1257,7 +1257,7 @@ export default function Inbox() {
                   key={lbl.id}
                   onClick={() => toggleLabel(lbl.id)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    isActive ? 'border-indigo-500 bg-indigo-950/60' : 'border-slate-800 hover:border-slate-700 bg-[#05070D]'
+                    isActive ? 'border-indigo-500 bg-indigo-950/60' : 'border-[#EFE3CF] hover:border-[#DFBE7E]/60 bg-[#05070D]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -1281,7 +1281,7 @@ export default function Inbox() {
       >
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {quickReplies.length === 0 ? (
-            <div className="text-sm text-slate-400">No quick replies found.</div>
+            <div className="text-sm text-[#7C756D]">No quick replies found.</div>
           ) : (
             quickReplies.map(qr => (
               <div
@@ -1290,7 +1290,7 @@ export default function Inbox() {
                   setInputText(qr.content);
                   setShowQuickReplies(false);
                 }}
-                className="p-3 bg-[#05070D] border border-slate-800 rounded-xl hover:border-indigo-500 hover:bg-slate-900 cursor-pointer transition-all"
+                className="p-3 bg-[#05070D] border border-[#EFE3CF] rounded-xl hover:border-indigo-500 hover:bg-[#F2ECE0] cursor-pointer transition-all"
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-white">{qr.title}</span>
@@ -1298,7 +1298,7 @@ export default function Inbox() {
                     /{qr.shortcut}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 line-clamp-2">{qr.content}</p>
+                <p className="text-xs text-[#5D564E] line-clamp-2">{qr.content}</p>
               </div>
             ))
           )}
@@ -1313,14 +1313,14 @@ export default function Inbox() {
         description="Attach an image, video, or document URL to send directly."
       >
         <div className="space-y-4">
-          <div className="flex bg-[#05070D] p-1 rounded-xl border border-slate-800">
+          <div className="flex bg-[#05070D] p-1 rounded-xl border border-[#EFE3CF]">
             {(['image', 'video', 'document'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setMediaType(t)}
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
-                  mediaType === t ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
+                  mediaType === t ? 'bg-slate-800 text-white shadow-xs' : 'text-[#7C756D] hover:text-[#2C2723]'
                 }`}
               >
                 {t}
@@ -1344,7 +1344,7 @@ export default function Inbox() {
             onChange={(e) => setMediaCaption(e.target.value)}
           />
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-800">
+          <div className="pt-3 flex justify-end gap-2 border-t border-[#EFE3CF]">
             <Button variant="outline" size="sm" onClick={() => setShowMediaModal(false)}>
               Cancel
             </Button>

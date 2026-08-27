@@ -73,7 +73,7 @@ export default function MediaLibraryPage() {
   });
 
   return (
-    <div className="flex h-screen bg-[#070A12]">
+    <div className="flex h-screen bg-[#F7F3EA]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -104,7 +104,7 @@ export default function MediaLibraryPage() {
                   key={t}
                   onClick={() => setFilter(t)}
                   className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                    filter === t ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    filter === t ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
                   }`}
                 >
                   {t === 'all' ? `All (${mediaList.length})` : `${t}s`}
@@ -115,13 +115,13 @@ export default function MediaLibraryPage() {
             {/* Search & Layout Toggle */}
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#7C756D]" />
                 <input
                   type="text"
                   placeholder="Search assets..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-[#0D131F] border border-slate-800 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#EFE3CF] rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 />
               </div>
 
@@ -129,7 +129,7 @@ export default function MediaLibraryPage() {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'grid' ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-400 hover:text-slate-600'
+                    viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#7C756D] hover:text-slate-600'
                   }`}
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -137,7 +137,7 @@ export default function MediaLibraryPage() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'list' ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-400 hover:text-slate-600'
+                    viewMode === 'list' ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#7C756D] hover:text-slate-600'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function MediaLibraryPage() {
               {filteredMedia.map((asset) => (
                 <div
                   key={asset.id}
-                  className="rounded-2xl border border-slate-800 bg-[#0D131F] overflow-hidden shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
+                  className="rounded-2xl border border-[#EFE3CF] bg-white overflow-hidden shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
                 >
                   {/* Thumbnail */}
                   <div className="h-44 bg-slate-100 relative overflow-hidden flex items-center justify-center">
@@ -160,13 +160,13 @@ export default function MediaLibraryPage() {
                       <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     )}
                     {asset.type === 'video' && (
-                      <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
+                      <div className="flex flex-col items-center justify-center text-[#7C756D] gap-1">
                         <Video className="w-8 h-8 text-indigo-600" />
                         <span className="text-[10px] font-bold">Video Asset</span>
                       </div>
                     )}
                     {asset.type === 'document' && (
-                      <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
+                      <div className="flex flex-col items-center justify-center text-[#7C756D] gap-1">
                         <FileText className="w-8 h-8 text-rose-500" />
                         <span className="text-[10px] font-bold">Document Asset</span>
                       </div>
@@ -183,17 +183,17 @@ export default function MediaLibraryPage() {
                   <div className="p-4 space-y-3">
                     <div>
                       <p className="text-xs font-bold text-white truncate">{asset.name}</p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      <p className="text-[10px] text-[#7C756D] font-mono mt-0.5">
                         {Math.round((asset.size_bytes || 150000) / 1024)} KB • {new Date(asset.created_at).toLocaleDateString()}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <div className="flex items-center justify-between pt-2 border-t border-[#EFE3CF]">
                       <a
                         href={asset.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                        className="text-[11px] font-semibold text-[#9E968D] hover:text-slate-700 flex items-center gap-1"
                       >
                         <ExternalLink className="w-3 h-3" /> View
                       </a>
@@ -214,7 +214,7 @@ export default function MediaLibraryPage() {
           {viewMode === 'list' && (
             <Card className="overflow-hidden">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B0F19] border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#FAF7F2] border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Asset Name</th>
                     <th className="px-6 py-4">Format</th>
@@ -225,7 +225,7 @@ export default function MediaLibraryPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
                   {filteredMedia.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-[#0B0F19]/80">
+                    <tr key={asset.id} className="hover:bg-[#FAF7F2]/80">
                       <td className="px-6 py-4 font-bold text-white text-xs">
                         {asset.name}
                       </td>
@@ -234,10 +234,10 @@ export default function MediaLibraryPage() {
                           {asset.type.toUpperCase()}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-500">
+                      <td className="px-6 py-4 text-xs font-mono text-[#9E968D]">
                         {Math.round((asset.size_bytes || 150000) / 1024)} KB
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-400">
+                      <td className="px-6 py-4 text-xs text-[#7C756D]">
                         {new Date(asset.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -289,7 +289,7 @@ export default function MediaLibraryPage() {
                 type="button"
                 onClick={() => setUploadType(t)}
                 className={`flex-1 py-1.5 text-xs font-bold capitalize rounded-lg transition-all ${
-                  uploadType === t ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  uploadType === t ? 'bg-white text-indigo-600 shadow-xs' : 'text-[#9E968D] hover:text-slate-700'
                 }`}
               >
                 {t}
@@ -304,7 +304,7 @@ export default function MediaLibraryPage() {
             required={true}
           />
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-800">
+          <div className="pt-3 flex justify-end gap-2 border-t border-[#EFE3CF]">
             <Button variant="outline" size="sm" onClick={() => setShowUploadModal(false)}>
               Cancel
             </Button>

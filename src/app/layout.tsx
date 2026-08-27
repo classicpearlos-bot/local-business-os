@@ -10,8 +10,8 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "WhatsApp SaaS",
-  description: "Next Generation WhatsApp Engagement",
+  title: "NEXCHAT - Classic Pearls Salon",
+  description: "Next Generation Customer Engagement & Marketing Automation OS",
 };
 
 export default function RootLayout({
@@ -20,12 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="antialiased selection:bg-indigo-500/30">
-      <body className={`${font.variable} font-sans bg-[var(--color-cyber-bg)] text-white`}>
+    <html lang="en" className="antialiased selection:bg-amber-500/30">
+      <body className={`${font.variable} font-sans bg-[#F7F3EA] text-[#1E1B18]`}>
         {children}
         <Toaster position="bottom-right" />
       </body>
     </html>
   );
 }
-

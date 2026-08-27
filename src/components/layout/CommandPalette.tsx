@@ -85,23 +85,23 @@ export function CommandPalette() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-[#FAF7F2] backdrop-blur-sm animate-in fade-in duration-150">
       <div 
         className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
         <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-          <Search className="w-5 h-5 text-slate-400 shrink-0" />
+          <Search className="w-5 h-5 text-[#7C756D] shrink-0" />
           <input
             type="text"
             autoFocus
             placeholder="Type a command, search pages or contacts... (ESC to close)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none"
+            className="flex-1 bg-transparent border-none text-sm font-medium text-slate-900 placeholder:text-[#7C756D] outline-none"
           />
-          <kbd className="px-2 py-0.5 text-[10px] font-bold text-slate-400 bg-slate-100 rounded border border-slate-200">
+          <kbd className="px-2 py-0.5 text-[10px] font-bold text-[#7C756D] bg-slate-100 rounded border border-slate-200">
             ESC
           </kbd>
         </div>
@@ -110,7 +110,7 @@ export function CommandPalette() {
         <div className="max-h-80 overflow-y-auto p-2 space-y-3">
           {filteredActions.map((group, gIdx) => (
             <div key={gIdx} className="space-y-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#7C756D]">
                 {group.group}
               </p>
               {group.items.map((item, iIdx) => {
@@ -133,11 +133,11 @@ export function CommandPalette() {
 
                     <div className="flex items-center gap-2">
                       {item.shortcut && (
-                        <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-50 rounded border border-slate-200">
+                        <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-[#7C756D] bg-slate-50 rounded border border-slate-200">
                           {item.shortcut}
                         </kbd>
                       )}
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#7C756D] group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5" />
                     </div>
                   </div>
                 );
@@ -146,14 +146,14 @@ export function CommandPalette() {
           ))}
 
           {filteredActions.length === 0 && (
-            <div className="p-8 text-center text-slate-400 text-xs font-medium">
+            <div className="p-8 text-center text-[#7C756D] text-xs font-medium">
               No commands matching "{query}"
             </div>
           )}
         </div>
 
         {/* Footer Hint */}
-        <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium px-4">
+        <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-[#7C756D] font-medium px-4">
           <span>Navigate with arrow keys</span>
           <span>Press <strong>Enter</strong> to select</span>
         </div>

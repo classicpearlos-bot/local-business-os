@@ -22,14 +22,14 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 text-white hover:from-indigo-400 hover:to-violet-500 shadow-md shadow-indigo-600/30 border border-indigo-400/20 active:scale-95',
-  secondary: 'bg-slate-800 text-slate-100 hover:bg-slate-700 active:bg-slate-900 border border-slate-700 shadow-xs active:scale-95',
-  outline: 'bg-transparent text-slate-200 hover:bg-slate-800/80 active:bg-slate-900 border border-slate-700 shadow-xs active:scale-95',
-  ghost: 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent',
-  danger: 'bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:from-rose-500 hover:to-rose-600 shadow-md shadow-rose-600/30 border border-rose-500/20 active:scale-95',
-  whatsapp: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-md shadow-emerald-600/30 border border-emerald-400/20 active:scale-95',
-  dark: 'bg-slate-900 text-white hover:bg-slate-850 active:bg-black shadow-sm border border-slate-800',
-  warning: 'bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 shadow-md shadow-amber-600/30 border border-amber-400/20 active:scale-95'
+  primary: 'gold-button text-white shadow-md shadow-[#C59E3F]/25 border border-[#DFB755] active:scale-95',
+  secondary: 'bg-[#F2ECE0] text-[#3E2D12] hover:bg-[#EBE3D3] active:bg-[#E2D7C3] border border-[#DFBE7E]/60 shadow-xs active:scale-95',
+  outline: 'bg-white text-[#5D564E] hover:bg-[#FAF7F2] hover:text-[#1E1B18] active:bg-[#F2ECE0] border border-[#EFE3CF] hover:border-[#DFBE7E] shadow-xs active:scale-95',
+  ghost: 'bg-transparent text-[#7C756D] hover:text-[#1E1B18] hover:bg-[#F2ECE0]/70 border border-transparent',
+  danger: 'bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:from-rose-500 hover:to-rose-600 shadow-md shadow-rose-600/20 border border-rose-400/20 active:scale-95',
+  whatsapp: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-md shadow-emerald-600/20 border border-emerald-400/20 active:scale-95',
+  dark: 'bg-[#1E1B2E] text-white hover:bg-[#2A263D] active:bg-[#0D0A14] shadow-sm border border-[#DFBE7E]/30',
+  warning: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20 border border-amber-400/20 active:scale-95'
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -59,14 +59,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-        ) : leftIcon ? (
-          <span className="shrink-0">{leftIcon}</span>
-        ) : null}
-        {children}
-        {!isLoading && rightIcon && (
-          <span className="shrink-0">{rightIcon}</span>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        ) : (
+          leftIcon && <span className="shrink-0">{leftIcon}</span>
         )}
+        {children}
+        {!isLoading && rightIcon && <span className="shrink-0">{rightIcon}</span>}
       </button>
     );
   }

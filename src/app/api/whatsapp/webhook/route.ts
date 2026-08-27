@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { processConversationAndMessage } from '@/lib/conversations/service';
 import { evaluateAutomations } from '@/lib/automations/service';
 import { queueTenantWebhook } from '@/lib/webhooks/service';
 import { normalizePhoneNumber } from '@/utils/phone';
 import { sendWhatsAppText } from '@/lib/meta/whatsapp';
+
+function verifyMetaSignature(rawBody: string, signatureHeader: string | null, appSecret: string): boolean {
+  if (!signatureHeader || !appSecret) return true; // Graceful fallback if secret not set in dev
+  try {
+    const [algorithm, signature] = signatureHeader.split('=');
+    if (algorithm !== 'sha256' || !signature) return false;
+    const hmac = crypto.createHmac('sha256', appSecret);
+    hmac.update(rawBody);
+    const expectedSignature = hmac.digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'));
+  } catch (e) {
+    return false;
+  }
+}
 
 // Handle webhook verification challenge from Meta
 export async function GET(request: Request) {
@@ -14,8 +29,12 @@ export async function GET(request: Request) {
   const challenge = searchParams.get('hub.challenge');
 
   if (mode === 'subscribe' && token && challenge) {
-    // Validate the verify token against any registered account's stored token or standard default
-    const isStandardToken = token === 'classic_pearls_secret_webhook_token' || token === 'classicpearls_webhook_verify_token' || token === 'nexchat_webhook_verify_token';
+    const envToken = process.env.WEBHOOK_VERIFY_TOKEN;
+    const isStandardToken = 
+      token === envToken ||
+      token === 'classic_pearls_secret_webhook_token' || 
+      token === 'classicpearls_webhook_verify_token' || 
+      token === 'nexchat_webhook_verify_token';
     
     if (isStandardToken) {
       return new NextResponse(challenge, { status: 200 });
@@ -26,7 +45,7 @@ export async function GET(request: Request) {
       .select('id')
       .eq('webhook_verify_token', token)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (account) {
       return new NextResponse(challenge, { status: 200 });
@@ -39,13 +58,30 @@ export async function GET(request: Request) {
 // Handle incoming webhook payloads from Meta
 export async function POST(request: Request) {
   try {
-    const payload = await request.json();
+    const rawBody = await request.text();
+    const signatureHeader = request.headers.get('x-hub-signature-256');
+    const appSecret = process.env.META_APP_SECRET || '';
+
+    // Verify cryptographic HMAC signature if secret is configured
+    if (appSecret && signatureHeader) {
+      const isValid = verifyMetaSignature(rawBody, signatureHeader, appSecret);
+      if (!isValid) {
+        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+      }
+    }
+
+    let payload: any;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      return new NextResponse('Invalid JSON', { status: 400 });
+    }
 
     if (payload.object !== 'whatsapp_business_account') {
       return new NextResponse('Not found', { status: 404 });
     }
 
-    for (const entry of payload.entry) {
+    for (const entry of (payload.entry || [])) {
       const wabaId = entry.id;
 
       // 1. Resolve Organization ID from WABA ID or active account
@@ -69,10 +105,10 @@ export async function POST(request: Request) {
 
       if (!accountOrgId) {
         console.error(`WABA ID ${wabaId} not linked to any organization.`);
-        continue; // Skip processing if unregistered
+        continue;
       }
 
-      for (const change of entry.changes) {
+      for (const change of (entry.changes || [])) {
         if (change.value.messages) {
           // Process incoming messages
           for (const msg of change.value.messages) {
@@ -85,9 +121,9 @@ export async function POST(request: Request) {
               .upsert({
                 organization_id: accountOrgId,
                 phone_number: contactPhone,
-                name: change.value.contacts?.[0]?.profile?.name || 'Unknown'
+                name: change.value.contacts?.[0]?.profile?.name || 'Customer'
               }, { onConflict: 'organization_id, phone_number' })
-              .select('id, opted_in')
+              .select('id, opted_in, attributes')
               .single();
 
             if (contact) {
@@ -98,10 +134,9 @@ export async function POST(request: Request) {
                   .select('id')
                   .eq('wam_id', msg.id)
                   .eq('organization_id', accountOrgId)
-                  .single();
+                  .maybeSingle();
 
                 if (existingMsg) {
-                  console.log(`Duplicate webhook: message ${msg.id} already processed, skipping.`);
                   continue;
                 }
 
@@ -118,15 +153,27 @@ export async function POST(request: Request) {
                 if (msg.type === 'text') textBody = msg.text?.body || '';
 
                 const normalizedCommand = textBody.trim().toLowerCase();
-                const isStopCommand = ['stop', 'unsubscribe', 'cancel', 'optout', 'opt-out'].includes(normalizedCommand);
-                const isStartCommand = ['start', 'subscribe', 'unstop', 'optin', 'opt-in'].includes(normalizedCommand);
+                const STOP_WORDS = ['stop', 'unsubscribe', 'cancel', 'optout', 'opt-out', 'remove', 'remove me', 'do not message', 'end', 'quit', 'block'];
+                const START_WORDS = ['start', 'subscribe', 'unstop', 'optin', 'opt-in', 'unblock'];
+
+                const isStopCommand = STOP_WORDS.includes(normalizedCommand);
+                const isStartCommand = START_WORDS.includes(normalizedCommand);
+
+                const currentAttrs = (contact.attributes as any) || {};
 
                 if (isStopCommand) {
                   // Idempotent: only process and reply if currently opted in
                   if (contact.opted_in !== false) {
                     await supabaseAdmin
                       .from('contacts')
-                      .update({ opted_in: false })
+                      .update({ 
+                        opted_in: false,
+                        attributes: {
+                          ...currentAttrs,
+                          opt_out_timestamp: new Date().toISOString(),
+                          opt_out_source: 'WhatsApp STOP Keyword'
+                        }
+                      })
                       .eq('id', contact.id);
 
                     const { data: accountInfo } = await supabaseAdmin
@@ -161,7 +208,14 @@ export async function POST(request: Request) {
                   if (contact.opted_in === false) {
                     await supabaseAdmin
                       .from('contacts')
-                      .update({ opted_in: true })
+                      .update({ 
+                        opted_in: true,
+                        attributes: {
+                          ...currentAttrs,
+                          opt_in_timestamp: new Date().toISOString(),
+                          opt_in_source: 'WhatsApp START Keyword'
+                        }
+                      })
                       .eq('id', contact.id);
 
                     const { data: accountInfo } = await supabaseAdmin
@@ -201,60 +255,84 @@ export async function POST(request: Request) {
                   );
                 }
 
-                await queueTenantWebhook(accountOrgId, 'message.received', msg);
-              } catch (e) {
-                console.error('Error processing message:', e);
+                // Queue developer webhook dispatch
+                await queueTenantWebhook(accountOrgId, 'message.received', {
+                  message_id: messageId,
+                  wam_id: msg.id,
+                  contact_id: contact.id,
+                  phone_number: contactPhone,
+                  direction: 'INBOUND',
+                  type: msg.type,
+                  content: msg,
+                  timestamp: msg.timestamp
+                });
+
+              } catch (msgErr) {
+                console.error(`Error processing message ${msg.id}:`, msgErr);
               }
             }
           }
-        } else if (change.value.statuses) {
-          // Process status updates (Ticks)
-          for (const status of change.value.statuses) {
-            const statusUpper = status.status.toUpperCase();
-            
-            // 1. Update regular Messages table
-            await supabaseAdmin
+        }
+
+        // Process status updates (sent, delivered, read, failed)
+        if (change.value.statuses) {
+          for (const statusObj of change.value.statuses) {
+            const wamId = statusObj.id;
+            const newStatus = statusObj.status.toUpperCase();
+
+            // 1. Update messages table
+            const { data: updatedMsg } = await supabaseAdmin
               .from('messages')
-              .update({ status: statusUpper, error_data: status.errors || null })
-              .eq('wam_id', status.id)
-              .eq('organization_id', accountOrgId);
+              .update({
+                status: newStatus,
+                error_data: statusObj.errors ? statusObj.errors[0] : null
+              })
+              .eq('wam_id', wamId)
+              .select('id, conversation_id, contact_id')
+              .maybeSingle();
 
-            // 2. Update Campaign Recipients Queue (if it belongs to a campaign)
-            const { data: existingRecip } = await supabaseAdmin.from('campaign_recipients')
-               .select('id, campaign_id, status')
-               .eq('meta_message_id', status.id)
-               .eq('organization_id', accountOrgId)
-               .single();
+            // 2. Update campaign_recipients if message was part of a broadcast
+            const { data: recip } = await supabaseAdmin
+              .from('campaign_recipients')
+              .select('id, campaign_id, status')
+              .eq('meta_message_id', wamId)
+              .maybeSingle();
 
-            if (existingRecip && existingRecip.status !== statusUpper) {
-              await supabaseAdmin.from('campaign_recipients')
-                 .update({
-                    status: statusUpper,
-                    ...(statusUpper === 'DELIVERED' ? { delivered_at: new Date().toISOString() } : {}),
-                    ...(statusUpper === 'READ' ? { read_at: new Date().toISOString() } : {}),
-                    ...(statusUpper === 'FAILED' ? { failed_at: new Date().toISOString(), error_message: status.errors?.[0]?.message } : {})
-                 })
-                 .eq('id', existingRecip.id);
-
-              if (statusUpper === 'DELIVERED') {
-                 await supabaseAdmin.rpc('increment_campaign_delivered', { camp_id: existingRecip.campaign_id });
-              } else if (statusUpper === 'READ') {
-                 await supabaseAdmin.rpc('increment_campaign_read', { camp_id: existingRecip.campaign_id });
-              } else if (statusUpper === 'FAILED') {
-                 await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: existingRecip.campaign_id });
+            if (recip) {
+              const updates: any = { status: newStatus };
+              if (newStatus === 'DELIVERED') {
+                updates.delivered_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
+                if (recip.status !== 'DELIVERED' && recip.status !== 'READ') {
+                  await supabaseAdmin.rpc('increment_campaign_delivered', { camp_id: recip.campaign_id });
+                }
+              } else if (newStatus === 'READ') {
+                updates.read_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
+                if (recip.status !== 'READ') {
+                  await supabaseAdmin.rpc('increment_campaign_read', { camp_id: recip.campaign_id });
+                }
+              } else if (newStatus === 'FAILED') {
+                updates.failed_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
+                updates.error_code = statusObj.errors?.[0]?.code?.toString() || 'DELIVERY_FAILED';
+                updates.error_message = statusObj.errors?.[0]?.title || statusObj.errors?.[0]?.message || 'Message delivery failed';
+                if (recip.status !== 'FAILED') {
+                  await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: recip.campaign_id });
+                }
               }
-            }
 
-            // 3. Queue Webhook Event
-            await queueTenantWebhook(accountOrgId, `message.${status.status.toLowerCase()}`, status);
+              await supabaseAdmin
+                .from('campaign_recipients')
+                .update(updates)
+                .eq('id', recip.id);
+            }
           }
         }
       }
     }
 
-    return new NextResponse('OK', { status: 200 });
-  } catch (error) {
-    console.error('Webhook error:', error);
+    return new NextResponse('EVENT_RECEIVED', { status: 200 });
+
+  } catch (error: any) {
+    console.error('Webhook processing exception:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
