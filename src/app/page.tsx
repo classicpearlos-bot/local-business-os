@@ -123,7 +123,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#1E1B18] tracking-tight flex items-center gap-2">
-                <span>Good Morning, Arjun</span>
+                <span>Welcome Back, Classic Pearls Salon</span>
                 <span className="text-2xl animate-pulse">👋</span>
               </h1>
               <p className="text-xs sm:text-sm text-[#7C756D] font-medium mt-1">
