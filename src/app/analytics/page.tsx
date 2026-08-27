@@ -143,7 +143,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-black text-white">Salon RFM Lifecycle Health</h3>
-                <p className="text-xs text-[#7C756D]">Automated recency & spending segmentation for Classic Pearls Salon</p>
+                <p className="text-xs text-[#7C756D]">Automated recency & spending segmentation for Classic Pearl Salon</p>
               </div>
               <Badge variant="success">Auto Synced</Badge>
             </div>

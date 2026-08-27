@@ -551,7 +551,7 @@ export default function Inbox() {
                     {filteredConversations.length}
                   </span>
                 </h1>
-                <p className="text-[11px] text-[#7C756D] font-medium mt-0.5">Classic Pearls Salon WhatsApp</p>
+                <p className="text-[11px] text-[#7C756D] font-medium mt-0.5">Classic Pearl Salon WhatsApp</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button 

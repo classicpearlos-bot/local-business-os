@@ -63,7 +63,7 @@ export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
           </div>
           <div className="text-left hidden sm:block">
             <div className="flex items-center gap-1">
-              <span className="text-xs font-bold text-[#1E1B18] leading-none">Classic Pearls Salon</span>
+              <span className="text-xs font-bold text-[#1E1B18] leading-none">Classic Pearl Salon</span>
               <ChevronDown className="w-3 h-3 text-[#8C827A]" />
             </div>
             <p className="text-[9px] text-[#8C6514] font-medium leading-tight mt-0.5">Premium Plan</p>

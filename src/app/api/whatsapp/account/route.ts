@@ -15,7 +15,7 @@ async function resolveUserOrgId(userId: string): Promise<string | null> {
   // Auto-provision org if none exists
   const { data: newOrg } = await supabaseAdmin
     .from('organizations')
-    .insert({ name: 'Classic Pearls' })
+    .insert({ name: 'Classic Pearl' })
     .select('id')
     .single();
 

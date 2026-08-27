@@ -123,11 +123,11 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#1E1B18] tracking-tight flex items-center gap-2">
-                <span>Welcome Back, Classic Pearls Salon</span>
+                <span>Good Morning, Jessica</span>
                 <span className="text-2xl animate-pulse">👋</span>
               </h1>
               <p className="text-xs sm:text-sm text-[#7C756D] font-medium mt-1">
-                Here&apos;s what&apos;s happening with your business today.
+                Here&apos;s what&apos;s happening with Classic Pearl today.
               </p>
             </div>
 

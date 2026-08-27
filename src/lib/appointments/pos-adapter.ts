@@ -7,7 +7,7 @@ export interface SalonPOSProvider {
   getAvailableSlots(orgId: string, date: string, serviceId: string, staffId?: string): Promise<AppointmentSlot[]>;
 }
 
-// Built-in Classic Pearls Salon Catalog & Staff Directory
+// Built-in Classic Pearl Salon Catalog & Staff Directory
 export const CLASSIC_PEARLS_SERVICES: SalonService[] = [
   { id: 'srv_botox', name: 'Hair Botox & Deep Repair Treatment', category: 'Hair', price: 3499, duration_minutes: 90, buffer_minutes: 15, active: true },
   { id: 'srv_nanoplastia', name: 'Nanoplastia Smoothing & Glossing', category: 'Hair', price: 4999, duration_minutes: 120, buffer_minutes: 15, active: true },

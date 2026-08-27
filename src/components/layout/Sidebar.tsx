@@ -88,7 +88,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
                 NEXCHAT
               </h1>
               <p className="text-[9px] font-bold tracking-[0.2em] text-[#8C6514] uppercase mt-0.5">
-                CLASSIC PEARLS SALON
+                CLASSIC PEARL
               </p>
             </Link>
           </div>
@@ -138,13 +138,13 @@ export function Sidebar({ className = '' }: SidebarProps) {
           <div className="flex items-center justify-between p-2 rounded-xl bg-white/90 border border-[#EFE3CF] shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EBD4A4] to-[#C59E3F] p-0.5 flex items-center justify-center shrink-0 shadow-xs">
-                <div className="w-full h-full rounded-full bg-[#2C2723] text-[#DFB755] flex items-center justify-center font-bold text-[10px]">
-                  CP
+                <div className="w-full h-full rounded-full bg-[#2C2723] text-[#DFB755] flex items-center justify-center font-bold text-xs">
+                  J
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#1E1B18] truncate leading-tight">Salon Administrator</p>
-                <p className="text-[10px] text-[#8C827A] font-medium truncate">Classic Pearls Salon</p>
+                <p className="text-xs font-bold text-[#1E1B18] truncate leading-tight">Jessica</p>
+                <p className="text-[10px] text-[#8C827A] font-medium truncate">Owner & Founder</p>
               </div>
             </div>
             <button className="text-[#8C827A] hover:text-[#1E1B18] p-1 cursor-pointer">

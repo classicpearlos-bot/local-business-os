@@ -10,7 +10,7 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "NEXCHAT - Classic Pearls Salon",
+  title: "NEXCHAT - Classic Pearl Salon",
   description: "Next Generation Customer Engagement & Marketing Automation OS",
 };
 
