@@ -66,12 +66,18 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   // Dynamic Current Date Formatting (e.g., "Thursday, 27 Aug 2026")
-  const todayFormatted = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
+  const [todayFormatted, setTodayFormatted] = useState('');
+
+  useEffect(() => {
+    setTodayFormatted(
+      new Date().toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      })
+    );
+  }, []);
 
   const fetchLiveStats = useCallback(async () => {
     try {
