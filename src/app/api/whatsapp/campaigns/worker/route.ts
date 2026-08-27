@@ -91,6 +91,28 @@ export async function GET(request: Request) {
               }
 
               if (conv && response.messages?.[0]?.id) {
+                // Fetch template structure to store full image & body text
+                const { data: tmplRecord } = await supabaseAdmin
+                  .from('message_templates')
+                  .select('components')
+                  .eq('organization_id', campaign.organization_id)
+                  .eq('name', campaign.template_name)
+                  .maybeSingle();
+
+                let headerImg = null;
+                let bodyTxt = null;
+                let btns: any[] = [];
+
+                (tmplRecord?.components || []).forEach((c: any) => {
+                  if (c.type === 'HEADER' && c.format === 'IMAGE') {
+                    headerImg = c.example?.header_handle?.[0] || null;
+                  } else if (c.type === 'BODY') {
+                    bodyTxt = c.text;
+                  } else if (c.type === 'BUTTONS') {
+                    btns = c.buttons || [];
+                  }
+                });
+
                 await supabaseAdmin.from('messages').insert({
                   organization_id: campaign.organization_id,
                   contact_id: recipient.contact_id,
@@ -99,8 +121,14 @@ export async function GET(request: Request) {
                   direction: 'OUTBOUND',
                   type: 'template',
                   content: { 
-                    text: { body: `[Campaign: ${campaign.name || 'Broadcast'}] Template: ${campaign.template_name}` },
-                    template: { name: campaign.template_name }
+                    template: { 
+                      name: campaign.template_name,
+                      header_image: headerImg,
+                      body_text: bodyTxt,
+                      buttons: btns
+                    },
+                    text: { body: bodyTxt || `[Campaign: ${campaign.name || 'Broadcast'}]` },
+                    image: headerImg ? { url: headerImg } : undefined
                   },
                   status: 'SENT'
                 });

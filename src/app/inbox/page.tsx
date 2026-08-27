@@ -27,7 +27,8 @@ import {
   Clock,
   ChevronRight,
   ShieldCheck,
-  Zap
+  Zap,
+  ExternalLink
 } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
@@ -83,18 +84,11 @@ export default function Inbox() {
   const [newConvLoading, setNewConvLoading] = useState(false);
 
   // Media Attachment State
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document' | 'location'>('image');
+  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document'>('image');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaCaption, setMediaCaption] = useState('');
   const [mediaSending, setMediaSending] = useState(false);
-  
-  // Location States
-  const [locLat, setLocLat] = useState('12.9716');
-  const [locLng, setLocLng] = useState('77.5946');
-  const [locName, setLocName] = useState('Classic Pearl Unisex Salon');
-  const [locAddress, setLocAddress] = useState('Bengaluru, Karnataka');
 
   // Notes & Quick Replies & Labels
   const [isInternalNote, setIsInternalNote] = useState(false);
@@ -105,6 +99,7 @@ export default function Inbox() {
   const [showLabelModal, setShowLabelModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Fetch all conversations reliably
   const fetchConversations = useCallback(async () => {
@@ -376,6 +371,9 @@ export default function Inbox() {
 
     const textToSend = inputText.trim();
     setInputText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
     setSending(true);
 
     try {
@@ -837,7 +835,7 @@ export default function Inbox() {
               <div className="flex-1 overflow-y-auto p-6 space-y-3 wa-chat-bg">
                 <div className="text-center my-1">
                   <span className="bg-[#0B0F19]/90 px-3 py-1 rounded-full text-[10px] font-bold text-slate-400 border border-slate-800 shadow-sm">
-                    Classic Pearl Unisex Salon • End-to-End Encrypted
+                    Classic Pearl Unisex Salon • WhatsApp Business Encrypted
                   </span>
                 </div>
 
@@ -848,9 +846,12 @@ export default function Inbox() {
                   const isImage = msg.type === 'image';
                   const isVideo = msg.type === 'video';
                   const isDocument = msg.type === 'document';
+                  const isTemplate = msg.type === 'template';
                   const isNote = msg.type === 'internal_note';
-                  const imageUrl = isImage ? (msg.content?.image?.link || msg.content?.image?.url) : null;
-                  const caption = msg.content?.[msg.type]?.caption || msg.content?.text?.body;
+                  
+                  const imageUrl = isImage ? (msg.content?.image?.link || msg.content?.image?.url) : (isTemplate ? (msg.content?.template?.header_image || msg.content?.image?.url) : null);
+                  const caption = msg.content?.[msg.type]?.caption || (isTemplate ? (msg.content?.template?.body_text || msg.content?.text?.body) : msg.content?.text?.body);
+                  const templateButtons = msg.content?.template?.buttons || [];
 
                   return (
                     <div
@@ -858,7 +859,7 @@ export default function Inbox() {
                       className={`flex group ${isNote ? 'justify-end' : (isInbound ? 'justify-start' : 'justify-end')}`}
                     >
                       <div
-                        className={`max-w-[75%] rounded-2xl p-3 shadow-md space-y-1.5 relative ${
+                        className={`max-w-[78%] sm:max-w-[65%] rounded-2xl p-3 shadow-md space-y-2 relative ${
                           isNote
                             ? 'bg-gradient-to-r from-amber-950/90 to-amber-900/80 text-amber-200 border border-amber-600/50 rounded-tr-xs'
                             : isInbound
@@ -881,9 +882,10 @@ export default function Inbox() {
                           </div>
                         )}
 
-                        {isImage && imageUrl && (
-                          <div className="rounded-xl overflow-hidden max-h-60 bg-black/30">
-                            <img src={imageUrl} alt="Attached image" className="w-full h-full object-cover" />
+                        {/* Image / Template Header Media */}
+                        {imageUrl && (
+                          <div className="rounded-xl overflow-hidden max-h-72 bg-black/40 border border-white/10 shadow-xs">
+                            <img src={imageUrl} alt="WhatsApp Image" className="w-full h-full object-cover" />
                           </div>
                         )}
 
@@ -901,24 +903,37 @@ export default function Inbox() {
                           </div>
                         )}
 
-                        {/* Text Content */}
+                        {/* Text / Caption Content */}
                         {isNote ? (
                           <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
                             {msg.content?.internal_note?.body || msg.content}
                           </p>
-                        ) : (caption || (!isImage && !isVideo && !isDocument && msg.type === 'text')) ? (
+                        ) : caption ? (
                           <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                            {caption || msg.content?.text?.body}
+                            {caption}
                           </p>
                         ) : null}
 
-                        {msg.type === 'template' && (
-                          <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                            {msg.content?.text?.body || `[Template: ${msg.content?.template?.name || 'WhatsApp Template'}]`}
-                          </p>
+                        {/* Interactive Template Buttons */}
+                        {isTemplate && templateButtons.length > 0 && (
+                          <div className="pt-2 border-t border-white/15 space-y-1.5">
+                            {templateButtons.map((btn: any, bIdx: number) => (
+                              <div
+                                key={bIdx}
+                                className="w-full py-1.5 px-3 rounded-lg bg-black/25 text-center text-xs font-bold text-emerald-200 border border-emerald-400/30 flex items-center justify-center gap-1.5 shadow-xs"
+                              >
+                                {btn.type === 'PHONE_NUMBER' ? (
+                                  <Phone className="w-3 h-3 text-emerald-300" />
+                                ) : (
+                                  <ExternalLink className="w-3 h-3 text-emerald-300" />
+                                )}
+                                <span>{btn.text || btn.phone_number || 'Action Button'}</span>
+                              </div>
+                            ))}
+                          </div>
                         )}
 
-                        <div className="flex items-center justify-end gap-1 text-[10px] text-slate-300 font-bold">
+                        <div className="flex items-center justify-end gap-1 text-[10px] text-slate-300 font-bold pt-0.5">
                           <span>{time}</span>
                           {!isInbound && !isNote && (
                             <span>
@@ -939,7 +954,7 @@ export default function Inbox() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Composer */}
+              {/* Chat Composer with WhatsApp Multiline Shift+Enter Support */}
               <div className="p-4 bg-[#0B0F19] border-t border-slate-800">
                 
                 {/* Note Indicator Banner */}
@@ -955,13 +970,13 @@ export default function Inbox() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 bg-[#05070D] border border-slate-700/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
+                <div className="flex items-end gap-2 bg-[#05070D] border border-slate-700/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
                   
                   {/* Media Attachment Trigger */}
                   <button
                     type="button"
                     onClick={() => setShowMediaModal(true)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Attach Image, Video, or Document"
                   >
                     <Paperclip className="w-4 h-4" />
@@ -971,7 +986,7 @@ export default function Inbox() {
                   <button
                     type="button"
                     onClick={() => setShowQuickReplies(true)}
-                    className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Quick Replies"
                   >
                     <Sparkles className="w-4 h-4" />
@@ -981,7 +996,7 @@ export default function Inbox() {
                   <button
                     type="button"
                     onClick={() => setIsInternalNote(!isInternalNote)}
-                    className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                    className={`p-2 rounded-lg transition-colors cursor-pointer mb-0.5 ${
                       isInternalNote ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800'
                     }`}
                     title="Toggle Internal Staff Note"
@@ -989,13 +1004,24 @@ export default function Inbox() {
                     <Tag className="w-4 h-4" />
                   </button>
 
-                  <input
-                    type="text"
+                  {/* Multiline WhatsApp Textarea (Enter sends, Shift+Enter newlines) */}
+                  <textarea
+                    ref={textareaRef}
+                    rows={1}
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                    placeholder={isInternalNote ? "Write an internal note for team members..." : "Type a message to reply on WhatsApp..."}
-                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-white placeholder:text-slate-500"
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    placeholder={isInternalNote ? "Write an internal note for team members..." : "Type a message (Shift+Enter for new line)..."}
+                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-white placeholder:text-slate-500 resize-none max-h-32 min-h-[36px]"
                   />
 
                   <Button
@@ -1003,7 +1029,7 @@ export default function Inbox() {
                     disabled={!inputText.trim() || sending}
                     size="sm"
                     variant={isInternalNote ? "warning" : "primary"}
-                    className="rounded-lg px-4 py-2"
+                    className="rounded-lg px-4 py-2 mb-0.5"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
