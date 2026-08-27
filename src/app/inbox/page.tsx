@@ -195,9 +195,20 @@ export default function Inbox() {
     fetchConversations();
     fetchTeamMembers();
     fetchContactsList();
-    const interval = setInterval(fetchConversations, 3000);
 
-    // Realtime conversation stream
+    // Supabase Free Tier Optimization: Sync on tab focus + gentle 30s heartbeat only when visible
+    const handleFocus = () => {
+      fetchConversations();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const heartbeat = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        fetchConversations();
+      }
+    }, 30000);
+
+    // Event-driven Realtime conversation stream (Zero DB polling overhead)
     const convChannel = supabase
       .channel('inbox-conversations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => {
@@ -205,7 +216,7 @@ export default function Inbox() {
       })
       .subscribe();
 
-    // Realtime message updates
+    // Event-driven Realtime message updates (Instant WebSocket delivery)
     const msgChannel = supabase
       .channel('inbox-messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
@@ -221,7 +232,8 @@ export default function Inbox() {
       .subscribe();
 
     return () => {
-      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(heartbeat);
       supabase.removeChannel(convChannel);
       supabase.removeChannel(msgChannel);
     };
@@ -231,15 +243,12 @@ export default function Inbox() {
     if (activeConvId) {
       fetchMessagesForConv(activeConvId);
       fetchActiveConvLabels(activeConvId);
-      const msgInterval = setInterval(() => fetchMessagesForConv(activeConvId), 2000);
 
       // Instant optimistic clear of unread count on view
       setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, unread_count: 0 } : c));
       
       // Mark as read on server & Meta
       fetch(`/api/conversations/${activeConvId}/read`, { method: 'POST' }).catch(()=>{});
-      
-      return () => clearInterval(msgInterval);
     } else {
       setMessages([]);
     }
