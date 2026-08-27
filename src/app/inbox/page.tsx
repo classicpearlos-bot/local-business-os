@@ -89,6 +89,7 @@ export default function Inbox() {
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaCaption, setMediaCaption] = useState('');
   const [mediaSending, setMediaSending] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Notes & Quick Replies & Labels
   const [isInternalNote, setIsInternalNote] = useState(false);
@@ -893,8 +894,21 @@ export default function Inbox() {
 
                         {/* Image / Template Header Media */}
                         {imageUrl && (
-                          <div className="rounded-xl overflow-hidden max-h-72 bg-black/40 border border-white/10 shadow-xs">
-                            <img src={imageUrl} alt="WhatsApp Image" className="w-full h-full object-cover" />
+                          <div 
+                            onClick={() => setPreviewImageUrl(imageUrl)}
+                            className="rounded-xl overflow-hidden max-h-80 bg-black/40 border border-white/10 shadow-xs cursor-pointer group/img relative hover:brightness-105 transition-all"
+                            title="Click to view full picture"
+                          >
+                            <img 
+                              src={imageUrl} 
+                              alt="WhatsApp Image" 
+                              className="w-full h-auto max-h-80 object-contain rounded-xl" 
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                              <span className="bg-black/80 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/20 shadow-lg flex items-center gap-1.5">
+                                🔍 Click to view full image
+                              </span>
+                            </div>
                           </div>
                         )}
 
@@ -1348,6 +1362,46 @@ export default function Inbox() {
           </div>
         </div>
       </Modal>
+
+      {/* Full-Screen WhatsApp Image Lightbox Preview Modal */}
+      {previewImageUrl && (
+        <div 
+          onClick={() => setPreviewImageUrl(null)}
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-150 cursor-zoom-out"
+        >
+          <div className="absolute top-5 right-6 flex items-center gap-3 z-[110]">
+            <a 
+              href={previewImageUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
+              title="Open full original image in new tab"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>Open Original</span>
+            </a>
+            <button
+              onClick={() => setPreviewImageUrl(null)}
+              className="p-2 bg-slate-800/90 hover:bg-rose-900/80 text-white rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
+              title="Close (or click anywhere)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="max-w-[94vw] max-h-[90vh] flex items-center justify-center p-2 cursor-default"
+          >
+            <img
+              src={previewImageUrl}
+              alt="Full Preview"
+              className="max-w-full max-h-[86vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -44,28 +44,28 @@ export default function Dashboard() {
       try {
         const [
           contactsRes,
-          messagesRes,
+          totalMessagesRes,
+          deliveredMessagesRes,
+          readMessagesRes,
           campaignsRes,
           conversationsRes
         ] = await Promise.all([
           supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('opted_in', true),
-          supabase.from('messages').select('status'),
-          supabase.from('campaigns').select('*').order('created_at', { ascending: false }).limit(4),
+          supabase.from('messages').select('id', { count: 'exact', head: true }),
+          supabase.from('messages').select('id', { count: 'exact', head: true }).in('status', ['DELIVERED', 'READ']),
+          supabase.from('messages').select('id', { count: 'exact', head: true }).eq('status', 'READ'),
+          supabase.from('campaigns').select('id, name, template_name, status, total_sent, total_delivered, created_at').order('created_at', { ascending: false }).limit(4),
           supabase.from('conversations').select('id, unread_count, last_message_at, contacts(name, phone_number)').order('last_message_at', { ascending: false }).limit(5)
         ]);
-
-        const messages = messagesRes.data || [];
-        const delivered = messages.filter(m => ['DELIVERED', 'READ'].includes(m.status)).length;
-        const read = messages.filter(m => m.status === 'READ').length;
 
         const convs = conversationsRes.data || [];
         const unread = convs.filter(c => (c.unread_count || 0) > 0).length;
 
         setStats({
           contactsCount: contactsRes.count || 0,
-          messagesCount: messages.length,
-          deliveredCount: delivered,
-          readCount: read,
+          messagesCount: totalMessagesRes.count || 0,
+          deliveredCount: deliveredMessagesRes.count || 0,
+          readCount: readMessagesRes.count || 0,
           campaignsCount: campaignsRes.data?.length || 0,
           unreadConversations: unread
         });
