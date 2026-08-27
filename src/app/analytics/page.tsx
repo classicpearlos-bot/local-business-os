@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
   const readRate = stats.delivered > 0 ? Math.round((stats.read / stats.delivered) * 100) : 0;
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-[#070A12]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -125,10 +125,10 @@ export default function AnalyticsPage() {
 
           {/* AI Insights & Funnel Card */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-5">
+            <div className="lg:col-span-2 p-6 rounded-2xl bg-[#0D131F] border border-slate-800 shadow-xs space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Message Lifecycle Funnel</h3>
+                  <h3 className="text-sm font-bold text-white">Message Lifecycle Funnel</h3>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">End-to-end customer journey from queue to read tick</p>
                 </div>
                 <Badge variant="success" dot>Realtime Meta Webhook Feed</Badge>
@@ -191,16 +191,16 @@ export default function AnalyticsPage() {
 
           {/* Recent Campaign Performance Table */}
           <Card className="overflow-hidden">
-            <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
+            <div className="p-5 border-b border-slate-800 bg-[#0D131F] flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-slate-900">Campaign Comparison</h4>
+                <h4 className="text-sm font-bold text-white">Campaign Comparison</h4>
                 <p className="text-xs text-slate-500 font-medium">Historical conversion and delivery metrics per broadcast.</p>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#0B0F19] border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Campaign Name</th>
                     <th className="px-6 py-4">Template</th>
@@ -209,13 +209,13 @@ export default function AnalyticsPage() {
                     <th className="px-6 py-4">Delivery Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
                   {campaigns.map((camp) => {
                     const rate = Math.min(100, Math.round(((camp.total_sent || 0) / (camp.total_recipients || 1)) * 100));
 
                     return (
-                      <tr key={camp.id} className="hover:bg-slate-50/80">
-                        <td className="px-6 py-4 font-bold text-slate-900 text-xs">
+                      <tr key={camp.id} className="hover:bg-[#0B0F19]/80">
+                        <td className="px-6 py-4 font-bold text-white text-xs">
                           {camp.name}
                         </td>
                         <td className="px-6 py-4 font-mono text-xs text-slate-600">

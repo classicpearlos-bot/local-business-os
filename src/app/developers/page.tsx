@@ -163,7 +163,7 @@ print(response.json())`;
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-[#070A12]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -202,7 +202,7 @@ print(response.json())`;
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#0B0F19]/70 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Key Name</th>
                     <th className="px-6 py-4">Token Prefix</th>
@@ -211,14 +211,14 @@ print(response.json())`;
                     <th className="px-6 py-4 text-right">Revoke</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-600">
+                <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {apiKeys.map((key) => (
-                    <tr key={key.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-900 text-sm">
+                    <tr key={key.id} className="hover:bg-[#0B0F19]/80 transition-colors">
+                      <td className="px-6 py-4 font-bold text-white text-sm">
                         {key.name}
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-700">
-                        <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">
+                        <span className="px-2 py-1 rounded bg-slate-100 border border-slate-800">
                           {key.key_prefix}••••••••
                         </span>
                       </td>
@@ -354,7 +354,7 @@ print(response.json())`;
               required
             />
 
-            <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+            <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
               <Button variant="outline" size="sm" type="button" onClick={() => setShowKeyModal(false)}>
                 Cancel
               </Button>

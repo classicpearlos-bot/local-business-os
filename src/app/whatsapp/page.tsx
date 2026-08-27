@@ -98,7 +98,7 @@ export default function WhatsAppSettings() {
     : 'https://your-domain.com/api/whatsapp/webhook';
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-[#070A12]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -169,7 +169,7 @@ export default function WhatsAppSettings() {
                 />
               </CardContent>
 
-              <div className="p-6 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl flex items-center justify-between">
+              <div className="p-6 border-t border-slate-800 bg-[#0B0F19]/50 rounded-b-2xl flex items-center justify-between">
                 <p className="text-xs text-slate-400 font-medium">
                   Credentials are strictly bound to your organization workspace via RLS.
                 </p>

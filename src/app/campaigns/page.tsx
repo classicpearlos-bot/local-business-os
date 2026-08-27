@@ -487,7 +487,7 @@ export default function CampaignsPage() {
   });
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-[#070A12]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -549,7 +549,7 @@ export default function CampaignsPage() {
 
           <Card className="overflow-hidden">
             {/* Table Toolbar */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-4 bg-white">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-4 bg-[#0D131F]">
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
@@ -557,7 +557,7 @@ export default function CampaignsPage() {
                   placeholder="Search campaigns or templates..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium focus:bg-[#0D131F] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                 />
               </div>
 
@@ -569,7 +569,7 @@ export default function CampaignsPage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#0B0F19]/70 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Campaign Name</th>
                     <th className="px-6 py-4">Status</th>
@@ -579,13 +579,13 @@ export default function CampaignsPage() {
                     <th className="px-6 py-4 text-right">Analytics & Report</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-600">
+                <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {filteredCampaigns.map((campaign) => {
                     const percent = Math.min(100, Math.round(((campaign.total_sent || 0) / (campaign.total_recipients || 1)) * 100));
 
                     return (
-                      <tr key={campaign.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-6 py-4 text-slate-900 font-bold text-sm">
+                      <tr key={campaign.id} className="hover:bg-[#0B0F19]/80 transition-colors">
+                        <td className="px-6 py-4 text-white font-bold text-sm">
                           {campaign.name}
                         </td>
                         <td className="px-6 py-4">
@@ -597,7 +597,7 @@ export default function CampaignsPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4 font-mono text-xs text-slate-700">
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200">
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-800">
                             {campaign.template_name || '-'}
                           </span>
                         </td>
@@ -701,12 +701,12 @@ export default function CampaignsPage() {
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'crm'
                         ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                        : 'border-slate-800 hover:border-slate-300 bg-[#0D131F]'
                     }`}
                   >
                     <Users className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">CRM Contacts</p>
+                      <p className="text-xs font-bold text-white">CRM Contacts</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">{contactCount} opted-in</p>
                     </div>
                   </div>
@@ -716,12 +716,12 @@ export default function CampaignsPage() {
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'excel'
                         ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                        : 'border-slate-800 hover:border-slate-300 bg-[#0D131F]'
                     }`}
                   >
                     <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Upload Excel</p>
+                      <p className="text-xs font-bold text-white">Upload Excel</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">Import directly</p>
                     </div>
                   </div>
@@ -731,12 +731,12 @@ export default function CampaignsPage() {
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       audienceSource === 'manual'
                         ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                        : 'border-slate-800 hover:border-slate-300 bg-[#0D131F]'
                     }`}
                   >
                     <Terminal className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Manual Numbers</p>
+                      <p className="text-xs font-bold text-white">Manual Numbers</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">Comma separated</p>
                     </div>
                   </div>
@@ -746,7 +746,7 @@ export default function CampaignsPage() {
               {/* Conditional Audience Box */}
               {audienceSource === 'crm' ? (
                 /* CRM Audience Summary Card */
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-indigo-600" />
@@ -756,11 +756,11 @@ export default function CampaignsPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                    <div className="p-3 bg-[#0D131F] rounded-xl border border-slate-800">
                       <p className="text-slate-400 font-medium">Eligible Opted-In</p>
                       <p className="text-xl font-extrabold text-emerald-600 mt-0.5">{contactCount}</p>
                     </div>
-                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                    <div className="p-3 bg-[#0D131F] rounded-xl border border-slate-800">
                       <p className="text-slate-400 font-medium">Suppressed (Opted Out)</p>
                       <p className="text-xl font-extrabold text-slate-400 mt-0.5">{excludedCount}</p>
                     </div>
@@ -772,7 +772,7 @@ export default function CampaignsPage() {
                 </div>
               ) : audienceSource === 'excel' ? (
                 /* Excel / CSV Uploader & Parsing Component */
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
@@ -797,7 +797,7 @@ export default function CampaignsPage() {
                 </div>
               ) : (
                 /* Manual Numbers Input Component */
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Terminal className="w-4 h-4 text-amber-600" />
@@ -850,11 +850,11 @@ export default function CampaignsPage() {
                       className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 relative ${
                         isSelected 
                           ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20' 
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                          : 'border-slate-800 hover:border-slate-300 bg-[#0D131F]'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono text-xs font-bold text-slate-900 truncate max-w-[180px]">
+                        <span className="font-mono text-xs font-bold text-white truncate max-w-[180px]">
                           {tpl.name}
                         </span>
                         <Badge variant={tpl.status === 'APPROVED' ? 'success' : 'warning'}>
@@ -895,7 +895,7 @@ export default function CampaignsPage() {
                     />
                   </div>
                 ) : (
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center gap-2">
+                  <div className="p-3 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs text-slate-600 flex items-center gap-2">
                     <Info className="w-4 h-4 text-slate-400 shrink-0" />
                     This template uses a standard text header. No media attachment required.
                   </div>
@@ -903,7 +903,7 @@ export default function CampaignsPage() {
 
                 {/* Variable Interpolation Inputs */}
                 {Object.keys(formData.variables).length > 0 && (
-                  <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F19] border border-slate-800">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                       Template Variables
                     </h4>
@@ -929,7 +929,7 @@ export default function CampaignsPage() {
               </div>
 
               {/* Right Column: Live WhatsApp Interactive Preview */}
-              <div className="flex flex-col items-center justify-center p-4 bg-slate-100/60 rounded-2xl border border-slate-200/80">
+              <div className="flex flex-col items-center justify-center p-4 bg-slate-100/60 rounded-2xl border border-slate-800">
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">
                   Live Customer Preview
                 </p>
@@ -951,7 +951,7 @@ export default function CampaignsPage() {
           {builderStep === 4 && (
             <div className="space-y-6 animate-in fade-in duration-150">
               {/* Pre-flight Checklist */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <div className="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-2.5">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 mb-2">
                   Pre-Flight Verification Checklist
                 </h4>
@@ -995,7 +995,7 @@ export default function CampaignsPage() {
                     placeholder="+919876543210 (include country code)"
                     value={testPhone}
                     onChange={(e) => setTestPhone(e.target.value)}
-                    className="flex-1 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                    className="flex-1 px-3.5 py-2 bg-[#0D131F] border border-slate-800 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                   <Button
                     size="sm"
@@ -1027,7 +1027,7 @@ export default function CampaignsPage() {
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  Type <strong className="text-white font-mono bg-white/10 px-1.5 py-0.5 rounded">SEND</strong> below to authorize queueing this campaign for delivery:
+                  Type <strong className="text-white font-mono bg-[#0D131F]/10 px-1.5 py-0.5 rounded">SEND</strong> below to authorize queueing this campaign for delivery:
                 </p>
                 <input
                   type="text"
@@ -1041,7 +1041,7 @@ export default function CampaignsPage() {
           )}
 
           {/* Navigation Controls */}
-          <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+          <div className="pt-4 flex items-center justify-between border-t border-slate-800">
             {builderStep > 1 ? (
               <Button
                 variant="outline"
@@ -1123,7 +1123,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('overview')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'overview' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  reportTab === 'overview' ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -1133,7 +1133,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('failures')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'failures' ? 'bg-white text-rose-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  reportTab === 'failures' ? 'bg-[#0D131F] text-rose-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -1143,7 +1143,7 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setReportTab('log')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  reportTab === 'log' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                  reportTab === 'log' ? 'bg-[#0D131F] text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -1182,7 +1182,7 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Visual Segmented Progress Distribution Bar */}
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="p-5 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-800">
                     <span>Message Lifecycle Funnel</span>
                     <span>{reportTotal} Total Recipients</span>
@@ -1210,7 +1210,7 @@ export default function CampaignsPage() {
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">Failure Reasons & Remediation</h4>
+                    <h4 className="text-sm font-bold text-white">Failure Reasons & Remediation</h4>
                     <p className="text-xs text-slate-500 font-medium">Automatic diagnosis of why undelivered messages failed to reach customers.</p>
                   </div>
 
@@ -1229,13 +1229,13 @@ export default function CampaignsPage() {
                 {Object.keys(failureGroups).length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {Object.values(failureGroups).map((group, idx) => (
-                      <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                      <div key={idx} className="p-4 rounded-2xl bg-[#0D131F] border border-slate-800 shadow-xs space-y-2.5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Badge variant={group.diag.categoryBadgeVariant} dot>
                               {group.diag.category}
                             </Badge>
-                            <span className="font-bold text-slate-900 text-xs">{group.diag.humanTitle}</span>
+                            <span className="font-bold text-white text-xs">{group.diag.humanTitle}</span>
                           </div>
                           <span className="text-xs font-extrabold text-rose-600">
                             {group.count} clients affected ({Math.round((group.count / (reportFailed || 1)) * 100)}%)
@@ -1246,7 +1246,7 @@ export default function CampaignsPage() {
                           {group.diag.explanation}
                         </p>
 
-                        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-2 text-xs">
+                        <div className="p-2.5 bg-[#0B0F19] rounded-xl border border-slate-800 flex items-start gap-2 text-xs">
                           <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                           <div className="text-slate-700">
                             <strong>Recommended Action:</strong> {group.diag.actionableRemedy}
@@ -1283,7 +1283,7 @@ export default function CampaignsPage() {
                       placeholder="Search by phone number or Meta ID..."
                       value={recipientSearch}
                       onChange={(e) => setRecipientSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                      className="w-full pl-9 pr-3 py-1.5 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium focus:bg-[#0D131F] focus:ring-2 focus:ring-indigo-500/20 outline-none"
                     />
                   </div>
 
@@ -1293,7 +1293,7 @@ export default function CampaignsPage() {
                         key={st}
                         onClick={() => setRecipientFilter(st)}
                         className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                          recipientFilter === st ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                          recipientFilter === st ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
                         {st}
@@ -1303,9 +1303,9 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Recipient Trace Table */}
-                <div className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl overflow-hidden">
+                <div className="max-h-80 overflow-y-auto border border-slate-800 rounded-xl overflow-hidden">
                   <table className="w-full text-left text-xs whitespace-nowrap">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                    <thead className="bg-[#0B0F19] border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                       <tr>
                         <th className="px-4 py-3">Recipient</th>
                         <th className="px-4 py-3">Delivery Status</th>
@@ -1313,12 +1313,12 @@ export default function CampaignsPage() {
                         <th className="px-4 py-3">Diagnosis / Details</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    <tbody className="divide-y divide-slate-800/60 font-medium text-slate-700">
                       {filteredReportRecipients.map((recip) => {
                         const diag = recip.status === 'FAILED' ? diagnoseMetaError(recip.error_code, recip.error_message) : null;
 
                         return (
-                          <tr key={recip.id} className="hover:bg-slate-50/80">
+                          <tr key={recip.id} className="hover:bg-[#0B0F19]/80">
                             <td className="px-4 py-3 font-mono">{recip.phone_number}</td>
                             <td className="px-4 py-3">
                               <Badge 
@@ -1362,7 +1362,7 @@ export default function CampaignsPage() {
               </div>
             )}
 
-            <div className="pt-2 flex justify-end border-t border-slate-100">
+            <div className="pt-2 flex justify-end border-t border-slate-800">
               <Button variant="outline" size="sm" onClick={() => setReportCampaign(null)}>
                 Close Report
               </Button>

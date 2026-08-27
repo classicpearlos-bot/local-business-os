@@ -15,7 +15,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label htmlFor={inputId} className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
             {label}
           </label>
         )}
@@ -28,10 +28,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
-            className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed ${
+            className={`w-full px-3.5 py-2.5 bg-[#0B0F19] border rounded-xl text-sm font-medium text-white placeholder:text-slate-500 transition-all outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-900 disabled:text-slate-500 disabled:cursor-not-allowed ${
               leftIcon ? 'pl-10' : ''
             } ${rightIcon ? 'pr-10' : ''} ${
-              error ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-200'
+              error ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-800 focus:border-indigo-500'
             } ${className}`}
             {...props}
           />
@@ -42,9 +42,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error ? (
-          <p className="text-xs font-semibold text-rose-600 mt-1.5">{error}</p>
+          <p className="text-xs font-semibold text-rose-400 mt-1.5">{error}</p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500 font-medium mt-1.5">{helperText}</p>
+          <p className="text-xs text-slate-400 font-medium mt-1.5">{helperText}</p>
         ) : null}
       </div>
     );
@@ -66,22 +66,22 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label htmlFor={inputId} className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
             {label}
           </label>
         )}
         <textarea
           id={inputId}
           ref={ref}
-          className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed ${
-            error ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-200'
+          className={`w-full px-3.5 py-2.5 bg-[#0B0F19] border rounded-xl text-sm font-medium text-white placeholder:text-slate-500 transition-all outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-900 disabled:text-slate-500 disabled:cursor-not-allowed ${
+            error ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-800 focus:border-indigo-500'
           } ${className}`}
           {...props}
         />
         {error ? (
-          <p className="text-xs font-semibold text-rose-600 mt-1.5">{error}</p>
+          <p className="text-xs font-semibold text-rose-400 mt-1.5">{error}</p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500 font-medium mt-1.5">{helperText}</p>
+          <p className="text-xs text-slate-400 font-medium mt-1.5">{helperText}</p>
         ) : null}
       </div>
     );

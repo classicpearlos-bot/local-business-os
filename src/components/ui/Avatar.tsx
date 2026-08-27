@@ -56,7 +56,7 @@ export function Avatar({ name = 'U', size = 'md', status, className = '' }: Avat
       </div>
       {status && (
         <span
-          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-white ${statusColors[status]}`}
+          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-[#0D131F] ${statusColors[status]}`}
         />
       )}
     </div>
