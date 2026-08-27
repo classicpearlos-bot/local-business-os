@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Bell, Gift, Crown, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, Gift, Crown, ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export interface TopBarProps {
   title?: string;
@@ -12,6 +13,23 @@ export interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    supabase
+      .from('conversations')
+      .select('unread_count')
+      .gt('unread_count', 0)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const total = data.reduce((acc, curr) => acc + (curr.unread_count || 0), 0);
+          setUnreadCount(total);
+        } else {
+          setUnreadCount(0);
+        }
+      });
+  }, []);
+
   return (
     <header className="px-6 sm:px-8 py-3.5 border-b border-[#EFE3CF]/80 bg-[#FAF7F2]/80 backdrop-blur-xl sticky top-0 z-20 flex flex-col md:flex-row md:items-center justify-between gap-4">
       {/* Search Bar matching the design */}
@@ -44,17 +62,23 @@ export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
         </Link>
 
         {/* Notification Bell */}
-        <button className="relative w-10 h-10 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] flex items-center justify-center text-[#7C756D] hover:text-[#1E1B18] transition-all cursor-pointer shadow-xs">
-          <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-[#DFB755] to-[#C59E3F] text-white text-[9px] font-extrabold flex items-center justify-center shadow-xs">
-            3
-          </span>
-        </button>
+        <Link href="/inbox">
+          <button className="relative w-10 h-10 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] flex items-center justify-center text-[#7C756D] hover:text-[#1E1B18] transition-all cursor-pointer shadow-xs">
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-[#DFB755] to-[#C59E3F] text-white text-[9px] font-extrabold flex items-center justify-center shadow-xs">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </Link>
 
         {/* Gift / Rewards Icon */}
-        <button className="w-10 h-10 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] flex items-center justify-center text-[#7C756D] hover:text-[#1E1B18] transition-all cursor-pointer shadow-xs">
-          <Gift className="w-4 h-4 text-[#C59E3F]" />
-        </button>
+        <Link href="/campaigns">
+          <button className="w-10 h-10 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] flex items-center justify-center text-[#7C756D] hover:text-[#1E1B18] transition-all cursor-pointer shadow-xs">
+            <Gift className="w-4 h-4 text-[#C59E3F]" />
+          </button>
+        </Link>
 
         {/* Organization Selector Pill */}
         <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white border border-[#EFE3CF] shadow-xs">

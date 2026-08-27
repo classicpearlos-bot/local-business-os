@@ -35,7 +35,7 @@ const supabase = createClient(
 
 export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
-  const [activeCount, setActiveCount] = useState<number>(12);
+  const [activeCount, setActiveCount] = useState<number>(0);
 
   useEffect(() => {
     supabase
@@ -45,7 +45,9 @@ export function Sidebar({ className = '' }: SidebarProps) {
       .then(({ data }) => {
         if (data && data.length > 0) {
           const total = data.reduce((acc, curr) => acc + (curr.unread_count || 0), 0);
-          setActiveCount(total > 0 ? total : 12);
+          setActiveCount(total);
+        } else {
+          setActiveCount(0);
         }
       });
   }, []);

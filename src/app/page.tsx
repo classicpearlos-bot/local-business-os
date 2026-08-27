@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
@@ -14,100 +14,134 @@ import {
   Crown, 
   ChevronRight, 
   TrendingUp, 
-  ArrowUpRight,
-  Shield,
   Sparkles,
   Phone,
   CheckCircle2,
-  Gem,
-  Award,
-  Layers,
-  Layout,
-  Briefcase,
-  Building2
+  RefreshCw,
+  Plus,
+  ArrowRight,
+  Radio,
+  Layers
 } from "lucide-react";
-import { supabase } from '@/lib/supabase';
+
+interface DashboardData {
+  stats: {
+    totalContacts: number;
+    totalConversations: number;
+    totalCampaigns: number;
+    activeCampaigns: number;
+    unreadMessages: number;
+    campaigns: {
+      sent: number;
+      delivered: number;
+      read: number;
+      failed: number;
+      successRate: number;
+    };
+    weeklyActivity: { day: string; count: number; dateStr: string }[];
+    totalWeeklyMessages: number;
+  };
+  recentConversations: {
+    id: string;
+    name: string;
+    phone: string;
+    initials: string;
+    lastMessage: string;
+    time: string;
+    unread: number;
+  }[];
+  recentCampaigns: {
+    id: string;
+    name: string;
+    status: string;
+    total_sent: number;
+    total_delivered: number;
+    total_read: number;
+    created_at: string;
+  }[];
+}
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
-    totalConversations: 2856,
-    unreadMessages: 96,
-    activeCampaigns: 24,
-    totalContacts: 12985,
-    sentMessages: 12256,
-    deliveredMessages: 10429,
-    readMessages: 8956,
-    repliedMessages: 6325,
-    successRate: 85
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Dynamic Current Date Formatting (e.g., "Thursday, 27 Aug 2026")
+  const todayFormatted = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
   });
 
-  const [recentConversations, setRecentConversations] = useState([
-    {
-      name: "Priya Sharma",
-      message: "Thank you so much! Appointment confirmed.",
-      time: "10:30 AM",
-      unread: 3,
-      avatar: "PS",
-      avatarBg: "from-amber-200 to-amber-400"
-    },
-    {
-      name: "Rahul Verma",
-      message: "Can you share the offers for this month?",
-      time: "10:28 AM",
-      unread: 2,
-      avatar: "RV",
-      avatarBg: "from-emerald-200 to-emerald-400"
-    },
-    {
-      name: "Neha Kapoor",
-      message: "Loved the service! Will visit again",
-      time: "10:25 AM",
-      unread: 1,
-      avatar: "NK",
-      avatarBg: "from-purple-200 to-purple-400"
-    },
-    {
-      name: "Ankit Patel",
-      message: "Need haircut and beard styling",
-      time: "10:20 AM",
-      unread: 0,
-      avatar: "AP",
-      avatarBg: "from-blue-200 to-blue-400"
-    },
-    {
-      name: "Simran Kaur",
-      message: "Do you have any bridal packages?",
-      time: "10:18 AM",
-      unread: 4,
-      avatar: "SK",
-      avatarBg: "from-rose-200 to-rose-400"
+  const fetchLiveStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/dashboard/stats');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setData(json);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load live dashboard stats:', e);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, []);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [contactsRes, messagesRes, campaignsRes] = await Promise.all([
-          supabase.from('contacts').select('id', { count: 'exact', head: true }),
-          supabase.from('messages').select('id', { count: 'exact', head: true }),
-          supabase.from('campaigns').select('id', { count: 'exact', head: true })
-        ]);
+    fetchLiveStats();
+  }, [fetchLiveStats]);
 
-        if (contactsRes.count && contactsRes.count > 0) {
-          setStats(prev => ({
-            ...prev,
-            totalContacts: contactsRes.count || prev.totalContacts,
-            totalConversations: messagesRes.count || prev.totalConversations,
-            activeCampaigns: campaignsRes.count || prev.activeCampaigns
-          }));
-        }
-      } catch (e) {
-        console.log('Using salon defaults');
-      }
-    }
+  const stats = data?.stats || {
+    totalContacts: 0,
+    totalConversations: 0,
+    totalCampaigns: 0,
+    activeCampaigns: 0,
+    unreadMessages: 0,
+    campaigns: { sent: 0, delivered: 0, read: 0, failed: 0, successRate: 0 },
+    weeklyActivity: [
+      { day: 'Mon', count: 0, dateStr: '' },
+      { day: 'Tue', count: 0, dateStr: '' },
+      { day: 'Wed', count: 0, dateStr: '' },
+      { day: 'Thu', count: 0, dateStr: '' },
+      { day: 'Fri', count: 0, dateStr: '' },
+      { day: 'Sat', count: 0, dateStr: '' },
+      { day: 'Sun', count: 0, dateStr: '' }
+    ],
+    totalWeeklyMessages: 0
+  };
 
-    loadData();
-  }, []);
+  const recentConversations = data?.recentConversations || [];
+  const recentCampaigns = data?.recentCampaigns || [];
+
+  // Calculate SVG curve coordinates from real weekly activity
+  const counts = stats.weeklyActivity.map(w => w.count);
+  const maxCount = Math.max(...counts, 10);
+  const points = counts.map((cnt, i) => {
+    const x = (i / (counts.length - 1)) * 280 + 10;
+    const y = 95 - (cnt / maxCount) * 75;
+    return { x, y, count: cnt };
+  });
+
+  const svgPathD = points.reduce((acc, pt, i) => {
+    if (i === 0) return `M ${pt.x} ${pt.y}`;
+    const prev = points[i - 1];
+    const cx = (prev.x + pt.x) / 2;
+    return `${acc} Q ${prev.x} ${prev.y}, ${cx} ${(prev.y + pt.y) / 2} T ${pt.x} ${pt.y}`;
+  }, '');
+
+  const areaPathD = `${svgPathD} L 290 110 L 10 110 Z`;
+
+  // Avatar color generator based on initials
+  const getAvatarGradient = (initials: string) => {
+    const charCode = initials.charCodeAt(0) || 0;
+    if (charCode % 4 === 0) return 'from-amber-200 to-amber-400 text-amber-950';
+    if (charCode % 4 === 1) return 'from-emerald-200 to-emerald-400 text-emerald-950';
+    if (charCode % 4 === 2) return 'from-purple-200 to-purple-400 text-purple-950';
+    return 'from-rose-200 to-rose-400 text-rose-950';
+  };
 
   return (
     <div className="flex h-screen bg-[#F7F3EA] text-[#1E1B18] font-sans antialiased overflow-hidden">
@@ -119,7 +153,7 @@ export default function Dashboard() {
         <TopBar />
 
         <main className="p-6 sm:p-8 space-y-6 max-w-[1600px] w-full mx-auto">
-          {/* Greeting Header & Date Filter */}
+          {/* Greeting Header & Real Date Filter */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#1E1B18] tracking-tight flex items-center gap-2">
@@ -131,23 +165,34 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Date Picker Button */}
+            {/* Date Picker & Real Refresh Button */}
             <div className="flex items-center gap-2">
-              <button className="h-10 px-4 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] shadow-xs text-xs font-bold text-[#3E2D12] flex items-center gap-2.5 transition-all cursor-pointer">
-                <CalendarIcon className="w-4 h-4 text-[#C59E3F]" />
-                <span>Tuesday, 26 Aug 2026</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#8C827A]" />
+              <button 
+                onClick={() => fetchLiveStats()}
+                disabled={loading}
+                className="h-10 px-3.5 rounded-full bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] shadow-xs text-xs font-bold text-[#3E2D12] flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                title="Refresh real-time data"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-[#C59E3F] ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Sync Data</span>
               </button>
+
+              <div className="h-10 px-4 rounded-full bg-white border border-[#EFE3CF] shadow-xs text-xs font-bold text-[#3E2D12] flex items-center gap-2.5">
+                <CalendarIcon className="w-4 h-4 text-[#C59E3F]" />
+                <span>{todayFormatted}</span>
+              </div>
             </div>
           </div>
 
-          {/* Top 4 KPI Metric Cards */}
+          {/* Top 4 Real KPI Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* 1. Total Conversations */}
             <div className="card-luxury p-5 flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between text-xs font-bold text-[#7C756D]">
                 <span>Total Conversations</span>
-                <span className="text-[#C4BCB3] group-hover:text-[#7C756D] cursor-pointer">•••</span>
+                <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Live
+                </span>
               </div>
               <div className="flex items-center justify-between my-3">
                 <h3 className="text-3xl font-black text-[#1E1B18] tracking-tight">
@@ -159,7 +204,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span>18.5% from last 7 days</span>
+                <span>Active WhatsApp Threads</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#FDE68A] to-transparent" />
             </div>
@@ -168,7 +213,9 @@ export default function Dashboard() {
             <div className="card-luxury p-5 flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between text-xs font-bold text-[#7C756D]">
                 <span>Unread Messages</span>
-                <span className="text-[#C4BCB3] group-hover:text-[#7C756D] cursor-pointer">•••</span>
+                <span className="text-xs font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  Real-Time
+                </span>
               </div>
               <div className="flex items-center justify-between my-3">
                 <h3 className="text-3xl font-black text-[#1E1B18] tracking-tight">
@@ -178,18 +225,20 @@ export default function Dashboard() {
                   <Mail className="w-5 h-5" />
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>12.7% from last 7 days</span>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#CA8A04]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Requires Guest Response</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#FEF08A] to-transparent" />
             </div>
 
-            {/* 3. Active Campaigns */}
+            {/* 3. Total Campaigns */}
             <div className="card-luxury p-5 flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between text-xs font-bold text-[#7C756D]">
-                <span>Active Campaigns</span>
-                <span className="text-[#C4BCB3] group-hover:text-[#7C756D] cursor-pointer">•••</span>
+                <span>Broadcast Campaigns</span>
+                <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  {stats.totalCampaigns} Total
+                </span>
               </div>
               <div className="flex items-center justify-between my-3">
                 <h3 className="text-3xl font-black text-[#1E1B18] tracking-tight">
@@ -201,7 +250,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span>8.3% from last 7 days</span>
+                <span>Marketing & Retention</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#BBF7D0] to-transparent" />
             </div>
@@ -209,8 +258,10 @@ export default function Dashboard() {
             {/* 4. Total Contacts */}
             <div className="card-luxury p-5 flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between text-xs font-bold text-[#7C756D]">
-                <span>Total Contacts</span>
-                <span className="text-[#C4BCB3] group-hover:text-[#7C756D] cursor-pointer">•••</span>
+                <span>Salon Guests (CRM)</span>
+                <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                  Database
+                </span>
               </div>
               <div className="flex items-center justify-between my-3">
                 <h3 className="text-3xl font-black text-[#1E1B18] tracking-tight">
@@ -220,9 +271,9 @@ export default function Dashboard() {
                   <Users className="w-5 h-5" />
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>22.1% from last 7 days</span>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#9333EA]">
+                <Users className="w-3.5 h-3.5" />
+                <span>Opted-In WhatsApp Contacts</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#E9D5FF] to-transparent" />
             </div>
@@ -230,7 +281,7 @@ export default function Dashboard() {
 
           {/* Middle Row Grid (4 Columns) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Column 1: Recent Conversations (3.5 cols) */}
+            {/* Column 1: Real Recent Conversations (3.5 cols) */}
             <div className="lg:col-span-3 card-luxury p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-[#EFE3CF]">
@@ -241,132 +292,134 @@ export default function Dashboard() {
                 </div>
 
                 <div className="divide-y divide-[#EFE3CF]/60 mt-2">
-                  {recentConversations.map((conv, idx) => (
-                    <Link
-                      key={idx}
-                      href="/inbox"
-                      className="py-3 flex items-center justify-between group hover:bg-[#FAF7F2] -mx-2 px-2 rounded-xl transition-all"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${conv.avatarBg} text-[#3E2D12] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-white`}>
-                          {conv.avatar}
+                  {recentConversations.length > 0 ? (
+                    recentConversations.map((conv) => (
+                      <Link
+                        key={conv.id}
+                        href={`/inbox?id=${conv.id}`}
+                        className="py-3 flex items-center justify-between group hover:bg-[#FAF7F2] -mx-2 px-2 rounded-xl transition-all"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient(conv.initials)} font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-white`}>
+                            {conv.initials}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-[#1E1B18] truncate group-hover:text-[#B88B2A] transition-colors">
+                              {conv.name}
+                            </p>
+                            <p className="text-[11px] text-[#7C756D] truncate mt-0.5 max-w-[140px]">
+                              {conv.lastMessage}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#1E1B18] truncate group-hover:text-[#B88B2A] transition-colors">
-                            {conv.name}
-                          </p>
-                          <p className="text-[11px] text-[#7C756D] truncate mt-0.5 max-w-[140px]">
-                            {conv.message}
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="text-right shrink-0 ml-2">
-                        <p className="text-[10px] text-[#9E968D] font-medium">{conv.time}</p>
-                        {conv.unread > 0 ? (
-                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#DFB755] text-[#3E2D12] text-[9px] font-bold mt-1 shadow-xs">
-                            {conv.unread}
-                          </span>
-                        ) : (
-                          <span className="inline-block w-2 h-2 rounded-full border border-[#DFBE7E] mt-2" />
-                        )}
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="text-right shrink-0 ml-2">
+                          <p className="text-[10px] text-[#9E968D] font-medium">{conv.time}</p>
+                          {conv.unread > 0 ? (
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#DFB755] text-[#3E2D12] text-[9px] font-bold mt-1 shadow-xs">
+                              {conv.unread}
+                            </span>
+                          ) : (
+                            <span className="inline-block w-2 h-2 rounded-full border border-[#DFBE7E] mt-2" />
+                          )}
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-xs text-[#7C756D]">
+                      No active conversations yet.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Column 2: Analytics Overview (4.5 cols) */}
+            {/* Column 2: Real Analytics Overview (4.5 cols) */}
             <div className="lg:col-span-4 card-luxury p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-[#EFE3CF]">
                   <h2 className="text-sm font-bold text-[#1E1B18]">Analytics Overview</h2>
-                  <button className="h-7 px-2.5 rounded-lg bg-white border border-[#EFE3CF] text-[11px] font-bold text-[#5D564E] flex items-center gap-1.5 cursor-pointer hover:border-[#DFBE7E]">
-                    <span>This Week</span>
-                    <ChevronDown className="w-3 h-3 text-[#8C827A]" />
-                  </button>
+                  <span className="text-[11px] font-bold text-[#8C6514] bg-[#FDF6E2] px-2.5 py-1 rounded-full border border-[#EBD4A4]">
+                    Last 7 Days
+                  </span>
                 </div>
 
-                {/* Golden Line Area Graph */}
+                {/* Real Dynamic Golden Line Area Graph */}
                 <div className="py-4 relative">
                   <div className="h-40 w-full relative flex items-end justify-between px-2 pt-6">
-                    {/* SVG Curve Line */}
+                    {/* Dynamic SVG Curve Line from Real Data */}
                     <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 120">
                       <defs>
-                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <linearGradient id="goldGradientReal" x1="0%" y1="0%" x2="0%" y2="100%">
                           <stop offset="0%" stopColor="#DFB755" stopOpacity="0.35" />
                           <stop offset="100%" stopColor="#DFB755" stopOpacity="0.0" />
                         </linearGradient>
                       </defs>
                       {/* Area Fill */}
                       <path
-                        d="M 0 100 Q 40 85, 80 65 T 160 30 T 220 55 T 300 35 L 300 120 L 0 120 Z"
-                        fill="url(#goldGradient)"
+                        d={areaPathD}
+                        fill="url(#goldGradientReal)"
                       />
                       {/* Stroke Line */}
                       <path
-                        d="M 0 100 Q 40 85, 80 65 T 160 30 T 220 55 T 300 35"
+                        d={svgPathD}
                         fill="none"
                         stroke="#C59E3F"
                         strokeWidth="3"
                         strokeLinecap="round"
                       />
-                      {/* Peak Point */}
-                      <circle cx="160" cy="30" r="5" fill="#FFFFFF" stroke="#C59E3F" strokeWidth="3" />
+                      {/* Interactive Data Points */}
+                      {points.map((pt, idx) => (
+                        <circle key={idx} cx={pt.x} cy={pt.y} r="4" fill="#FFFFFF" stroke="#C59E3F" strokeWidth="2.5" />
+                      ))}
                     </svg>
 
-                    {/* Tooltip Badge at Peak */}
-                    <div className="absolute left-[48%] top-2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-white border border-[#DFBE7E] shadow-sm text-[10px] font-extrabold text-[#7A5714]">
-                      785
+                    {/* Peak Point Dynamic Tooltip */}
+                    <div className="absolute right-6 top-2 px-2.5 py-0.5 rounded-md bg-white border border-[#DFBE7E] shadow-sm text-[10px] font-extrabold text-[#7A5714]">
+                      {stats.totalWeeklyMessages} Messages
                     </div>
 
-                    {/* X-Axis Labels */}
+                    {/* Dynamic X-Axis Labels */}
                     <div className="w-full flex justify-between text-[10px] font-bold text-[#9E968D] pt-2 border-t border-[#EFE3CF]/60 z-10">
-                      <span>Mon</span>
-                      <span>Tue</span>
-                      <span>Wed</span>
-                      <span>Thu</span>
-                      <span>Fri</span>
-                      <span>Sat</span>
-                      <span>Sun</span>
+                      {stats.weeklyActivity.map((w, idx) => (
+                        <span key={idx}>{w.day}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom 3 Summary Metrics */}
+              {/* Bottom 3 Summary Metrics with Real DB Values */}
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#EFE3CF] text-center">
                 <div className="p-2 rounded-xl bg-[#FAF7F2]">
-                  <p className="text-[10px] text-[#7C756D] font-bold">New Contacts</p>
-                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">1,245</p>
-                  <span className="text-[9px] font-bold text-[#059669]">↑ 15.3%</span>
+                  <p className="text-[10px] text-[#7C756D] font-bold">Total Contacts</p>
+                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">{stats.totalContacts}</p>
+                  <span className="text-[9px] font-bold text-[#059669]">Opted-In</span>
                 </div>
                 <div className="p-2 rounded-xl bg-[#FAF7F2]">
-                  <p className="text-[10px] text-[#7C756D] font-bold">Messages Sent</p>
-                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">8,659</p>
-                  <span className="text-[9px] font-bold text-[#059669]">↑ 19.8%</span>
+                  <p className="text-[10px] text-[#7C756D] font-bold">Weekly Activity</p>
+                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">{stats.totalWeeklyMessages}</p>
+                  <span className="text-[9px] font-bold text-[#059669]">Dispatched</span>
                 </div>
                 <div className="p-2 rounded-xl bg-[#FAF7F2]">
-                  <p className="text-[10px] text-[#7C756D] font-bold">Response Rate</p>
-                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">98.6%</p>
-                  <span className="text-[9px] font-bold text-[#059669]">↑ 6.2%</span>
+                  <p className="text-[10px] text-[#7C756D] font-bold">Success Rate</p>
+                  <p className="text-sm font-black text-[#1E1B18] mt-0.5">{stats.campaigns.successRate}%</p>
+                  <span className="text-[9px] font-bold text-[#059669]">Delivered</span>
                 </div>
               </div>
             </div>
 
-            {/* Column 3: Campaign Performance (2.5 cols) */}
+            {/* Column 3: Real Campaign Performance (2.5 cols) */}
             <div className="lg:col-span-3 card-luxury p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-[#EFE3CF]">
                   <h2 className="text-sm font-bold text-[#1E1B18]">Campaign Performance</h2>
-                  <button className="h-7 px-2 rounded-lg bg-white border border-[#EFE3CF] text-[10px] font-bold text-[#5D564E] flex items-center gap-1 cursor-pointer hover:border-[#DFBE7E]">
-                    <span>This Month</span>
-                    <ChevronDown className="w-3 h-3 text-[#8C827A]" />
-                  </button>
+                  <span className="text-[10px] font-bold text-[#5D564E] bg-[#FAF7F2] px-2 py-0.5 rounded-lg border border-[#EFE3CF]">
+                    {stats.totalCampaigns} Campaigns
+                  </span>
                 </div>
 
-                {/* Donut Chart Gauge */}
+                {/* Real Donut Chart Gauge */}
                 <div className="flex flex-col items-center justify-center my-4">
                   <div className="relative w-32 h-32 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -381,7 +434,7 @@ export default function Dashboard() {
                       {/* Golden Progress Ring */}
                       <path
                         className="text-[#C59E3F]"
-                        strokeDasharray="85, 100"
+                        strokeDasharray={`${stats.campaigns.successRate}, 100`}
                         strokeWidth="3.5"
                         strokeLinecap="round"
                         stroke="currentColor"
@@ -390,144 +443,98 @@ export default function Dashboard() {
                       />
                     </svg>
                     <div className="absolute flex flex-col items-center text-center">
-                      <span className="text-2xl font-black text-[#1E1B18]">85%</span>
-                      <span className="text-[9px] font-bold text-[#7C756D] uppercase">Success Rate</span>
+                      <span className="text-2xl font-black text-[#1E1B18]">{stats.campaigns.successRate}%</span>
+                      <span className="text-[9px] font-bold text-[#7C756D] uppercase">Delivery Rate</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Status Metric Rows */}
+              {/* Status Metric Rows with Real Database Data */}
               <div className="space-y-2 pt-3 border-t border-[#EFE3CF] text-xs font-bold">
                 <div className="flex items-center justify-between text-[#5D564E]">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
                     <span>Sent</span>
                   </div>
-                  <span className="text-[#1E1B18] font-black">{stats.sentMessages.toLocaleString()}</span>
+                  <span className="text-[#1E1B18] font-black">{stats.campaigns.sent.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#5D564E]">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
                     <span>Delivered</span>
                   </div>
-                  <span className="text-[#1E1B18] font-black">{stats.deliveredMessages.toLocaleString()}</span>
+                  <span className="text-[#1E1B18] font-black">{stats.campaigns.delivered.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#5D564E]">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#EC4899]" />
                     <span>Read</span>
                   </div>
-                  <span className="text-[#1E1B18] font-black">{stats.readMessages.toLocaleString()}</span>
+                  <span className="text-[#1E1B18] font-black">{stats.campaigns.read.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#5D564E]">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]" />
-                    <span>Replied</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                    <span>Failed</span>
                   </div>
-                  <span className="text-[#1E1B18] font-black">{stats.repliedMessages.toLocaleString()}</span>
+                  <span className="text-[#1E1B18] font-black">{stats.campaigns.failed.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
-            {/* Column 4: Why This Palette? Guide Panel (2 cols) */}
+            {/* Column 4: Real Recent Broadcast Campaigns & Quick Launcher (2 cols) */}
             <div className="lg:col-span-2 card-luxury p-4 flex flex-col justify-between text-xs">
               <div>
-                <h3 className="font-serif font-black text-xs text-[#8C6514] uppercase tracking-wider mb-3">
-                  Why This Palette?
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-serif font-black text-xs text-[#8C6514] uppercase tracking-wider">
+                    Recent Broadcasts
+                  </h3>
+                  <Link href="/campaigns" className="text-[10px] font-bold text-[#B88B2A] hover:underline">
+                    View
+                  </Link>
+                </div>
 
-                <div className="space-y-3">
-                  {/* Royal Gold */}
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-[#FEF3C7] text-[#C59E3F] flex items-center justify-center shrink-0 border border-[#FDE68A]">
-                      <Crown className="w-3.5 h-3.5" />
+                <div className="space-y-2.5">
+                  {recentCampaigns.length > 0 ? (
+                    recentCampaigns.map((camp) => (
+                      <div key={camp.id} className="p-2 rounded-xl bg-[#FAF7F2] border border-[#EFE3CF]">
+                        <div className="flex items-center justify-between">
+                          <p className="font-bold text-[#1E1B18] truncate max-w-[110px] text-[11px]">
+                            {camp.name}
+                          </p>
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                            {camp.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-[#7C756D] mt-1">
+                          <span>Sent: {camp.total_sent}</span>
+                          <span className="text-emerald-700 font-bold">Delivered: {camp.total_delivered}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-6 text-center text-xs text-[#7C756D]">
+                      No campaigns dispatched yet.
                     </div>
-                    <div>
-                      <p className="font-bold text-[#1E1B18] leading-tight">Royal Gold</p>
-                      <p className="text-[10px] text-[#7C756D] leading-tight mt-0.5">
-                        Represents success, wealth and premium quality.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Pearl White */}
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-[#8C827A] flex items-center justify-center shrink-0 border border-[#EFE3CF]">
-                      <Gem className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#1E1B18] leading-tight">Pearl White</p>
-                      <p className="text-[10px] text-[#7C756D] leading-tight mt-0.5">
-                        Adds purity, clarity and a clean luxury feel.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Amethyst Purple */}
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-[#F3E8FF] text-[#9333EA] flex items-center justify-center shrink-0 border border-[#E9D5FF]">
-                      <Sparkles className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#1E1B18] leading-tight">Amethyst Purple</p>
-                      <p className="text-[10px] text-[#7C756D] leading-tight mt-0.5">
-                        Signifies elegance, depth and creativity.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Emerald Green */}
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center shrink-0 border border-[#BBF7D0]">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#1E1B18] leading-tight">Emerald Green</p>
-                      <p className="text-[10px] text-[#7C756D] leading-tight mt-0.5">
-                        Brings balance, growth and prosperity.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Warm Taupe */}
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-[#F2ECE0] text-[#7C756D] flex items-center justify-center shrink-0 border border-[#E2D7C3]">
-                      <Layers className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#1E1B18] leading-tight">Warm Taupe</p>
-                      <p className="text-[10px] text-[#7C756D] leading-tight mt-0.5">
-                        Creates a calm, professional and timeless base.
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Perfect For Section */}
-              <div className="pt-3 border-t border-[#EFE3CF] mt-3">
-                <h4 className="font-serif font-black text-[11px] text-[#8C6514] uppercase tracking-wider mb-2">
-                  Perfect For
-                </h4>
-                <div className="space-y-1.5 text-[10px] font-bold text-[#5D564E]">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-3 h-3 text-[#C59E3F]" />
-                    <span>CRM Software</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Layout className="w-3 h-3 text-[#C59E3F]" />
-                    <span>Dashboard Systems</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-3 h-3 text-[#C59E3F]" />
-                    <span>Premium SaaS</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-3 h-3 text-[#C59E3F]" />
-                    <span>Business Platforms</span>
-                  </div>
-                </div>
+              {/* Quick Actions Panel */}
+              <div className="pt-3 border-t border-[#EFE3CF] mt-3 space-y-2">
+                <Link href="/campaigns">
+                  <button className="w-full gold-button py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>New Campaign</span>
+                  </button>
+                </Link>
+                <Link href="/flows">
+                  <button className="w-full py-1.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-[#DFBE7E] text-[11px] font-bold text-[#5D564E] flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                    <Layers className="w-3 h-3 text-[#C59E3F]" />
+                    <span>Flow Studio</span>
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -541,16 +548,16 @@ export default function Dashboard() {
                   <Crown className="w-6 h-6 text-[#C59E3F]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-[#1E1B18]">You&apos;re using Premium Plan</h3>
+                  <h3 className="text-sm font-black text-[#1E1B18]">Classic Pearl — Premium Plan</h3>
                   <p className="text-xs text-[#7C756D] font-medium mt-0.5">
-                    Unlock more features & grow your business
+                    Full WhatsApp API & Marketing Automation Enabled
                   </p>
                 </div>
               </div>
 
               <Link href="/whatsapp">
                 <button className="gold-button h-9 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer">
-                  <span>Upgrade Now</span>
+                  <span>Settings</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </Link>
@@ -579,14 +586,18 @@ export default function Dashboard() {
               </Link>
             </div>
 
-            {/* Banner 3: Cosmic Luxury Quote Card (3 cols) */}
+            {/* Banner 3: Live System Status (3 cols) */}
             <div className="lg:col-span-3 p-5 rounded-2xl cosmic-luxury-card text-center flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-1 z-10">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-bold text-emerald-300">Live Production Node</span>
+              </div>
               <p className="font-serif italic text-xs font-medium text-[#DFB755] leading-relaxed relative z-10">
-                <span className="text-base font-serif text-[#C59E3F] mr-1">❝</span>
-                Designed for those who never compromise.
-                <span className="text-base font-serif text-[#C59E3F] ml-1">❞</span>
+                Classic Pearl Salon OS v2.0
               </p>
-              {/* Subtle Stardust Background Highlight */}
+              <p className="text-[10px] text-[#C4BCB3] mt-0.5 z-10">
+                {stats.totalContacts} Guests • {stats.totalConversations} Threads
+              </p>
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(223,183,85,0.08)_0,transparent_70%)] pointer-events-none" />
             </div>
           </div>
@@ -597,7 +608,7 @@ export default function Dashboard() {
               <div className="h-[1px] w-20 bg-gradient-to-r from-transparent to-[#DFBE7E]" />
               <span className="text-[#C59E3F] text-xs font-serif">✦</span>
               <p className="font-serif text-[10px] font-black tracking-[0.35em] text-[#8C6514] uppercase">
-                LUXURY . POWER . ELEGANCE . PERFORMANCE .
+                CLASSIC PEARL . LUXURY . PERFORMANCE
               </p>
               <span className="text-[#C59E3F] text-xs font-serif">✦</span>
               <div className="h-[1px] w-20 bg-gradient-to-l from-transparent to-[#DFBE7E]" />
