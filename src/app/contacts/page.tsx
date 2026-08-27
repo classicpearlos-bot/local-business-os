@@ -39,6 +39,8 @@ export default function ContactsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'opted_in' | 'opted_out'>('all');
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const [optedInCount, setOptedInCount] = useState(0);
+  const [optedOutCount, setOptedOutCount] = useState(0);
   const [openingChatId, setOpeningChatId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -59,6 +61,8 @@ export default function ContactsPage() {
         const data = await res.json();
         setContacts(data.contacts || []);
         setTotal(data.total || 0);
+        setOptedInCount(data.opted_in_count || 0);
+        setOptedOutCount(data.opted_out_count || 0);
       }
     } finally {
       setLoading(false);
@@ -219,6 +223,79 @@ export default function ContactsPage() {
         />
 
         <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-6">
+          
+          {/* Executive Audience Health & Meta Policy KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
+            {/* Card 1: Total Audience */}
+            <div 
+              onClick={() => setStatusFilter('all')}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                statusFilter === 'all'
+                  ? 'bg-[#0F172A] border-indigo-500/80 shadow-lg shadow-indigo-500/10'
+                  : 'bg-[#0B0F19] border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400">Total Audience</span>
+                <Users className="w-4 h-4 text-indigo-400" />
+              </div>
+              <p className="text-2xl font-black text-white">{total}</p>
+              <p className="text-[11px] font-medium text-slate-400 mt-1">
+                Complete WhatsApp customer directory
+              </p>
+            </div>
+
+            {/* Card 2: Marketing Opted-In (Active) */}
+            <div 
+              onClick={() => setStatusFilter('opted_in')}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                statusFilter === 'opted_in'
+                  ? 'bg-emerald-950/40 border-emerald-500/80 shadow-lg shadow-emerald-500/10'
+                  : 'bg-[#0B0F19] border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Opted In (Active)
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-950 text-emerald-300 border border-emerald-800/60">
+                  {total > 0 ? Math.round((optedInCount / total) * 100) : 0}%
+                </span>
+              </div>
+              <p className="text-2xl font-black text-emerald-400">{optedInCount}</p>
+              <p className="text-[11px] font-medium text-slate-400 mt-1">
+                Eligible for marketing broadcasts • 100% Meta compliant
+              </p>
+            </div>
+
+            {/* Card 3: Marketing Opted-Out (Protected) */}
+            <div 
+              onClick={() => setStatusFilter('opted_out')}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                statusFilter === 'opted_out'
+                  ? 'bg-rose-950/40 border-rose-500/80 shadow-lg shadow-rose-500/10'
+                  : 'bg-[#0B0F19] border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  Opted Out (Excluded)
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-950 text-rose-300 border border-rose-800/60">
+                  Protected
+                </span>
+              </div>
+              <p className="text-2xl font-black text-rose-400">{optedOutCount}</p>
+              <p className="text-[11px] font-medium text-slate-400 mt-1">
+                Excluded from broadcasts to protect Meta quality & prevent spam blocks
+              </p>
+            </div>
+
+          </div>
+
           <Card className="overflow-hidden">
             {/* Toolbar */}
             <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0D131F]">
@@ -230,10 +307,10 @@ export default function ContactsPage() {
                     placeholder="Search by name or WhatsApp number..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium focus:bg-[#0D131F] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-9 pr-8 py-2 bg-[#0B0F19] border border-slate-800 rounded-xl text-xs font-medium focus:bg-[#0D131F] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-white placeholder:text-slate-500"
                   />
                   {search && (
-                    <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-200 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -242,30 +319,30 @@ export default function ContactsPage() {
 
               {/* Status Filter Pills */}
               <div className="flex items-center gap-2">
-                <div className="flex bg-slate-100/80 p-1 rounded-xl">
+                <div className="flex bg-[#070A12] p-1 rounded-xl border border-slate-800">
                   <button
                     onClick={() => setStatusFilter('all')}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'all' ? 'bg-[#0D131F] text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      statusFilter === 'all' ? 'bg-slate-800 text-white shadow-xs border border-slate-700' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    All ({contacts.length})
+                    All ({total})
                   </button>
                   <button
                     onClick={() => setStatusFilter('opted_in')}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'opted_in' ? 'bg-[#0D131F] text-emerald-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      statusFilter === 'opted_in' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700 shadow-xs' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Opted In
+                    Opted In ({optedInCount})
                   </button>
                   <button
                     onClick={() => setStatusFilter('opted_out')}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'opted_out' ? 'bg-[#0D131F] text-rose-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      statusFilter === 'opted_out' ? 'bg-rose-950 text-rose-300 border border-rose-700 shadow-xs' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Opted Out
+                    Opted Out ({optedOutCount})
                   </button>
                 </div>
 

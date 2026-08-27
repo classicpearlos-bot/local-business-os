@@ -27,6 +27,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
+    const optedInParam = searchParams.get('opted_in');
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const offset = (page - 1) * limit;
@@ -38,6 +39,12 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
+    if (optedInParam === 'true') {
+      query = query.eq('opted_in', true);
+    } else if (optedInParam === 'false') {
+      query = query.eq('opted_in', false);
+    }
+
     if (search) {
       const cleanDigits = search.replace(/\D/g, '');
       if (cleanDigits.length >= 3) {
@@ -47,11 +54,27 @@ export async function GET(request: Request) {
       }
     }
 
-    const { data: contacts, error, count } = await query;
+    // Fetch contacts and head counts in parallel
+    const [
+      contactsRes,
+      optedInCountRes,
+      optedOutCountRes
+    ] = await Promise.all([
+      query,
+      supabaseAdmin.from('contacts').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).eq('opted_in', true),
+      supabaseAdmin.from('contacts').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).eq('opted_in', false)
+    ]);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (contactsRes.error) return NextResponse.json({ error: contactsRes.error.message }, { status: 500 });
 
-    return NextResponse.json({ contacts, total: count, page, limit });
+    return NextResponse.json({ 
+      contacts: contactsRes.data || [], 
+      total: contactsRes.count || 0,
+      opted_in_count: optedInCountRes.count || 0,
+      opted_out_count: optedOutCountRes.count || 0,
+      page, 
+      limit 
+    });
   } catch (err: any) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
