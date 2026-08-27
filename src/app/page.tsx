@@ -116,27 +116,41 @@ export default function Dashboard() {
   const recentConversations = data?.recentConversations || [];
   const recentCampaigns = data?.recentCampaigns || [];
 
-  // Calculate SVG curve coordinates from real weekly activity
-  const counts = stats.weeklyActivity.map(w => w.count);
+  // Calculate SVG curve coordinates safely from real weekly activity
+  const weekly = stats.weeklyActivity && stats.weeklyActivity.length > 0 
+    ? stats.weeklyActivity 
+    : [
+        { day: 'Mon', count: 0, dateStr: '' },
+        { day: 'Tue', count: 0, dateStr: '' },
+        { day: 'Wed', count: 0, dateStr: '' },
+        { day: 'Thu', count: 0, dateStr: '' },
+        { day: 'Fri', count: 0, dateStr: '' },
+        { day: 'Sat', count: 0, dateStr: '' },
+        { day: 'Sun', count: 0, dateStr: '' }
+      ];
+
+  const counts = weekly.map(w => w.count || 0);
   const maxCount = Math.max(...counts, 10);
-  const points = counts.map((cnt, i) => {
-    const x = (i / (counts.length - 1)) * 280 + 10;
-    const y = 95 - (cnt / maxCount) * 75;
-    return { x, y, count: cnt };
+  const points = weekly.map((w, i) => {
+    const x = weekly.length > 1 ? (i / (weekly.length - 1)) * 280 + 10 : 140;
+    const y = 95 - ((w.count || 0) / maxCount) * 75;
+    return { x, y, count: w.count || 0 };
   });
 
-  const svgPathD = points.reduce((acc, pt, i) => {
-    if (i === 0) return `M ${pt.x} ${pt.y}`;
-    const prev = points[i - 1];
-    const cx = (prev.x + pt.x) / 2;
-    return `${acc} Q ${prev.x} ${prev.y}, ${cx} ${(prev.y + pt.y) / 2} T ${pt.x} ${pt.y}`;
-  }, '');
+  const svgPathD = points.length > 0 
+    ? points.reduce((acc, pt, i) => {
+        if (i === 0) return `M ${pt.x} ${pt.y}`;
+        const prev = points[i - 1];
+        const cx = (prev.x + pt.x) / 2;
+        return `${acc} Q ${prev.x} ${prev.y}, ${cx} ${(prev.y + pt.y) / 2} T ${pt.x} ${pt.y}`;
+      }, '')
+    : 'M 10 95 L 290 95';
 
   const areaPathD = `${svgPathD} L 290 110 L 10 110 Z`;
 
   // Avatar color generator based on initials
   const getAvatarGradient = (initials: string) => {
-    const charCode = initials.charCodeAt(0) || 0;
+    const charCode = (initials && initials.charCodeAt(0)) || 0;
     if (charCode % 4 === 0) return 'from-amber-200 to-amber-400 text-amber-950';
     if (charCode % 4 === 1) return 'from-emerald-200 to-emerald-400 text-emerald-950';
     if (charCode % 4 === 2) return 'from-purple-200 to-purple-400 text-purple-950';
