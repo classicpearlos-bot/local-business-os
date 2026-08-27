@@ -39,7 +39,12 @@ export async function GET(request: Request) {
       .range(offset, offset + limit - 1);
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,phone_number.ilike.%${search}%`);
+      const cleanDigits = search.replace(/\D/g, '');
+      if (cleanDigits.length >= 3) {
+        query = query.or(`name.ilike.%${search}%,phone_number.ilike.%${cleanDigits}%,phone_number.ilike.%${search}%`);
+      } else {
+        query = query.or(`name.ilike.%${search}%,phone_number.ilike.%${search}%`);
+      }
     }
 
     const { data: contacts, error, count } = await query;

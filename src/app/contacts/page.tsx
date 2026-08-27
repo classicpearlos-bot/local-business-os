@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { 
@@ -18,7 +19,8 @@ import {
   CheckCircle2,
   ShieldAlert,
   FileSpreadsheet,
-  Download
+  Download,
+  MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -31,11 +33,13 @@ import { ExcelUploader } from "@/components/ui/ExcelUploader";
 import { ExcelParseResult } from "@/utils/excelImport";
 
 export default function ContactsPage() {
+  const router = useRouter();
   const [contacts, setContacts] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'opted_in' | 'opted_out'>('all');
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [parsedExcel, setParsedExcel] = useState<ExcelParseResult | null>(null);
@@ -49,7 +53,7 @@ export default function ContactsPage() {
   const fetchContacts = useCallback(async (searchQuery = '') => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ search: searchQuery, limit: '100' });
+      const params = new URLSearchParams({ search: searchQuery, limit: '500' });
       const res = await fetch(`/api/contacts?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -154,6 +158,30 @@ export default function ContactsPage() {
       body: JSON.stringify({ id: contact.id, opted_in: !contact.opted_in })
     });
     if (res.ok) fetchContacts(search);
+  };
+
+  const openChatForContact = async (contact: any) => {
+    setOpeningChatId(contact.id);
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone_number: contact.phone_number,
+          name: contact.name
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.conversation_id) {
+        router.push(`/inbox?id=${data.conversation_id}`);
+      } else {
+        router.push(`/inbox?phone=${encodeURIComponent(contact.phone_number)}`);
+      }
+    } catch (e) {
+      router.push(`/inbox?phone=${encodeURIComponent(contact.phone_number)}`);
+    } finally {
+      setOpeningChatId(null);
+    }
   };
 
   const filteredContacts = contacts.filter(c => {
@@ -288,13 +316,25 @@ export default function ContactsPage() {
                         {new Date(contact.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEdit(contact)}
-                        >
-                          Edit
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="whatsapp"
+                            size="sm"
+                            isLoading={openingChatId === contact.id}
+                            onClick={() => openChatForContact(contact)}
+                            leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                            title="Open chat in WhatsApp Inbox"
+                          >
+                            Chat
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEdit(contact)}
+                          >
+                            Edit
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

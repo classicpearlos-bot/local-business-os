@@ -197,6 +197,28 @@ export default function Inbox() {
     fetchTeamMembers();
     fetchContactsList();
 
+    // Auto-select conversation if redirected from Contacts CRM with ?id= or ?phone=
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlId = urlParams.get('id');
+      const urlPhone = urlParams.get('phone');
+      if (urlId) {
+        setActiveConvId(urlId);
+      } else if (urlPhone) {
+        const cleanP = urlPhone.replace(/\D/g, '');
+        fetch('/api/conversations')
+          .then(res => res.json())
+          .then(json => {
+            const list = json.conversations || [];
+            const match = list.find((c: any) => (c.contacts?.phone_number || '').replace(/\D/g, '').includes(cleanP));
+            if (match) {
+              setActiveConvId(match.id);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
     // Supabase Free Tier Optimization: Sync on tab focus + gentle 30s heartbeat only when visible
     const handleFocus = () => {
       fetchConversations();
