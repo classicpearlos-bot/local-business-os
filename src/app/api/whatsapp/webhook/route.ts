@@ -86,25 +86,32 @@ export async function POST(request: Request) {
 
       // 1. Resolve Organization ID from WABA ID or active account
       let accountOrgId: string | null = null;
+      let accessToken: string | null = null;
+      let phoneNumberId: string | null = null;
+
       const { data: account } = await supabaseAdmin
         .from('whatsapp_accounts')
-        .select('organization_id')
+        .select('organization_id, access_token, phone_number_id')
         .eq('waba_id', wabaId)
         .maybeSingle();
 
       if (account?.organization_id) {
         accountOrgId = account.organization_id;
+        accessToken = account.access_token;
+        phoneNumberId = account.phone_number_id;
       } else {
         const { data: fallbackAccount } = await supabaseAdmin
           .from('whatsapp_accounts')
-          .select('organization_id')
+          .select('organization_id, access_token, phone_number_id')
           .limit(1)
           .maybeSingle();
         accountOrgId = fallbackAccount?.organization_id || null;
+        accessToken = fallbackAccount?.access_token || null;
+        phoneNumberId = fallbackAccount?.phone_number_id || null;
       }
 
-      if (!accountOrgId) {
-        console.error(`WABA ID ${wabaId} not linked to any organization.`);
+      if (!accountOrgId || !accessToken) {
+        console.error(`WABA ID ${wabaId} not linked or missing access token.`);
         continue;
       }
 
@@ -148,6 +155,41 @@ export async function POST(request: Request) {
                   msg.type,
                   msg
                 );
+
+                // Handle Inbound Media Persistence
+                const mediaTypes = ['image', 'video', 'audio', 'document', 'sticker'];
+                if (mediaTypes.includes(msg.type) && msg[msg.type]?.id) {
+                  const mediaObj = msg[msg.type];
+                  try {
+                    const { downloadMediaFromMeta } = await import('@/lib/meta/media');
+                    const { buffer, mimeType } = await downloadMediaFromMeta(mediaObj.id, accessToken);
+                    
+                    const fileExt = mimeType.split('/')[1] || 'bin';
+                    const storagePath = `${accountOrgId}/${Date.now()}_inbound_${msg.id.substring(0,6)}.${fileExt}`;
+                    
+                    // Upload to Storage
+                    await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
+                      contentType: mimeType,
+                      upsert: false
+                    });
+                    
+                    // Save to message_media
+                    await supabaseAdmin.from('message_media').insert({
+                      organization_id: accountOrgId,
+                      contact_id: contact.id,
+                      conversation_id: conversationId,
+                      message_id: messageId,
+                      storage_path: storagePath,
+                      mime_type: mimeType,
+                      file_name: mediaObj.filename || `inbound_${msg.type}.${fileExt}`,
+                      file_size: buffer.byteLength,
+                      direction: 'INBOUND',
+                      meta_media_id: mediaObj.id
+                    });
+                  } catch (mediaErr) {
+                    console.error(`Failed to persist inbound media for msg ${msg.id}:`, mediaErr);
+                  }
+                }
 
                 let textBody = '';
                 if (msg.type === 'text') textBody = msg.text?.body || '';
@@ -279,17 +321,40 @@ export async function POST(request: Request) {
           for (const statusObj of change.value.statuses) {
             const wamId = statusObj.id;
             const newStatus = statusObj.status.toUpperCase();
+            const statusTimestamp = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
 
-            // 1. Update messages table
-            const { data: updatedMsg } = await supabaseAdmin
+            // 1. Fetch current message to enforce monotonic progression
+            const { data: currentMsg } = await supabaseAdmin
               .from('messages')
-              .update({
-                status: newStatus,
-                error_data: statusObj.errors ? statusObj.errors[0] : null
-              })
+              .select('id, status, conversation_id, contact_id')
               .eq('wam_id', wamId)
-              .select('id, conversation_id, contact_id')
               .maybeSingle();
+
+            if (currentMsg) {
+              const STATUS_RANK: Record<string, number> = { 'SENDING': 1, 'SENT': 2, 'DELIVERED': 3, 'READ': 4, 'FAILED': 5 };
+              const currentRank = STATUS_RANK[currentMsg.status] || 0;
+              const newRank = STATUS_RANK[newStatus] || 0;
+
+              // Only update if the new status is a progression, or if it's FAILED
+              if (newRank > currentRank || newStatus === 'FAILED') {
+                const msgUpdates: any = { status: newStatus };
+                
+                if (newStatus === 'SENT') msgUpdates.sent_at = statusTimestamp;
+                if (newStatus === 'DELIVERED') msgUpdates.delivered_at = statusTimestamp;
+                if (newStatus === 'READ') msgUpdates.read_at = statusTimestamp;
+                if (newStatus === 'FAILED') {
+                  msgUpdates.failed_at = statusTimestamp;
+                  msgUpdates.failure_code = statusObj.errors?.[0]?.code?.toString();
+                  msgUpdates.failure_message = statusObj.errors?.[0]?.title || statusObj.errors?.[0]?.message;
+                  msgUpdates.error_data = statusObj.errors ? statusObj.errors[0] : null;
+                }
+
+                await supabaseAdmin
+                  .from('messages')
+                  .update(msgUpdates)
+                  .eq('id', currentMsg.id);
+              }
+            }
 
             // 2. Update campaign_recipients if message was part of a broadcast
             const { data: recip } = await supabaseAdmin
@@ -299,30 +364,37 @@ export async function POST(request: Request) {
               .maybeSingle();
 
             if (recip) {
-              const updates: any = { status: newStatus };
-              if (newStatus === 'DELIVERED') {
-                updates.delivered_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
-                if (recip.status !== 'DELIVERED' && recip.status !== 'READ') {
-                  await supabaseAdmin.rpc('increment_campaign_delivered', { camp_id: recip.campaign_id });
-                }
-              } else if (newStatus === 'READ') {
-                updates.read_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
-                if (recip.status !== 'READ') {
-                  await supabaseAdmin.rpc('increment_campaign_read', { camp_id: recip.campaign_id });
-                }
-              } else if (newStatus === 'FAILED') {
-                updates.failed_at = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
-                updates.error_code = statusObj.errors?.[0]?.code?.toString() || 'DELIVERY_FAILED';
-                updates.error_message = statusObj.errors?.[0]?.title || statusObj.errors?.[0]?.message || 'Message delivery failed';
-                if (recip.status !== 'FAILED') {
-                  await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: recip.campaign_id });
-                }
-              }
+              const STATUS_RANK: Record<string, number> = { 'SENDING': 1, 'SENT': 2, 'DELIVERED': 3, 'READ': 4, 'FAILED': 5 };
+              const currentRank = STATUS_RANK[recip.status] || 0;
+              const newRank = STATUS_RANK[newStatus] || 0;
 
-              await supabaseAdmin
-                .from('campaign_recipients')
-                .update(updates)
-                .eq('id', recip.id);
+              if (newRank > currentRank || newStatus === 'FAILED') {
+                const updates: any = { status: newStatus };
+                
+                if (newStatus === 'DELIVERED') {
+                  updates.delivered_at = statusTimestamp;
+                  if (recip.status !== 'DELIVERED' && recip.status !== 'READ') {
+                    await supabaseAdmin.rpc('increment_campaign_delivered', { camp_id: recip.campaign_id });
+                  }
+                } else if (newStatus === 'READ') {
+                  updates.read_at = statusTimestamp;
+                  if (recip.status !== 'READ') {
+                    await supabaseAdmin.rpc('increment_campaign_read', { camp_id: recip.campaign_id });
+                  }
+                } else if (newStatus === 'FAILED') {
+                  updates.failed_at = statusTimestamp;
+                  updates.error_code = statusObj.errors?.[0]?.code?.toString() || 'DELIVERY_FAILED';
+                  updates.error_message = statusObj.errors?.[0]?.title || statusObj.errors?.[0]?.message || 'Message delivery failed';
+                  if (recip.status !== 'FAILED') {
+                    await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: recip.campaign_id });
+                  }
+                }
+
+                await supabaseAdmin
+                  .from('campaign_recipients')
+                  .update(updates)
+                  .eq('id', recip.id);
+              }
             }
           }
         }

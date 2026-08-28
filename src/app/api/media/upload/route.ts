@@ -42,6 +42,17 @@ export async function POST(request: Request) {
 
     const mimeType = file.type || 'image/jpeg';
     const filename = (file as any).name || 'upload.jpg';
+    
+    // 1. Upload to Supabase Storage for local persistence
+    const fileExt = filename.split('.').pop() || 'jpg';
+    const storagePath = `${orgId}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
+      contentType: mimeType,
+      upsert: false
+    });
 
     if (purpose === 'template') {
       // Use resumable upload API to get a template-compatible handle
@@ -62,7 +73,19 @@ export async function POST(request: Request) {
       const { uploadMediaToMeta } = await import('@/lib/meta/media');
       try {
         const result = await uploadMediaToMeta(account.phone_number_id, account.access_token, file, mimeType);
-        return NextResponse.json({ success: true, media_id: result.id }, { status: 200 });
+        
+        // Save to message_media database
+        await supabaseAdmin.from('message_media').insert({
+          organization_id: orgId,
+          storage_path: storagePath,
+          mime_type: mimeType,
+          file_name: filename,
+          file_size: file.size,
+          direction: 'OUTBOUND',
+          meta_media_id: result.id
+        });
+        
+        return NextResponse.json({ success: true, media_id: result.id, storage_path: storagePath }, { status: 200 });
       } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }

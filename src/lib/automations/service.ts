@@ -2,6 +2,7 @@ import { supabaseAdmin } from '../supabaseAdmin';
 import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation } from '../meta/whatsapp';
 import { GoogleGenAI } from '@google/genai';
 import servicesData from './services.json';
+import { FlowExecutionEngine } from '../flows/engine';
 
 export async function evaluateAutomations(
   orgId: string, 
@@ -12,11 +13,31 @@ export async function evaluateAutomations(
 ) {
   if (!inboundText) return;
 
- 
-
   const normalizedInput = inboundText.trim().toLowerCase();
 
-  // Load active automations for the organization, ordered by priority (highest first)
+  // 1. Evaluate Visual Flows First (P0 Priority)
+  const { data: contact } = await supabaseAdmin.from('conversations').select('contact_id').eq('id', conversationId).single();
+  const contactId = contact?.contact_id;
+
+  if (contactId) {
+    const { data: flows } = await supabaseAdmin
+      .from('flows')
+      .select('id, trigger_config')
+      .eq('organization_id', orgId)
+      .eq('status', 'PUBLISHED')
+      .eq('trigger_type', 'KEYWORD');
+
+    for (const flow of (flows || [])) {
+      const keywords = (flow.trigger_config as any)?.keywords || [];
+      if (keywords.some((k: string) => k.toLowerCase() === normalizedInput || normalizedInput.includes(k.toLowerCase()))) {
+        // Trigger match! Start flow execution
+        const execId = await FlowExecutionEngine.start(orgId, flow.id, contactId, conversationId, messageId);
+        if (execId) return; // Flow handled it, exit.
+      }
+    }
+  }
+
+  // 2. Load active legacy automations for the organization, ordered by priority (highest first)
   const { data: automations } = await supabaseAdmin
     .from('automations')
     .select('*')

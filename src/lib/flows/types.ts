@@ -57,7 +57,8 @@ export interface FlowRecord {
   name: string;
   description?: string;
   trigger_type: FlowTriggerType;
-  trigger_keywords?: string[];
+  trigger_config?: Record<string, any>;
+  version?: number;
   status: 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'ARCHIVED';
   definition: FlowDefinition;
   created_at: string;

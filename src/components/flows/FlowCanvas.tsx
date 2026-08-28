@@ -79,7 +79,7 @@ const ConditionNode = ({ data, isConnectable }: any) => (
       <span className="text-xs font-black uppercase tracking-wider text-amber-400">Condition IF/ELSE</span>
     </div>
     <p className="text-xs font-bold text-[#2C2723]">{data.label}</p>
-    <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#EFE3CF] text-[10px] font-black">
+    <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#E5DED2] text-[10px] font-black">
       <span className="text-emerald-400">TRUE (Yes)</span>
       <span className="text-rose-400">FALSE (No)</span>
     </div>
@@ -112,7 +112,7 @@ const APINode = ({ data, isConnectable }: any) => (
       <span className="text-xs font-black uppercase tracking-wider text-purple-400">Salon POS / API</span>
     </div>
     <p className="text-xs font-bold text-[#2C2723]">{data.label}</p>
-    <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#EFE3CF] text-[10px] font-black">
+    <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#E5DED2] text-[10px] font-black">
       <span className="text-emerald-400">SUCCESS</span>
       <span className="text-rose-400">FAILURE</span>
     </div>
@@ -122,10 +122,10 @@ const APINode = ({ data, isConnectable }: any) => (
 );
 
 const EndNode = ({ data, isConnectable }: any) => (
-  <div className="px-4 py-2.5 rounded-2xl bg-[#070A12] border border-[#DFBE7E]/60 shadow-xl min-w-[140px] text-center">
+  <div className="px-4 py-2.5 rounded-2xl bg-[#F8F5EF] border border-[#DFBE7E]/60 shadow-xl min-w-[140px] text-center">
     <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!w-3 !h-3 !bg-slate-400" />
-    <div className="flex items-center justify-center gap-1.5 text-[#7C756D] text-xs font-black">
-      <CheckCircle2 className="w-3.5 h-3.5 text-[#7C756D]" />
+    <div className="flex items-center justify-center gap-1.5 text-[#706B61] text-xs font-black">
+      <CheckCircle2 className="w-3.5 h-3.5 text-[#706B61]" />
       <span>END FLOW</span>
     </div>
   </div>
@@ -221,12 +221,12 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
   };
 
   return (
-    <div className="flex h-full w-full bg-[#070A12] text-white relative overflow-hidden">
+    <div className="flex h-full w-full bg-[#F8F5EF] text-[#292722] relative overflow-hidden">
       
       {/* LEFT: NODE LIBRARY */}
-      <div className="w-64 border-r border-[#EFE3CF] bg-white p-4 flex flex-col gap-3 z-10">
-        <div className="flex items-center justify-between pb-3 border-b border-[#EFE3CF]">
-          <span className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Node Library</span>
+      <div className="w-64 border-r border-[#E5DED2] bg-white p-4 flex flex-col gap-3 z-10">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E5DED2]">
+          <span className="text-xs font-black uppercase tracking-wider text-[#706B61]">Node Library</span>
           <Badge variant="primary">Visual Drag</Badge>
         </div>
 
@@ -235,7 +235,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
           <p className="text-[10px] font-black uppercase tracking-wider text-[#9E968D] pt-1">Messages & Prompts</p>
           <button
             onClick={() => handleAddNode('message_text', 'Send WhatsApp Text')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-emerald-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-emerald-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
             <MessageSquare className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-[#2C2723]">WhatsApp Text</span>
@@ -243,7 +243,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
 
           <button
             onClick={() => handleAddNode('message_template', 'Send Meta Template')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-emerald-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-emerald-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
             <Sparkles className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-[#2C2723]">Meta Template Card</span>
@@ -252,7 +252,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
           <p className="text-[10px] font-black uppercase tracking-wider text-[#9E968D] pt-2">Logic & Branching</p>
           <button
             onClick={() => handleAddNode('logic_condition', 'Check Condition (IF/ELSE)')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-amber-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-amber-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
             <Split className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-[#2C2723]">Condition (IF / ELSE)</span>
@@ -261,7 +261,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
           <p className="text-[10px] font-black uppercase tracking-wider text-[#9E968D] pt-2">Timing & Schedule</p>
           <button
             onClick={() => handleAddNode('timing_delay', 'Wait / Delay Time')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-cyan-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-cyan-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
             <Clock className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-[#2C2723]">Wait / Delay</span>
@@ -270,7 +270,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
           <p className="text-[10px] font-black uppercase tracking-wider text-[#9E968D] pt-2">Integrations</p>
           <button
             onClick={() => handleAddNode('integration_api', 'Salon POS / API Request')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-purple-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-purple-500/80 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
             <Globe className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-[#2C2723]">Salon POS / API</span>
@@ -278,10 +278,10 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
 
           <button
             onClick={() => handleAddNode('end', 'End Flow')}
-            className="w-full p-2.5 rounded-xl bg-white border border-[#EFE3CF] hover:border-slate-600 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
+            className="w-full p-2.5 rounded-xl bg-white border border-[#E5DED2] hover:border-slate-600 flex items-center gap-2.5 text-left transition-all cursor-pointer group"
           >
-            <CheckCircle2 className="w-4 h-4 text-[#7C756D] group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-[#7C756D]">End Flow</span>
+            <CheckCircle2 className="w-4 h-4 text-[#706B61] group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-[#706B61]">End Flow</span>
           </button>
 
         </div>
@@ -291,9 +291,9 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
       <div className="flex-1 h-full relative">
         
         {/* Top Floating Control Bar */}
-        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between p-3 rounded-2xl bg-white/90 backdrop-blur-md border border-[#EFE3CF] shadow-2xl">
+        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between p-3 rounded-2xl bg-white/90 backdrop-blur-md border border-[#E5DED2] shadow-2xl">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-black text-white">{flowName}</span>
+            <span className="text-sm font-black text-[#292722]">{flowName}</span>
             <Badge variant="success">Active Flow</Badge>
           </div>
 
@@ -318,7 +318,7 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
               {saving ? 'Publishing...' : 'Save & Publish'}
             </Button>
             {onClose && (
-              <button onClick={onClose} className="p-2 rounded-xl text-[#7C756D] hover:text-white hover:bg-slate-800 transition-colors">
+              <button onClick={onClose} className="p-2 rounded-xl text-[#706B61] hover:text-[#292722] hover:bg-white shadow-sm transition-colors">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -342,15 +342,15 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
           onNodeClick={handleNodeClick}
           nodeTypes={nodeTypes}
           fitView
-          className="bg-[#070A12]"
+          className="bg-[#F8F5EF]"
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#1E293B" />
-          <Controls className="!bg-white !border-[#EFE3CF] !text-white [&>button]:!bg-white [&>button]:!border-[#EFE3CF] [&>button]:!fill-white" />
+          <Controls className="!bg-white !border-[#E5DED2] !text-[#292722] [&>button]:!bg-white [&>button]:!border-[#E5DED2] [&>button]:!fill-white" />
           <MiniMap 
             nodeStrokeColor="#6366F1" 
             nodeColor="#0F172A" 
             maskColor="rgba(7, 10, 18, 0.8)" 
-            className="!bg-white !border-[#EFE3CF] rounded-xl overflow-hidden" 
+            className="!bg-white !border-[#E5DED2] rounded-xl overflow-hidden" 
           />
         </ReactFlow>
 
@@ -358,21 +358,21 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
 
       {/* RIGHT: NODE PROPERTIES DRAWER */}
       {selectedNode && (
-        <div className="w-80 border-l border-[#EFE3CF] bg-white p-5 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
+        <div className="w-80 border-l border-[#E5DED2] bg-white p-5 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE3CF]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5DED2]">
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-indigo-400" />
                 <span className="text-xs font-black uppercase tracking-wider text-[#5D564E]">Node Properties</span>
               </div>
-              <button onClick={() => setSelectedNode(null)} className="text-[#7C756D] hover:text-white">
+              <button onClick={() => setSelectedNode(null)} className="text-[#706B61] hover:text-[#292722]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-[#7C756D] mb-1">Node Title</label>
+                <label className="block text-[11px] font-bold text-[#706B61] mb-1">Node Title</label>
                 <input
                   type="text"
                   value={selectedNode.data.label as string}
@@ -382,54 +382,115 @@ export function FlowCanvas({ initialFlow, flowName, onSave, onClose }: FlowCanva
                       nds.map((n) => (n.id === selectedNode.id ? { ...n, data: { ...n.data, label: val } } : n))
                     );
                   }}
-                  className="w-full px-3 py-2 bg-[#070A12] border border-[#EFE3CF] rounded-xl text-white outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none focus:border-indigo-500"
                 />
               </div>
 
+              {selectedNode.type === 'trigger' && (
+                <div>
+                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Keywords (Comma Separated)</label>
+                  <input
+                    type="text"
+                    value={((selectedNode.data.config as any)?.keywords || []).join(', ')}
+                    onChange={(e) => handleUpdateNodeConfig('keywords', e.target.value.split(',').map(k => k.trim()))}
+                    placeholder="e.g. hi, hello, menu"
+                    className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none focus:border-indigo-500"
+                  />
+                </div>
+              )}
+
               {selectedNode.type === 'message_text' && (
                 <div>
-                  <label className="block text-[11px] font-bold text-[#7C756D] mb-1">Message Body</label>
+                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Message Body</label>
                   <textarea
                     rows={4}
                     value={(selectedNode.data.config as any)?.text || ''}
                     onChange={(e) => handleUpdateNodeConfig('text', e.target.value)}
                     placeholder="Enter message text with {{name}} variables..."
-                    className="w-full p-3 bg-[#070A12] border border-[#EFE3CF] rounded-xl text-white text-xs outline-none focus:border-emerald-500"
+                    className="w-full p-3 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] text-xs outline-none focus:border-emerald-500"
                   />
                 </div>
               )}
 
               {selectedNode.type === 'timing_delay' && (
-                <div>
-                  <label className="block text-[11px] font-bold text-[#7C756D] mb-1">Wait Duration (Minutes)</label>
-                  <input
-                    type="number"
-                    value={(selectedNode.data.config as any)?.delay_minutes || 10}
-                    onChange={(e) => handleUpdateNodeConfig('delay_minutes', Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-[#070A12] border border-[#EFE3CF] rounded-xl text-white outline-none focus:border-cyan-500"
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-[#706B61] mb-1">Days</label>
+                    <input
+                      type="number"
+                      value={(selectedNode.data.config as any)?.days || 0}
+                      onChange={(e) => handleUpdateNodeConfig('days', Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-[#706B61] mb-1">Hours</label>
+                    <input
+                      type="number"
+                      value={(selectedNode.data.config as any)?.hours || 0}
+                      onChange={(e) => handleUpdateNodeConfig('hours', Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-[#706B61] mb-1">Minutes</label>
+                    <input
+                      type="number"
+                      value={(selectedNode.data.config as any)?.minutes || 0}
+                      onChange={(e) => handleUpdateNodeConfig('minutes', Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none focus:border-cyan-500"
+                    />
+                  </div>
                 </div>
               )}
 
               {selectedNode.type === 'logic_condition' && (
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-bold text-[#7C756D]">Condition Field</label>
-                  <select
-                    value={(selectedNode.data.config as any)?.field || 'days_since_visit'}
-                    onChange={(e) => handleUpdateNodeConfig('field', e.target.value)}
-                    className="w-full px-3 py-2 bg-[#070A12] border border-[#EFE3CF] rounded-xl text-white outline-none"
-                  >
-                    <option value="days_since_visit">Days Since Last Visit</option>
-                    <option value="lifetime_spend">Lifetime Spend (INR)</option>
-                    <option value="opted_in">Marketing Opt-In</option>
-                    <option value="rfm_segment">RFM Segment</option>
-                  </select>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#706B61] mb-1">Condition Field</label>
+                    <select
+                      value={(selectedNode.data.config as any)?.field || 'opted_in'}
+                      onChange={(e) => handleUpdateNodeConfig('field', e.target.value)}
+                      className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none"
+                    >
+                      <option value="opted_in">Marketing Opt-In (Boolean)</option>
+                      <option value="days_since_visit">Days Since Last Visit (Number)</option>
+                      <option value="lifetime_spend">Lifetime Spend (Number)</option>
+                      <option value="last_message_body">Last Message Text (String)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#706B61] mb-1">Operator</label>
+                    <select
+                      value={(selectedNode.data.config as any)?.operator || 'is_true'}
+                      onChange={(e) => handleUpdateNodeConfig('operator', e.target.value)}
+                      className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none"
+                    >
+                      <option value="is_true">Is True</option>
+                      <option value="is_false">Is False</option>
+                      <option value="equals">Equals (==)</option>
+                      <option value="greater_than">Greater Than (&gt;)</option>
+                      <option value="less_than">Less Than (&lt;)</option>
+                      <option value="contains">Contains</option>
+                    </select>
+                  </div>
+                  {['equals', 'greater_than', 'less_than', 'contains'].includes((selectedNode.data.config as any)?.operator) && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#706B61] mb-1">Value</label>
+                      <input
+                        type="text"
+                        value={(selectedNode.data.config as any)?.value || ''}
+                        onChange={(e) => handleUpdateNodeConfig('value', e.target.value)}
+                        className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#EFE3CF]">
+          <div className="pt-4 border-t border-[#E5DED2]">
             <Button
               variant="outline"
               size="sm"

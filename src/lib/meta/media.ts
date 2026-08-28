@@ -77,3 +77,27 @@ export async function uploadImageForTemplate(
 
   return uploadData.h; // This is the handle needed for template header
 }
+/**
+ * Downloads a media file from Meta API given its ID
+ */
+export async function downloadMediaFromMeta(mediaId: string, accessToken: string): Promise<{ buffer: Buffer, mimeType: string }> {
+  // 1. Get Media URL
+  const metaUrlRes = await fetch(`${META_GRAPH_URL}/${mediaId}`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+  const metaUrlData = await metaUrlRes.json();
+  if (!metaUrlData.url) {
+    throw new Error(metaUrlData?.error?.message || 'Failed to get media URL');
+  }
+
+  // 2. Download from Media URL
+  const downloadRes = await fetch(metaUrlData.url, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+  if (!downloadRes.ok) throw new Error('Failed to download media bytes');
+  
+  const arrayBuffer = await downloadRes.arrayBuffer();
+  const mimeType = downloadRes.headers.get('content-type') || metaUrlData.mime_type || 'application/octet-stream';
+  
+  return { buffer: Buffer.from(arrayBuffer), mimeType };
+}

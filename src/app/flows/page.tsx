@@ -92,7 +92,27 @@ export default function FlowsPage() {
   const handleSaveCanvas = async (definition: FlowDefinition) => {
     if (!activeEditingFlow) return;
     const updated = { ...activeEditingFlow, definition, status: 'PUBLISHED' as const };
-    setFlows(flows.map(f => f.id === updated.id ? updated : f));
+    
+    try {
+      const res = await fetch('/api/flows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save',
+          flow: updated
+        })
+      });
+      const json = await res.json();
+      if (json.success && json.flow) {
+        setFlows(flows.map(f => f.id === activeEditingFlow.id ? json.flow : f));
+      } else {
+        setFlows(flows.map(f => f.id === updated.id ? updated : f));
+      }
+    } catch (e) {
+      console.error('Failed to save flow', e);
+      setFlows(flows.map(f => f.id === updated.id ? updated : f));
+    }
+    
     setActiveEditingFlow(null);
   };
 

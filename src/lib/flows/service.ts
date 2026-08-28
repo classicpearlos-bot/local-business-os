@@ -165,24 +165,61 @@ export const DEFAULT_SALON_FLOWS: Array<{ name: string; description: string; tri
 ];
 
 /**
- * Get all flows for an organization (with defaults if empty)
+ * Get all flows for an organization
  */
 export async function getOrganizationFlows(orgId: string): Promise<FlowRecord[]> {
   const { data: flows, error } = await supabaseAdmin
-    .from('automations')
+    .from('flows')
     .select('*')
-    .eq('organization_id', orgId);
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: false });
 
-  // Return standard salon flows merged with any custom saved flows
-  return DEFAULT_SALON_FLOWS.map((f, i) => ({
-    id: `flow_${i + 1}`,
-    organization_id: orgId,
-    name: f.name,
-    description: f.description,
-    trigger_type: f.trigger_type,
-    status: 'PUBLISHED',
-    definition: f.definition,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }));
+  if (error) {
+    console.error('Error fetching flows:', error);
+    return [];
+  }
+
+  // If no flows exist, we could optionally seed DEFAULT_SALON_FLOWS here,
+  // but for now we just return the actual database state.
+  return flows as FlowRecord[];
+}
+
+/**
+ * Save a flow
+ */
+export async function saveFlow(orgId: string, flow: Partial<FlowRecord>): Promise<FlowRecord | null> {
+  if (flow.id) {
+    const { data, error } = await supabaseAdmin
+      .from('flows')
+      .update({
+        name: flow.name,
+        description: flow.description,
+        status: flow.status,
+        trigger_type: flow.trigger_type,
+        trigger_config: flow.trigger_config,
+        definition: flow.definition,
+        updated_at: new Date().toISOString(),
+        version: flow.version ? flow.version + 1 : 2
+      })
+      .eq('id', flow.id)
+      .eq('organization_id', orgId)
+      .select()
+      .single();
+    return data;
+  } else {
+    const { data, error } = await supabaseAdmin
+      .from('flows')
+      .insert({
+        organization_id: orgId,
+        name: flow.name,
+        description: flow.description,
+        status: flow.status || 'DRAFT',
+        trigger_type: flow.trigger_type,
+        trigger_config: flow.trigger_config || {},
+        definition: flow.definition || { nodes: [], edges: [] }
+      })
+      .select()
+      .single();
+    return data;
+  }
 }

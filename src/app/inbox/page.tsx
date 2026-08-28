@@ -533,31 +533,31 @@ export default function Inbox() {
   };
 
   return (
-    <div className="flex h-screen bg-[#06080F] text-[#1E1B18] font-sans antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="flex h-screen bg-[#F8F5EF] text-[#1E1B18] font-sans antialiased selection:bg-indigo-500 selection:text-[#292722]">
       <Sidebar className="hidden md:flex" />
 
       <main className="flex-1 flex overflow-hidden min-w-0">
         
         {/* Pane 1: Luxury Conversations List & Filters */}
-        <div className={`w-full md:w-[350px] lg:w-[380px] border-r border-[#EFE3CF]/90 flex flex-col bg-[#0B0F19] shrink-0 ${
+        <div className={`w-full md:w-[350px] lg:w-[380px] border-r border-[#E5DED2]/90 flex flex-col bg-[#FFFDFC] shrink-0 ${
           activeConvId ? 'hidden md:flex' : 'flex'
         }`}>
           {/* Header & Main Toolbar */}
-          <div className="p-4 border-b border-[#EFE3CF] bg-[#080C14] space-y-3">
+          <div className="p-4 border-b border-[#E5DED2] bg-[#F1ECE3] space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-lg font-black text-[#292722] tracking-tight flex items-center gap-2">
                   <span>Conversations</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-[#5D564E] font-black border border-[#DFBE7E]/60">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-white shadow-sm text-[#5D564E] font-black border border-[#DFBE7E]/60">
                     {filteredConversations.length}
                   </span>
                 </h1>
-                <p className="text-[11px] text-[#7C756D] font-medium mt-0.5">Classic Pearl Salon WhatsApp</p>
+                <p className="text-[11px] text-[#706B61] font-medium mt-0.5">Classic Pearl Salon WhatsApp</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button 
                   onClick={fetchConversations} 
-                  className="p-2 text-[#7C756D] hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-[#706B61] hover:text-[#292722] hover:bg-white shadow-sm rounded-lg transition-colors cursor-pointer"
                   title="Refresh conversations"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -570,7 +570,7 @@ export default function Inbox() {
                     setNewConvName(''); 
                     setContactSearchResults([]);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md shadow-indigo-600/30 active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#B08D57] to-[#8C6514] hover:from-[#D6B878] hover:to-[#B08D57] text-[#292722] text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md shadow-[#B08D57]/30 active:scale-95"
                   title="Start a new chat"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -580,15 +580,15 @@ export default function Inbox() {
             </div>
 
             {/* Status Tabs: ALL / OPEN / PENDING / RESOLVED */}
-            <div className="flex bg-[#05070D] p-1 rounded-xl border border-[#EFE3CF]">
+            <div className="flex bg-[#E5DED2] p-1 rounded-xl border border-[#E5DED2]">
               {(['ALL', 'OPEN', 'PENDING', 'RESOLVED'] as const).map((st) => (
                 <button 
                   key={st}
                   onClick={() => setStatusFilter(st)} 
                   className={`flex-1 text-[11px] font-black py-1.5 rounded-lg transition-all cursor-pointer capitalize ${
                     statusFilter === st 
-                      ? 'bg-slate-800 text-white shadow-xs border border-[#DFBE7E]/60 font-black' 
-                      : 'text-[#7C756D] hover:text-[#2C2723]'
+                      ? 'bg-white shadow-sm text-[#292722] shadow-xs border border-[#DFBE7E]/60 font-black' 
+                      : 'text-[#706B61] hover:text-[#2C2723]'
                   }`}
                 >
                   {st.toLowerCase()}
@@ -602,7 +602,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('all')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'all' ? 'bg-slate-800 text-white' : 'text-[#7C756D] hover:text-[#5D564E]'
+                    assignmentFilter === 'all' ? 'bg-white shadow-sm text-[#292722]' : 'text-[#706B61] hover:text-[#5D564E]'
                   }`}
                 >
                   All Staff
@@ -610,7 +610,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('mine')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'mine' ? 'bg-indigo-950 text-indigo-300 border border-indigo-800/60' : 'text-[#7C756D] hover:text-[#5D564E]'
+                    assignmentFilter === 'mine' ? 'bg-[#F1ECE3] text-[#B08D57] border border-[#B08D57]/40' : 'text-[#706B61] hover:text-[#5D564E]'
                   }`}
                 >
                   Assigned to Me
@@ -618,7 +618,7 @@ export default function Inbox() {
                 <button 
                   onClick={() => setAssignmentFilter('unassigned')}
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                    assignmentFilter === 'unassigned' ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : 'text-[#7C756D] hover:text-[#5D564E]'
+                    assignmentFilter === 'unassigned' ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : 'text-[#706B61] hover:text-[#5D564E]'
                   }`}
                 >
                   Unassigned
@@ -633,8 +633,8 @@ export default function Inbox() {
                   onClick={() => setSelectedLabelId(null)}
                   className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                     selectedLabelId === null
-                      ? 'bg-slate-800 text-white border border-[#DFBE7E]/60'
-                      : 'bg-[#FAF7F2] text-[#7C756D] hover:bg-slate-800 hover:text-[#2C2723] border border-[#EFE3CF]'
+                      ? 'bg-white shadow-sm text-[#292722] border border-[#DFBE7E]/60'
+                      : 'bg-[#FAF7F2] text-[#706B61] hover:bg-white shadow-sm hover:text-[#2C2723] border border-[#E5DED2]'
                   }`}
                 >
                   All Labels
@@ -647,8 +647,8 @@ export default function Inbox() {
                       onClick={() => setSelectedLabelId(isSelected ? null : lbl.id)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
                         isSelected
-                          ? 'border-indigo-400 bg-indigo-950 text-indigo-200 shadow-xs'
-                          : 'border-[#EFE3CF] bg-[#F2ECE0]/50 text-[#5D564E] hover:border-[#DFBE7E]/60'
+                          ? 'border-indigo-400 bg-[#F1ECE3] text-indigo-200 shadow-xs'
+                          : 'border-[#E5DED2] bg-[#F2ECE0]/50 text-[#5D564E] hover:border-[#DFBE7E]/60'
                       }`}
                     >
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: lbl.color || '#6366f1' }} />
@@ -662,13 +662,13 @@ export default function Inbox() {
             {/* Search Input */}
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7C756D]" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#706B61]" />
                 <input
                   type="text"
                   placeholder="Search name, phone, message..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-[#05070D] border border-[#EFE3CF] rounded-lg text-xs font-semibold text-white focus:bg-[#0B0F19] focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder:text-[#9E968D]"
+                  className="w-full pl-8 pr-3 py-1.5 bg-[#E5DED2] border border-[#E5DED2] rounded-lg text-xs font-semibold text-[#292722] focus:bg-[#FFFDFC] focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder:text-[#9E968D]"
                 />
               </div>
             </div>
@@ -690,8 +690,8 @@ export default function Inbox() {
                   onClick={() => setActiveConvId(conv.id)}
                   className={`p-3.5 cursor-pointer transition-colors duration-150 relative ${
                     isActive 
-                      ? 'bg-slate-800/90 border-l-4 border-indigo-500 shadow-md' 
-                      : 'hover:bg-slate-800/40'
+                      ? 'bg-white shadow-sm/90 border-l-4 border-indigo-500 shadow-md' 
+                      : 'hover:bg-white shadow-sm/40'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -699,23 +699,23 @@ export default function Inbox() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className={`text-sm font-extrabold truncate ${isActive ? 'text-white' : 'text-[#2C2723]'}`}>
+                        <p className={`text-sm font-extrabold truncate ${isActive ? 'text-[#292722]' : 'text-[#2C2723]'}`}>
                           {contactName}
                         </p>
-                        <span className="text-[10px] font-bold text-[#7C756D] shrink-0">
+                        <span className="text-[10px] font-bold text-[#706B61] shrink-0">
                           {new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-[#7C756D] font-medium mb-1">
+                      <div className="flex items-center justify-between text-xs text-[#706B61] font-medium mb-1">
                         <span className="truncate flex items-center gap-1 text-[11px] font-semibold">
-                          <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <Phone className="w-3 h-3 text-[#3F7D58] shrink-0" />
                           {phone}
                         </span>
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           {status === 'RESOLVED' ? (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-[#7C756D] border border-[#DFBE7E]/60">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-white shadow-sm text-[#706B61] border border-[#DFBE7E]/60">
                               Resolved
                             </span>
                           ) : status === 'PENDING' ? (
@@ -725,7 +725,7 @@ export default function Inbox() {
                           ) : null}
 
                           {hasUnread && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black shadow-md shadow-emerald-500/40 animate-pulse">
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-[#292722] text-[10px] font-black shadow-md shadow-emerald-500/40 animate-pulse">
                               {conv.unread_count}
                             </span>
                           )}
@@ -741,7 +741,7 @@ export default function Inbox() {
                             return (
                               <span
                                 key={lbl.id}
-                                className="px-1.5 py-0.2 rounded text-[9px] font-bold text-[#2C2723] bg-slate-800/80 border border-[#DFBE7E]/60/80"
+                                className="px-1.5 py-0.2 rounded text-[9px] font-bold text-[#2C2723] bg-white shadow-sm/80 border border-[#DFBE7E]/60/80"
                               >
                                 {lbl.name}
                               </span>
@@ -757,7 +757,7 @@ export default function Inbox() {
 
             {filteredConversations.length === 0 && (
               <div className="p-12 text-center text-[#9E968D]">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#7C756D]" />
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#706B61]" />
                 <p className="text-xs font-bold text-[#5D564E]">No conversations in this view</p>
                 <p className="text-[11px] text-[#9E968D] mt-0.5">Click "New Chat" to start messaging a client.</p>
               </div>
@@ -766,17 +766,17 @@ export default function Inbox() {
         </div>
 
         {/* Pane 2: Active Chat Canvas */}
-        <div className={`flex-1 flex flex-col bg-[#080C14] min-w-0 ${
+        <div className={`flex-1 flex flex-col bg-[#F1ECE3] min-w-0 ${
           !activeConvId ? 'hidden md:flex' : 'flex'
         }`}>
           {activeConv ? (
             <>
               {/* Active Conversation Header */}
-              <header className="px-6 py-3.5 border-b border-[#EFE3CF] bg-[#0B0F19] flex items-center justify-between gap-4 z-10">
+              <header className="px-6 py-3.5 border-b border-[#E5DED2] bg-[#FFFDFC] flex items-center justify-between gap-4 z-10">
                 <div className="flex items-center gap-3 min-w-0">
                   <button 
                     onClick={() => setActiveConvId(null)}
-                    className="md:hidden p-1.5 text-[#7C756D] hover:text-white rounded-lg cursor-pointer"
+                    className="md:hidden p-1.5 text-[#706B61] hover:text-[#292722] rounded-lg cursor-pointer"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -785,7 +785,7 @@ export default function Inbox() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-black text-white truncate">
+                      <h2 className="text-sm font-black text-[#292722] truncate">
                         {activeConv.contacts?.name || 'Unknown Contact'}
                       </h2>
                       {activeConv.contacts?.opted_in === false && (
@@ -794,8 +794,8 @@ export default function Inbox() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#7C756D] font-semibold flex items-center gap-1.5 mt-0.5">
-                      <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <p className="text-xs text-[#706B61] font-semibold flex items-center gap-1.5 mt-0.5">
+                      <Phone className="w-3 h-3 text-[#3F7D58] shrink-0" />
                       {activeConv.contacts?.phone_number}
                     </p>
                   </div>
@@ -805,37 +805,37 @@ export default function Inbox() {
                 <div className="flex items-center gap-2 shrink-0">
                   
                   {/* Status Dropdown */}
-                  <div className="flex items-center bg-[#05070D] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
-                    <span className="text-[11px] font-bold text-[#7C756D] mr-1.5 hidden sm:inline">Status:</span>
+                  <div className="flex items-center bg-[#E5DED2] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
+                    <span className="text-[11px] font-bold text-[#706B61] mr-1.5 hidden sm:inline">Status:</span>
                     <select
                       value={(activeConv.status || 'OPEN').toUpperCase()}
                       onChange={(e) => updateConversationStatus(e.target.value as ConversationStatus)}
                       disabled={updatingStatus}
-                      className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer"
+                      className="bg-transparent text-xs font-bold text-[#292722] outline-none cursor-pointer"
                     >
-                      <option value="OPEN" className="bg-white text-emerald-400">Open</option>
+                      <option value="OPEN" className="bg-white text-[#3F7D58]">Open</option>
                       <option value="PENDING" className="bg-white text-amber-400">Pending</option>
-                      <option value="RESOLVED" className="bg-white text-[#7C756D]">Resolved</option>
+                      <option value="RESOLVED" className="bg-white text-[#706B61]">Resolved</option>
                     </select>
                   </div>
 
                   {/* Agent Assignment Selector */}
-                  <div className="flex items-center bg-[#05070D] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
-                    <UserCheck className="w-3.5 h-3.5 text-[#7C756D] mr-1.5 hidden sm:inline" />
+                  <div className="flex items-center bg-[#E5DED2] border border-[#DFBE7E]/60 rounded-lg px-2.5 py-1">
+                    <UserCheck className="w-3.5 h-3.5 text-[#706B61] mr-1.5 hidden sm:inline" />
                     <select
                       value={activeConv.assigned_to || ''}
                       onChange={(e) => updateConversationAssignment(e.target.value || null)}
                       disabled={updatingAssignment}
-                      className="bg-transparent text-xs font-bold text-white outline-none cursor-pointer max-w-[120px] truncate"
+                      className="bg-transparent text-xs font-bold text-[#292722] outline-none cursor-pointer max-w-[120px] truncate"
                     >
-                      <option value="" className="bg-white text-[#7C756D]">Unassigned</option>
+                      <option value="" className="bg-white text-[#706B61]">Unassigned</option>
                       {currentUser && (
                         <option value={currentUser.id} className="bg-white text-indigo-400">
                           Assign to Me
                         </option>
                       )}
                       {teamMembers.filter(m => m.id !== currentUser?.id).map((member) => (
-                        <option key={member.id} value={member.id} className="bg-white text-white">
+                        <option key={member.id} value={member.id} className="bg-white text-[#292722]">
                           {member.name}
                         </option>
                       ))}
@@ -845,7 +845,7 @@ export default function Inbox() {
                   {/* Labels Toggle Button */}
                   <button
                     onClick={() => setShowLabelModal(true)}
-                    className="p-1.5 rounded-lg border border-[#DFBE7E]/60 text-[#7C756D] hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg border border-[#DFBE7E]/60 text-[#706B61] hover:text-[#292722] hover:bg-white shadow-sm transition-colors cursor-pointer"
                     title="Manage labels"
                   >
                     <Tag className="w-4 h-4" />
@@ -855,7 +855,7 @@ export default function Inbox() {
                   <button
                     onClick={() => setShowCustomerDrawer(!showCustomerDrawer)}
                     className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                      showCustomerDrawer ? 'bg-indigo-950 text-indigo-300 border-indigo-600' : 'text-[#7C756D] hover:text-white border-[#DFBE7E]/60 hover:bg-slate-800'
+                      showCustomerDrawer ? 'bg-[#F1ECE3] text-[#B08D57] border-indigo-600' : 'text-[#706B61] hover:text-[#292722] border-[#DFBE7E]/60 hover:bg-white shadow-sm'
                     }`}
                     title="Customer profile details"
                   >
@@ -867,7 +867,7 @@ export default function Inbox() {
               {/* Chat Canvas with Ultra Luxury Wallpaper */}
               <div className="flex-1 overflow-y-auto p-6 space-y-3 wa-chat-bg">
                 <div className="text-center my-1">
-                  <span className="bg-[#0B0F19]/90 px-3 py-1 rounded-full text-[10px] font-bold text-[#7C756D] border border-[#EFE3CF] shadow-sm">
+                  <span className="bg-[#FFFDFC]/90 px-3 py-1 rounded-full text-[10px] font-bold text-[#706B61] border border-[#E5DED2] shadow-sm">
                     Classic Pearl Unisex Salon • WhatsApp Business Encrypted
                   </span>
                 </div>
@@ -896,8 +896,8 @@ export default function Inbox() {
                           isNote
                             ? 'bg-gradient-to-r from-amber-950/90 to-amber-900/80 text-amber-200 border border-amber-600/50 rounded-tr-xs'
                             : isInbound
-                            ? 'bg-[#121927] text-white rounded-tl-xs border border-[#DFBE7E]/60/80 shadow-md shadow-black/30'
-                            : 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-white rounded-tr-xs shadow-md shadow-emerald-950/40'
+                            ? 'bg-[#121927] text-[#292722] rounded-tl-xs border border-[#DFBE7E]/60/80 shadow-md shadow-black/30'
+                            : 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-[#292722] rounded-tr-xs shadow-md shadow-emerald-950/40'
                         }`}
                       >
                         <button
@@ -928,7 +928,7 @@ export default function Inbox() {
                               className="w-full h-auto max-h-80 object-contain rounded-xl" 
                             />
                             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                              <span className="bg-black/80 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/20 shadow-lg flex items-center gap-1.5">
+                              <span className="bg-black/80 text-[#292722] text-[11px] font-bold px-3 py-1 rounded-full border border-white/20 shadow-lg flex items-center gap-1.5">
                                 🔍 Click to view full image
                               </span>
                             </div>
@@ -936,8 +936,8 @@ export default function Inbox() {
                         )}
 
                         {isVideo && (
-                          <div className="p-3 bg-black/40 text-white rounded-xl flex items-center gap-2.5">
-                            <Video className="w-5 h-5 text-white/80" />
+                          <div className="p-3 bg-black/40 text-[#292722] rounded-xl flex items-center gap-2.5">
+                            <Video className="w-5 h-5 text-[#292722]/80" />
                             <span className="text-xs font-bold">Video Message</span>
                           </div>
                         )}
@@ -1001,7 +1001,7 @@ export default function Inbox() {
               </div>
 
               {/* Chat Composer with WhatsApp Multiline Shift+Enter Support */}
-              <div className="p-4 bg-[#0B0F19] border-t border-[#EFE3CF]">
+              <div className="p-4 bg-[#FFFDFC] border-t border-[#E5DED2]">
                 
                 {/* Note Indicator Banner */}
                 {isInternalNote && (
@@ -1010,19 +1010,19 @@ export default function Inbox() {
                       <Tag className="w-3.5 h-3.5" />
                       Writing an Internal Staff Note (Customer will NOT receive this)
                     </span>
-                    <button onClick={() => setIsInternalNote(false)} className="text-amber-400 hover:text-white cursor-pointer">
+                    <button onClick={() => setIsInternalNote(false)} className="text-amber-400 hover:text-[#292722] cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
 
-                <div className="flex items-end gap-2 bg-[#05070D] border border-[#DFBE7E]/60/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
+                <div className="flex items-end gap-2 bg-[#E5DED2] border border-[#DFBE7E]/60/90 p-2 rounded-xl focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all shadow-md">
                   
                   {/* Media Attachment Trigger */}
                   <button
                     type="button"
                     onClick={() => setShowMediaModal(true)}
-                    className="p-2 text-[#7C756D] hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
+                    className="p-2 text-[#706B61] hover:text-[#292722] hover:bg-white shadow-sm rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Attach Image, Video, or Document"
                   >
                     <Paperclip className="w-4 h-4" />
@@ -1032,7 +1032,7 @@ export default function Inbox() {
                   <button
                     type="button"
                     onClick={() => setShowQuickReplies(true)}
-                    className="p-2 text-[#7C756D] hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer mb-0.5"
+                    className="p-2 text-[#706B61] hover:text-indigo-400 hover:bg-white shadow-sm rounded-lg transition-colors cursor-pointer mb-0.5"
                     title="Quick Replies"
                   >
                     <Sparkles className="w-4 h-4" />
@@ -1043,7 +1043,7 @@ export default function Inbox() {
                     type="button"
                     onClick={() => setIsInternalNote(!isInternalNote)}
                     className={`p-2 rounded-lg transition-colors cursor-pointer mb-0.5 ${
-                      isInternalNote ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'text-[#7C756D] hover:text-amber-400 hover:bg-slate-800'
+                      isInternalNote ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'text-[#706B61] hover:text-amber-400 hover:bg-white shadow-sm'
                     }`}
                     title="Toggle Internal Staff Note"
                   >
@@ -1067,7 +1067,7 @@ export default function Inbox() {
                       }
                     }}
                     placeholder={isInternalNote ? "Write an internal note for team members..." : "Type a message (Shift+Enter for new line)..."}
-                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-white placeholder:text-[#9E968D] resize-none max-h-32 min-h-[36px]"
+                    className="flex-1 bg-transparent border-none px-2 py-1.5 text-sm outline-none font-medium text-[#292722] placeholder:text-[#9E968D] resize-none max-h-32 min-h-[36px]"
                   />
 
                   <Button
@@ -1083,12 +1083,12 @@ export default function Inbox() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#06080F]">
-              <div className="w-14 h-14 rounded-2xl bg-white border border-[#EFE3CF] flex items-center justify-center text-[#7C756D] mb-3 shadow-md">
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F8F5EF]">
+              <div className="w-14 h-14 rounded-2xl bg-white border border-[#E5DED2] flex items-center justify-center text-[#706B61] mb-3 shadow-md">
                 <MessageSquare className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-black text-white">Select a Conversation</h3>
-              <p className="text-xs text-[#7C756D] font-medium max-w-sm mt-1">
+              <h3 className="text-base font-black text-[#292722]">Select a Conversation</h3>
+              <p className="text-xs text-[#706B61] font-medium max-w-sm mt-1">
                 Choose a customer from the left sidebar or click "New Chat" above to start messaging.
               </p>
               <Button
@@ -1112,21 +1112,21 @@ export default function Inbox() {
 
         {/* Pane 3: Customer Profile Drawer */}
         {showCustomerDrawer && activeConv && (
-          <div className="w-[300px] border-l border-[#EFE3CF] bg-[#0B0F19] p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-150">
-            <div className="text-center pb-5 border-b border-[#EFE3CF]">
+          <div className="w-[300px] border-l border-[#E5DED2] bg-[#FFFDFC] p-6 overflow-y-auto space-y-6 shrink-0 hidden lg:block animate-in slide-in-from-right duration-150">
+            <div className="text-center pb-5 border-b border-[#E5DED2]">
               <Avatar name={activeConv.contacts?.name} size="xl" className="mx-auto mb-3" />
-              <h3 className="text-sm font-black text-white">{activeConv.contacts?.name || 'Customer'}</h3>
-              <p className="text-xs text-[#7C756D] font-semibold mt-0.5">{activeConv.contacts?.phone_number}</p>
+              <h3 className="text-sm font-black text-[#292722]">{activeConv.contacts?.name || 'Customer'}</h3>
+              <p className="text-xs text-[#706B61] font-semibold mt-0.5">{activeConv.contacts?.phone_number}</p>
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Marketing Consent</h4>
-              <div className="p-3 rounded-xl bg-[#05070D] border border-[#EFE3CF] flex items-center justify-between">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#706B61]">Marketing Consent</h4>
+              <div className="p-3 rounded-xl bg-[#E5DED2] border border-[#E5DED2] flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-white block">
+                  <span className="text-xs font-bold text-[#292722] block">
                     {activeConv.contacts?.opted_in !== false ? 'Opted In' : 'Opted Out'}
                   </span>
-                  <span className="text-[10px] text-[#7C756D]">
+                  <span className="text-[10px] text-[#706B61]">
                     {activeConv.contacts?.opted_in !== false ? 'Receives promotional broadcasts' : 'Excluded from marketing broadcasts'}
                   </span>
                 </div>
@@ -1142,17 +1142,17 @@ export default function Inbox() {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Details</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#706B61]">Details</h4>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-[#EFE3CF]/60">
-                  <span className="text-[#7C756D]">Created At</span>
-                  <span className="font-bold text-white">
+                <div className="flex justify-between py-1.5 border-b border-[#E5DED2]/60">
+                  <span className="text-[#706B61]">Created At</span>
+                  <span className="font-bold text-[#292722]">
                     {new Date(activeConv.contacts?.created_at || Date.now()).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-[#EFE3CF]/60">
-                  <span className="text-[#7C756D]">Status</span>
-                  <span className="font-extrabold text-emerald-400">
+                <div className="flex justify-between py-1.5 border-b border-[#E5DED2]/60">
+                  <span className="text-[#706B61]">Status</span>
+                  <span className="font-extrabold text-[#3F7D58]">
                     {activeConv.status || 'OPEN'}
                   </span>
                 </div>
@@ -1182,8 +1182,8 @@ export default function Inbox() {
 
             {/* Autocomplete Suggestions */}
             {contactSearchResults.length > 0 && (
-              <div className="mt-2 bg-[#05070D] border border-[#EFE3CF] rounded-xl overflow-hidden divide-y divide-slate-800 shadow-md">
-                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#7C756D] bg-[#F2ECE0]/50">
+              <div className="mt-2 bg-[#E5DED2] border border-[#E5DED2] rounded-xl overflow-hidden divide-y divide-slate-800 shadow-md">
+                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#706B61] bg-[#F2ECE0]/50">
                   Matching Existing Contacts
                 </div>
                 {contactSearchResults.map(c => (
@@ -1197,8 +1197,8 @@ export default function Inbox() {
                     className="p-2.5 hover:bg-slate-850 cursor-pointer flex items-center justify-between transition-colors"
                   >
                     <div>
-                      <p className="text-xs font-bold text-white">{c.name || 'Valued Customer'}</p>
-                      <p className="text-[11px] text-[#7C756D]">{c.phone_number}</p>
+                      <p className="text-xs font-bold text-[#292722]">{c.name || 'Valued Customer'}</p>
+                      <p className="text-[11px] text-[#706B61]">{c.phone_number}</p>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded-full border border-emerald-800/40">Existing</span>
                   </div>
@@ -1222,7 +1222,7 @@ export default function Inbox() {
             </div>
           )}
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-[#EFE3CF]">
+          <div className="pt-3 flex justify-end gap-2 border-t border-[#E5DED2]">
             <Button variant="outline" size="sm" onClick={() => setShowNewConvModal(false)}>
               Cancel
             </Button>
@@ -1249,7 +1249,7 @@ export default function Inbox() {
       >
         <div className="space-y-2">
           {labels.length === 0 ? (
-            <div className="text-sm text-[#7C756D]">No labels created yet.</div>
+            <div className="text-sm text-[#706B61]">No labels created yet.</div>
           ) : (
             labels.map(lbl => {
               const isActive = activeLabels.includes(lbl.id);
@@ -1258,12 +1258,12 @@ export default function Inbox() {
                   key={lbl.id}
                   onClick={() => toggleLabel(lbl.id)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    isActive ? 'border-indigo-500 bg-indigo-950/60' : 'border-[#EFE3CF] hover:border-[#DFBE7E]/60 bg-[#05070D]'
+                    isActive ? 'border-indigo-500 bg-[#F1ECE3]/60' : 'border-[#E5DED2] hover:border-[#DFBE7E]/60 bg-[#E5DED2]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lbl.color || '#6366f1' }} />
-                    <span className="text-sm font-bold text-white">{lbl.name}</span>
+                    <span className="text-sm font-bold text-[#292722]">{lbl.name}</span>
                   </div>
                   {isActive && <Check className="w-4 h-4 text-indigo-400" />}
                 </button>
@@ -1282,7 +1282,7 @@ export default function Inbox() {
       >
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {quickReplies.length === 0 ? (
-            <div className="text-sm text-[#7C756D]">No quick replies found.</div>
+            <div className="text-sm text-[#706B61]">No quick replies found.</div>
           ) : (
             quickReplies.map(qr => (
               <div
@@ -1291,11 +1291,11 @@ export default function Inbox() {
                   setInputText(qr.content);
                   setShowQuickReplies(false);
                 }}
-                className="p-3 bg-[#05070D] border border-[#EFE3CF] rounded-xl hover:border-indigo-500 hover:bg-[#F2ECE0] cursor-pointer transition-all"
+                className="p-3 bg-[#E5DED2] border border-[#E5DED2] rounded-xl hover:border-indigo-500 hover:bg-[#F2ECE0] cursor-pointer transition-all"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-white">{qr.title}</span>
-                  <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-bold text-[#292722]">{qr.title}</span>
+                  <span className="text-[10px] font-mono text-indigo-400 bg-[#F1ECE3] px-1.5 py-0.5 rounded">
                     /{qr.shortcut}
                   </span>
                 </div>
@@ -1314,7 +1314,7 @@ export default function Inbox() {
         description="Attach an image, video, or document URL to send directly."
       >
         <div className="space-y-4">
-          <div className="flex bg-[#05070D] p-1 rounded-xl border border-[#EFE3CF]">
+          <div className="flex bg-[#E5DED2] p-1 rounded-xl border border-[#E5DED2]">
             {(['image', 'video', 'document'] as const).map((t) => (
               <button
                 key={t}
@@ -1324,7 +1324,7 @@ export default function Inbox() {
                   setMediaUpload(null);
                 }}
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
-                  mediaType === t ? 'bg-slate-800 text-white shadow-xs' : 'text-[#7C756D] hover:text-[#2C2723]'
+                  mediaType === t ? 'bg-white shadow-sm text-[#292722] shadow-xs' : 'text-[#706B61] hover:text-[#2C2723]'
                 }`}
               >
                 {t}
@@ -1348,7 +1348,7 @@ export default function Inbox() {
             onChange={(e) => setMediaCaption(e.target.value)}
           />
 
-          <div className="pt-3 flex justify-end gap-2 border-t border-[#EFE3CF]">
+          <div className="pt-3 flex justify-end gap-2 border-t border-[#E5DED2]">
             <Button variant="outline" size="sm" onClick={() => setShowMediaModal(false)}>
               Cancel
             </Button>
@@ -1403,7 +1403,7 @@ export default function Inbox() {
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white shadow-sm/90 hover:bg-slate-700 text-[#292722] text-xs font-bold rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
               title="Open full original image in new tab"
             >
               <ExternalLink className="w-4 h-4" />
@@ -1411,7 +1411,7 @@ export default function Inbox() {
             </a>
             <button
               onClick={() => setPreviewImageUrl(null)}
-              className="p-2 bg-slate-800/90 hover:bg-rose-900/80 text-white rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
+              className="p-2 bg-white shadow-sm/90 hover:bg-rose-900/80 text-[#292722] rounded-lg transition-colors cursor-pointer border border-slate-600 shadow-md"
               title="Close (or click anywhere)"
             >
               <X className="w-5 h-5" />

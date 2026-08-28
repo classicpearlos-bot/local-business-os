@@ -104,6 +104,41 @@ export async function createSalonAppointment(
     console.error('Failed to send appointment confirmation WhatsApp:', e);
   }
 
+  // --- CAMPAIGN ROI ATTRIBUTION ---
+  // Check if this contact received a campaign message in the last 7 days
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // Find recent campaign messages sent to this contact
+    const { data: recentRecipients } = await supabaseAdmin
+      .from('campaign_recipients')
+      .select('campaign_id, created_at, status')
+      .eq('contact_id', contact.id)
+      .gte('created_at', sevenDaysAgo)
+      .in('status', ['DELIVERED', 'READ', 'REPLIED']) // Any engagement
+      .order('created_at', { ascending: false })
+      .limit(1);
+      
+    if (recentRecipients && recentRecipients.length > 0) {
+      const recip = recentRecipients[0];
+      
+      // Found a recent campaign touchpoint! Log attribution.
+      await supabaseAdmin.from('campaign_attribution').insert({
+        organization_id: orgId,
+        contact_id: contact.id,
+        campaign_id: recip.campaign_id,
+        engagement_time: recip.created_at,
+        conversion_time: new Date().toISOString(),
+        revenue_generated: service.price
+      });
+      
+      // Update the campaign's total revenue generated
+      // Assuming you might want an RPC for this, but for now we just log it in the attribution table.
+    }
+  } catch (roiError) {
+    console.error('Failed to track campaign ROI attribution:', roiError);
+  }
+
   return appointment;
 }
 
