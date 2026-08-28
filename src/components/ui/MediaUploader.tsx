@@ -30,6 +30,7 @@ export interface MediaUploaderProps {
   onChange: (val: MediaUploadValue | null) => void;
   required?: boolean;
   purpose?: 'message' | 'template'; // Controls which upload API to use
+  label?: string;
 }
 
 export function MediaUploader({
@@ -37,9 +38,10 @@ export function MediaUploader({
   value,
   onChange,
   required = false,
-  purpose = 'message'
+  purpose = 'message',
+  label
 }: MediaUploaderProps) {
-  const [activeTab, setActiveTab] = useState<'url' | 'file'>('url');
+  const [activeTab, setActiveTab] = useState<'url' | 'file'>('file');
   const [urlInput, setUrlInput] = useState(value?.url || '');
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -50,7 +52,7 @@ export function MediaUploader({
   const handleUrlSubmit = () => {
     setError(null);
     if (!urlInput.trim()) {
-      if (required) setError('Media URL is required for this template header.');
+      if (required) setError('Media URL is required.');
       return;
     }
 
@@ -123,7 +125,7 @@ export function MediaUploader({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-          Template Media Header ({mediaType.toUpperCase()}) {required && '*'}
+          {label || `Template Media Header (${mediaType.toUpperCase()})`} {required && '*'}
         </label>
         <span className="text-[11px] text-[#7C756D] font-medium">
           Max {limits.maxSizeMB}MB • {limits.acceptedExtensions.join(', ')}

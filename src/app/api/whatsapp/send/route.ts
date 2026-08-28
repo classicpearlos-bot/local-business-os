@@ -61,11 +61,12 @@ export async function POST(request: Request) {
         accessToken: account.access_token,
         to: contact.phone_number
       }, payload.templateName, payload.language || 'en_US', payload.components || []);
-    } else if (payload.mediaType && payload.mediaUrl) {
+    } else if (payload.mediaType && (payload.mediaUrl || payload.mediaId)) {
       msgType = payload.mediaType;
+      const mediaRef = payload.mediaUrl ? { link: payload.mediaUrl } : { id: payload.mediaId };
       msgContent = {
         [payload.mediaType]: {
-          link: payload.mediaUrl,
+          ...mediaRef,
           caption: payload.caption || payload.text,
           filename: payload.filename
         }
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
         phoneNumberId: account.phone_number_id,
         accessToken: account.access_token,
         to: contact.phone_number
-      }, payload.mediaType, payload.mediaUrl, payload.caption || payload.text, payload.filename);
+      }, payload.mediaType, payload.mediaUrl || payload.mediaId, payload.caption || payload.text, payload.filename);
     } else if (payload.location) {
       msgType = 'location';
       msgContent = { location: { name: payload.location.name, address: payload.location.address, latitude: payload.location.latitude, longitude: payload.location.longitude } };

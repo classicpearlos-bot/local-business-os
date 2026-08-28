@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MediaUploader, MediaUploadValue } from "@/components/ui/MediaUploader";
 import { 
   Search, 
   Send, 
@@ -86,7 +87,7 @@ export default function Inbox() {
   // Media Attachment State
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'document'>('image');
-  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaUpload, setMediaUpload] = useState<MediaUploadValue | null>(null);
   const [mediaCaption, setMediaCaption] = useState('');
   const [mediaSending, setMediaSending] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
@@ -1318,7 +1319,10 @@ export default function Inbox() {
               <button
                 key={t}
                 type="button"
-                onClick={() => setMediaType(t)}
+                onClick={() => {
+                  setMediaType(t);
+                  setMediaUpload(null);
+                }}
                 className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
                   mediaType === t ? 'bg-slate-800 text-white shadow-xs' : 'text-[#7C756D] hover:text-[#2C2723]'
                 }`}
@@ -1328,13 +1332,13 @@ export default function Inbox() {
             ))}
           </div>
 
-          <Input
-            label="Public HTTPS Media URL *"
-            placeholder={`https://your-domain.com/assets/${mediaType === 'image' ? 'photo.jpg' : mediaType === 'video' ? 'video.mp4' : 'catalog.pdf'}`}
-            value={mediaUrl}
-            onChange={(e) => setMediaUrl(e.target.value)}
-            helperText="Direct public HTTPS link accessible by WhatsApp servers."
+          <MediaUploader
+            mediaType={mediaType}
+            value={mediaUpload}
+            onChange={setMediaUpload}
             required
+            purpose="message"
+            label={`Attach ${mediaType} file`}
           />
 
           <Input
@@ -1352,9 +1356,9 @@ export default function Inbox() {
               variant="whatsapp"
               size="sm"
               isLoading={mediaSending}
-              disabled={!mediaUrl.trim()}
+              disabled={!mediaUpload}
               onClick={async () => {
-                if (!activeConv || mediaSending || !mediaUrl.trim()) return;
+                if (!activeConv || mediaSending || !mediaUpload) return;
                 setMediaSending(true);
                 try {
                   const res = await fetch('/api/whatsapp/send', {
@@ -1363,13 +1367,15 @@ export default function Inbox() {
                     body: JSON.stringify({
                       contactId: activeConv.contacts.id,
                       mediaType: mediaType,
-                      mediaUrl: mediaUrl.trim(),
+                      mediaUrl: mediaUpload.url?.startsWith('http') ? mediaUpload.url : undefined,
+                      mediaId: mediaUpload.media_id,
+                      filename: mediaUpload.filename,
                       caption: mediaCaption.trim() || undefined
                     })
                   });
                   if (res.ok) {
                     setShowMediaModal(false);
-                    setMediaUrl('');
+                    setMediaUpload(null);
                     setMediaCaption('');
                     fetchMessagesForConv(activeConv.id);
                   }

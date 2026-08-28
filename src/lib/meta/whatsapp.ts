@@ -105,11 +105,12 @@ export async function sendWhatsAppText(
 export async function sendWhatsAppMedia(
   options: SendMessageOptions,
   mediaType: 'image' | 'video' | 'document' | 'audio',
-  mediaUrl: string,
+  mediaUrlOrId: string,
   caption?: string,
   filename?: string
 ) {
-  const mediaPayload: any = { link: mediaUrl };
+  const isUrl = mediaUrlOrId.startsWith('http');
+  const mediaPayload: any = isUrl ? { link: mediaUrlOrId } : { id: mediaUrlOrId };
   if (caption && (mediaType === 'image' || mediaType === 'video' || mediaType === 'document')) {
     mediaPayload.caption = caption;
   }
