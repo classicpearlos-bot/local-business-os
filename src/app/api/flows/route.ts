@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { getOrganizationFlows, DEFAULT_SALON_FLOWS } from '@/lib/flows/service';
-
-import { FlowExecution } from '@/lib/flows/types';
+import { getOrganizationFlows, saveFlow, deleteFlow } from '@/lib/flows/service';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -27,6 +25,7 @@ export async function GET() {
     const flows = await getOrganizationFlows(orgId);
     return NextResponse.json({ flows });
   } catch (error: any) {
+    console.error('GET /api/flows error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -41,42 +40,27 @@ export async function POST(request: Request) {
     if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
-    const { action, flow_id, definition, contact_id } = body;
+    const { action } = body;
 
-    // Test execution simulation
-    if (action === 'execute' && definition && contact_id) {
-      // In a real scenario we'd use FlowExecutionEngine.start(), but since this is just a stateless test in the UI, we return a mock execution.
-      const initialExecution = {
-        id: `exec_${Date.now()}`,
-        organization_id: orgId,
-        flow_id: flow_id || 'test_flow',
-        contact_id,
-        status: 'COMPLETED',
-        current_node_id: '',
-        variables: {},
-        steps: definition.nodes.map((n: any) => ({
-           id: 'step_1',
-           node_id: n.id,
-           node_type: n.data.node_type,
-           status: 'SUCCESS',
-           executed_at: new Date().toISOString()
-        })),
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString()
-      };
-
-      return NextResponse.json({ success: true, execution: initialExecution });
-    }
-
-    // Save Flow
+    // Save Flow (create or update)
     if (action === 'save' && body.flow) {
-      const { saveFlow } = await import('@/lib/flows/service');
       const saved = await saveFlow(orgId, body.flow);
+      if (!saved) {
+        return NextResponse.json({ error: 'Failed to save flow to database' }, { status: 500 });
+      }
       return NextResponse.json({ success: true, flow: saved });
     }
 
-    return NextResponse.json({ success: true, message: 'Action not supported' });
+    // Delete Flow
+    if (action === 'delete' && body.flow_id) {
+      const ok = await deleteFlow(orgId, body.flow_id);
+      if (!ok) return NextResponse.json({ error: 'Failed to delete flow' }, { status: 500 });
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error: any) {
+    console.error('POST /api/flows error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
