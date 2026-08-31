@@ -1,39 +1,44 @@
 {
-  "timestamp": "2026-08-27T17:24:43.296Z",
-  "durationSeconds": 34.31,
+  "timestamp": "2026-08-31T06:52:02.417Z",
+  "durationSeconds": 16.24,
   "summary": {
     "totalSuites": 11,
     "totalTests": 60,
-    "totalPassed": 60,
-    "totalFailed": 0,
-    "passRate": "100.0%"
+    "totalPassed": 20,
+    "totalFailed": 40,
+    "passRate": "33.3%"
   },
   "suiteResults": [
     {
       "suite": "Suite 1: Authentication & Authorization Security",
       "total": 5,
-      "passed": 5,
-      "failed": 0,
+      "passed": 0,
+      "failed": 5,
       "tests": [
         {
           "name": "Unauthenticated request to /inbox is intercepted/redirected",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Unauthenticated request to /campaigns is protected",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Unauthenticated request to /developers is protected",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Login endpoint rejects missing email/password gracefully",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Auth handles SQL injection and XSS strings safely without crashing",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
@@ -76,28 +81,33 @@
     {
       "suite": "Suite 3: Developer API (/api/v1/send) & Idempotency",
       "total": 6,
-      "passed": 6,
-      "failed": 0,
+      "passed": 1,
+      "failed": 5,
       "tests": [
         {
           "name": "/api/v1/send rejects requests without Authorization header (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "/api/v1/send rejects invalid bearer token (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "/api/v1/send rejects expired API key (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "/api/v1/send rejects revoked API key (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "/api/v1/send rejects unsupported message types (400)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Idempotency: Concurrent duplicate requests with same Idempotency-Key are protected against duplicate processing",
@@ -108,136 +118,158 @@
     {
       "suite": "Suite 4: Meta Webhook Inbound & Status Tick Processing",
       "total": 5,
-      "passed": 5,
-      "failed": 0,
+      "passed": 0,
+      "failed": 5,
       "tests": [
         {
           "name": "Meta Webhook GET: Responds with challenge on valid subscription",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Meta Webhook GET: Rejects missing verification challenge (403)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Meta Webhook POST: Gracefully handles malformed / non-whatsapp payload (404)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Meta Webhook POST: Inbound text message auto-creates contact and conversation",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Meta Webhook POST: Status update (DELIVERED/READ) updates message status",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 5: Keyword Automation Engine & Cooldown Logic",
       "total": 3,
-      "passed": 3,
-      "failed": 0,
+      "passed": 0,
+      "failed": 3,
       "tests": [
         {
           "name": "EXACT match triggers when text matches keyword exactly (case-insensitive & trimmed)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "EXACT match does NOT trigger on sentence containing the word",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "CONTAINS match triggers when keyword is anywhere inside sentence",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 6: Campaign Queue Worker Execution",
       "total": 2,
-      "passed": 2,
-      "failed": 0,
+      "passed": 0,
+      "failed": 2,
       "tests": [
         {
           "name": "Campaign Worker GET: Returns 200 and handles empty queue gracefully",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Campaign Creation API rejects missing body / unauthenticated requests (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 7: Outbound Tenant Webhooks Queueing",
       "total": 2,
-      "passed": 2,
-      "failed": 0,
+      "passed": 0,
+      "failed": 2,
       "tests": [
         {
           "name": "Subscribed event (message.received) is queued into tenant_webhook_deliveries on inbound message",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Unsubscribed event (message.failed) is NOT queued for this endpoint",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 8: Frontend Pages & Routing Integrity",
       "total": 10,
-      "passed": 10,
-      "failed": 0,
+      "passed": 0,
+      "failed": 10,
       "tests": [
         {
           "name": "Page [Dashboard] (/) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Multi-Agent Inbox] (/inbox) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Campaigns Dashboard] (/campaigns) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Contacts CRM] (/contacts) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Message Templates] (/templates) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Keyword Automations] (/automations) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [WhatsApp Meta Settings] (/whatsapp) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Developers & Webhooks] (/developers) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Sign In] (/login) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Page [Sign Up] (/signup) responds with HTTP 200",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 9: Security Attack, IDOR & Adversarial Tests",
       "total": 9,
-      "passed": 9,
-      "failed": 0,
+      "passed": 4,
+      "failed": 5,
       "tests": [
         {
           "name": "IDOR: Anonymous client cannot read Org1 contacts by guessing UUID",
@@ -253,23 +285,28 @@
         },
         {
           "name": "Webhook token validation: fake token is rejected (403)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Webhook token validation: missing challenge is rejected (403)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "IDOR: Cannot update Org2 contacts via PATCH /api/contacts using Org1 ID",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Developer API: Cannot use another tenant API key for cross-tenant access",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "SQL Injection: contact search does not expose data",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Phone normalization: duplicate contact with different format is rejected",
@@ -280,8 +317,8 @@
     {
       "suite": "Suite 10: Media Campaigns, Validation & Test Send",
       "total": 5,
-      "passed": 5,
-      "failed": 0,
+      "passed": 3,
+      "failed": 2,
       "tests": [
         {
           "name": "Media Validation: Image sizes (5MB) and MIME types enforced according to Meta specs",
@@ -297,19 +334,21 @@
         },
         {
           "name": "Test Send API: Unauthenticated requests protected (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         },
         {
           "name": "Message Debugger API: Granular recipient traces protected by authentication (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     },
     {
       "suite": "Suite 11: Excel Import, Audience & Meta Error Diagnostics",
       "total": 6,
-      "passed": 6,
-      "failed": 0,
+      "passed": 5,
+      "failed": 1,
       "tests": [
         {
           "name": "Diagnostic Engine: Identifies \"Not on WhatsApp\" error (#131026)",
@@ -333,7 +372,8 @@
         },
         {
           "name": "Bulk Contact Import API: Unauthenticated requests protected (401)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "fetch failed"
         }
       ]
     }

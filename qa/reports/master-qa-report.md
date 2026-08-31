@@ -1,20 +1,20 @@
 # Master QA, Verification & Validation Report
 
-**Timestamp**: 2026-08-27T17:24:43.296Z  
-**Duration**: 34.31s  
+**Timestamp**: 2026-08-31T06:52:02.417Z  
+**Duration**: 16.24s  
 **Total Tests Executed**: 60  
-**Passed**: 60 (✅ 100.0%)  
-**Failed**: 0  
+**Passed**: 20 (✅ 33.3%)  
+**Failed**: 40  
 
 ## Test Suite Breakdown
 
 ### Suite 1: Authentication & Authorization Security
-* **Results**: 5/5 Passed
-  * ✅ PASS: Unauthenticated request to /inbox is intercepted/redirected
-  * ✅ PASS: Unauthenticated request to /campaigns is protected
-  * ✅ PASS: Unauthenticated request to /developers is protected
-  * ✅ PASS: Login endpoint rejects missing email/password gracefully
-  * ✅ PASS: Auth handles SQL injection and XSS strings safely without crashing
+* **Results**: 0/5 Passed
+  * ❌ FAIL: Unauthenticated request to /inbox is intercepted/redirected (*fetch failed*)
+  * ❌ FAIL: Unauthenticated request to /campaigns is protected (*fetch failed*)
+  * ❌ FAIL: Unauthenticated request to /developers is protected (*fetch failed*)
+  * ❌ FAIL: Login endpoint rejects missing email/password gracefully (*fetch failed*)
+  * ❌ FAIL: Auth handles SQL injection and XSS strings safely without crashing (*fetch failed*)
 
 ### Suite 2: Database Integrity, RPCs & RLS Isolation
 * **Results**: 7/7 Passed
@@ -27,77 +27,77 @@
   * ✅ PASS: RPC: claim_campaign_recipients executes atomically
 
 ### Suite 3: Developer API (/api/v1/send) & Idempotency
-* **Results**: 6/6 Passed
-  * ✅ PASS: /api/v1/send rejects requests without Authorization header (401)
-  * ✅ PASS: /api/v1/send rejects invalid bearer token (401)
-  * ✅ PASS: /api/v1/send rejects expired API key (401)
-  * ✅ PASS: /api/v1/send rejects revoked API key (401)
-  * ✅ PASS: /api/v1/send rejects unsupported message types (400)
+* **Results**: 1/6 Passed
+  * ❌ FAIL: /api/v1/send rejects requests without Authorization header (401) (*fetch failed*)
+  * ❌ FAIL: /api/v1/send rejects invalid bearer token (401) (*fetch failed*)
+  * ❌ FAIL: /api/v1/send rejects expired API key (401) (*fetch failed*)
+  * ❌ FAIL: /api/v1/send rejects revoked API key (401) (*fetch failed*)
+  * ❌ FAIL: /api/v1/send rejects unsupported message types (400) (*fetch failed*)
   * ✅ PASS: Idempotency: Concurrent duplicate requests with same Idempotency-Key are protected against duplicate processing
 
 ### Suite 4: Meta Webhook Inbound & Status Tick Processing
-* **Results**: 5/5 Passed
-  * ✅ PASS: Meta Webhook GET: Responds with challenge on valid subscription
-  * ✅ PASS: Meta Webhook GET: Rejects missing verification challenge (403)
-  * ✅ PASS: Meta Webhook POST: Gracefully handles malformed / non-whatsapp payload (404)
-  * ✅ PASS: Meta Webhook POST: Inbound text message auto-creates contact and conversation
-  * ✅ PASS: Meta Webhook POST: Status update (DELIVERED/READ) updates message status
+* **Results**: 0/5 Passed
+  * ❌ FAIL: Meta Webhook GET: Responds with challenge on valid subscription (*fetch failed*)
+  * ❌ FAIL: Meta Webhook GET: Rejects missing verification challenge (403) (*fetch failed*)
+  * ❌ FAIL: Meta Webhook POST: Gracefully handles malformed / non-whatsapp payload (404) (*fetch failed*)
+  * ❌ FAIL: Meta Webhook POST: Inbound text message auto-creates contact and conversation (*fetch failed*)
+  * ❌ FAIL: Meta Webhook POST: Status update (DELIVERED/READ) updates message status (*fetch failed*)
 
 ### Suite 5: Keyword Automation Engine & Cooldown Logic
-* **Results**: 3/3 Passed
-  * ✅ PASS: EXACT match triggers when text matches keyword exactly (case-insensitive & trimmed)
-  * ✅ PASS: EXACT match does NOT trigger on sentence containing the word
-  * ✅ PASS: CONTAINS match triggers when keyword is anywhere inside sentence
+* **Results**: 0/3 Passed
+  * ❌ FAIL: EXACT match triggers when text matches keyword exactly (case-insensitive & trimmed) (*fetch failed*)
+  * ❌ FAIL: EXACT match does NOT trigger on sentence containing the word (*fetch failed*)
+  * ❌ FAIL: CONTAINS match triggers when keyword is anywhere inside sentence (*fetch failed*)
 
 ### Suite 6: Campaign Queue Worker Execution
-* **Results**: 2/2 Passed
-  * ✅ PASS: Campaign Worker GET: Returns 200 and handles empty queue gracefully
-  * ✅ PASS: Campaign Creation API rejects missing body / unauthenticated requests (401)
+* **Results**: 0/2 Passed
+  * ❌ FAIL: Campaign Worker GET: Returns 200 and handles empty queue gracefully (*fetch failed*)
+  * ❌ FAIL: Campaign Creation API rejects missing body / unauthenticated requests (401) (*fetch failed*)
 
 ### Suite 7: Outbound Tenant Webhooks Queueing
-* **Results**: 2/2 Passed
-  * ✅ PASS: Subscribed event (message.received) is queued into tenant_webhook_deliveries on inbound message
-  * ✅ PASS: Unsubscribed event (message.failed) is NOT queued for this endpoint
+* **Results**: 0/2 Passed
+  * ❌ FAIL: Subscribed event (message.received) is queued into tenant_webhook_deliveries on inbound message (*fetch failed*)
+  * ❌ FAIL: Unsubscribed event (message.failed) is NOT queued for this endpoint (*fetch failed*)
 
 ### Suite 8: Frontend Pages & Routing Integrity
-* **Results**: 10/10 Passed
-  * ✅ PASS: Page [Dashboard] (/) responds with HTTP 200
-  * ✅ PASS: Page [Multi-Agent Inbox] (/inbox) responds with HTTP 200
-  * ✅ PASS: Page [Campaigns Dashboard] (/campaigns) responds with HTTP 200
-  * ✅ PASS: Page [Contacts CRM] (/contacts) responds with HTTP 200
-  * ✅ PASS: Page [Message Templates] (/templates) responds with HTTP 200
-  * ✅ PASS: Page [Keyword Automations] (/automations) responds with HTTP 200
-  * ✅ PASS: Page [WhatsApp Meta Settings] (/whatsapp) responds with HTTP 200
-  * ✅ PASS: Page [Developers & Webhooks] (/developers) responds with HTTP 200
-  * ✅ PASS: Page [Sign In] (/login) responds with HTTP 200
-  * ✅ PASS: Page [Sign Up] (/signup) responds with HTTP 200
+* **Results**: 0/10 Passed
+  * ❌ FAIL: Page [Dashboard] (/) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Multi-Agent Inbox] (/inbox) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Campaigns Dashboard] (/campaigns) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Contacts CRM] (/contacts) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Message Templates] (/templates) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Keyword Automations] (/automations) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [WhatsApp Meta Settings] (/whatsapp) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Developers & Webhooks] (/developers) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Sign In] (/login) responds with HTTP 200 (*fetch failed*)
+  * ❌ FAIL: Page [Sign Up] (/signup) responds with HTTP 200 (*fetch failed*)
 
 ### Suite 9: Security Attack, IDOR & Adversarial Tests
-* **Results**: 9/9 Passed
+* **Results**: 4/9 Passed
   * ✅ PASS: IDOR: Anonymous client cannot read Org1 contacts by guessing UUID
   * ✅ PASS: IDOR: Anonymous client cannot read Org1 campaigns
   * ✅ PASS: IDOR: Anonymous client cannot read Org1 API keys
-  * ✅ PASS: Webhook token validation: fake token is rejected (403)
-  * ✅ PASS: Webhook token validation: missing challenge is rejected (403)
-  * ✅ PASS: IDOR: Cannot update Org2 contacts via PATCH /api/contacts using Org1 ID
-  * ✅ PASS: Developer API: Cannot use another tenant API key for cross-tenant access
-  * ✅ PASS: SQL Injection: contact search does not expose data
+  * ❌ FAIL: Webhook token validation: fake token is rejected (403) (*fetch failed*)
+  * ❌ FAIL: Webhook token validation: missing challenge is rejected (403) (*fetch failed*)
+  * ❌ FAIL: IDOR: Cannot update Org2 contacts via PATCH /api/contacts using Org1 ID (*fetch failed*)
+  * ❌ FAIL: Developer API: Cannot use another tenant API key for cross-tenant access (*fetch failed*)
+  * ❌ FAIL: SQL Injection: contact search does not expose data (*fetch failed*)
   * ✅ PASS: Phone normalization: duplicate contact with different format is rejected
 
 ### Suite 10: Media Campaigns, Validation & Test Send
-* **Results**: 5/5 Passed
+* **Results**: 3/5 Passed
   * ✅ PASS: Media Validation: Image sizes (5MB) and MIME types enforced according to Meta specs
   * ✅ PASS: Media Validation: Video (16MB) and Document (100MB) limits strictly enforced
   * ✅ PASS: Template Builder: Meta-compliant media header and variable array generated
-  * ✅ PASS: Test Send API: Unauthenticated requests protected (401)
-  * ✅ PASS: Message Debugger API: Granular recipient traces protected by authentication (401)
+  * ❌ FAIL: Test Send API: Unauthenticated requests protected (401) (*fetch failed*)
+  * ❌ FAIL: Message Debugger API: Granular recipient traces protected by authentication (401) (*fetch failed*)
 
 ### Suite 11: Excel Import, Audience & Meta Error Diagnostics
-* **Results**: 6/6 Passed
+* **Results**: 5/6 Passed
   * ✅ PASS: Diagnostic Engine: Identifies "Not on WhatsApp" error (#131026)
   * ✅ PASS: Diagnostic Engine: Identifies 24-Hour customer service window expired (#131047)
   * ✅ PASS: Diagnostic Engine: Identifies Meta API rate limit (#131056)
   * ✅ PASS: Diagnostic Engine: Identifies Meta billing restriction (#131042)
   * ✅ PASS: Diagnostic Engine: Identifies template variable/parameter mismatch (#132000)
-  * ✅ PASS: Bulk Contact Import API: Unauthenticated requests protected (401)
+  * ❌ FAIL: Bulk Contact Import API: Unauthenticated requests protected (401) (*fetch failed*)
 

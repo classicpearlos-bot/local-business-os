@@ -8,7 +8,7 @@ import { normalizePhoneNumber } from '@/utils/phone';
 import { sendWhatsAppText } from '@/lib/meta/whatsapp';
 
 function verifyMetaSignature(rawBody: string, signatureHeader: string | null, appSecret: string): boolean {
-  if (!signatureHeader || !appSecret) return true; // Graceful fallback if secret not set in dev
+  if (!signatureHeader || !appSecret) return false; // MUST reject in production if missing
   try {
     const [algorithm, signature] = signatureHeader.split('=');
     if (algorithm !== 'sha256' || !signature) return false;
@@ -62,12 +62,10 @@ export async function POST(request: Request) {
     const signatureHeader = request.headers.get('x-hub-signature-256');
     const appSecret = process.env.META_APP_SECRET || '';
 
-    // Verify cryptographic HMAC signature if secret is configured
-    if (appSecret && signatureHeader) {
-      const isValid = verifyMetaSignature(rawBody, signatureHeader, appSecret);
-      if (!isValid) {
-        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
-      }
+    // Verify cryptographic HMAC signature
+    const isValid = verifyMetaSignature(rawBody, signatureHeader, appSecret);
+    if (!isValid) {
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
     }
 
     let payload: any;
