@@ -270,6 +270,21 @@ export default function FlowsPage() {
             <Badge variant="success" className="py-1.5 px-3 shrink-0">ReactFlow v12 Powered</Badge>
           </div>
 
+          {/* CREATE FLOW ROW — always visible */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-black text-[#292722]">Your Flows</h2>
+              <p className="text-xs text-[#706B61]">{flows.length} flow{flows.length !== 1 ? 's' : ''} · Click a flow card to open the canvas editor</p>
+            </div>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              className="shrink-0 bg-[#292722] hover:bg-[#111] text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create New Flow
+            </Button>
+          </div>
+
           {/* Error state */}
           {error && (
             <div className="p-5 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3">
