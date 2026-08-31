@@ -4,7 +4,7 @@ import { sendWhatsAppText } from '@/lib/meta/whatsapp';
 import { CLASSIC_PEARLS_SERVICES, CLASSIC_PEARLS_STAFF } from './pos-adapter';
 
 /**
- * Create an appointment and dispatch instant WhatsApp confirmation with concurrency check
+ * Create an appointment and dispatch instant WhatsApp confirmation with ATOMIC concurrency check
  */
 export async function createSalonAppointment(
   orgId: string,
@@ -31,47 +31,42 @@ export async function createSalonAppointment(
 
   const targetSlotKey = `${payload.date} ${payload.time}`;
 
-  // 1. CONCURRENCY & DOUBLE-BOOKING GUARD:
-  // Check if this stylist is already booked for this exact slot
-  const existingApts = await getOrganizationAppointments(orgId);
-  const conflict = existingApts.find(a => 
-    a.staff_id === staff.id && 
-    a.start_time === targetSlotKey && 
-    a.status !== 'CANCELLED'
-  );
+  // 1. ATOMIC DOUBLE-BOOKING GUARD
+  // We rely on the database unique constraint idx_appointments_no_double_booking
+  const { data: newApt, error: insertError } = await supabaseAdmin
+    .from('appointments')
+    .insert({
+      organization_id: orgId,
+      contact_id: contact.id,
+      service_id: service.id,
+      service_name: service.name,
+      service_price: service.price,
+      staff_id: staff.id,
+      staff_name: staff.name,
+      start_time: targetSlotKey,
+      end_time: targetSlotKey,
+      status: 'CONFIRMED',
+      notes: payload.notes
+    })
+    .select()
+    .single();
 
-  if (conflict) {
-    throw new Error(`Stylist ${staff.name} is already booked for ${payload.time} on ${payload.date}. Please select another time slot or stylist.`);
+  if (insertError) {
+    if (insertError.code === '23505' || insertError.message.includes('unique constraint')) {
+      throw new Error(`Stylist ${staff.name} is already booked for ${payload.time} on ${payload.date}. Please select another time slot or stylist.`);
+    }
+    throw new Error(`Failed to book appointment: ${insertError.message}`);
   }
 
-  const appointment: AppointmentRecord = {
-    id: `apt_${Date.now()}`,
-    organization_id: orgId,
-    contact_id: contact.id,
-    customer_name: contact.name || 'Valued Customer',
-    customer_phone: contact.phone_number,
-    service_id: service.id,
-    service_name: service.name,
-    service_price: service.price,
-    staff_id: staff.id,
-    staff_name: staff.name,
-    start_time: targetSlotKey,
-    end_time: targetSlotKey,
-    status: 'CONFIRMED',
-    notes: payload.notes,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+  const appointment = newApt as unknown as AppointmentRecord;
 
-  // Update customer profile with appointment details
+  // Update customer profile with custom fields
   const attrs = (contact.attributes as any) || {};
-  const currentAppointments = Array.isArray(attrs.appointments) ? attrs.appointments : [];
   await supabaseAdmin
     .from('contacts')
     .update({
       attributes: {
         ...attrs,
-        appointments: [appointment, ...currentAppointments],
         custom_fields: {
           ...(attrs.custom_fields || {}),
           last_visit: payload.date,
@@ -92,7 +87,7 @@ export async function createSalonAppointment(
 
     const account = accounts?.[0];
     if (account && contact.phone_number) {
-      const confirmMsg = `🌸 *APPOINTMENT CONFIRMED* 🌸\n\nDear ${contact.name || 'Client'},\nYour salon appointment has been booked!\n\n💇 *Service:* ${service.name}\n📅 *Date:* ${payload.date}\n⏰ *Time:* ${payload.time}\n👤 *Stylist:* ${staff.name}\n💰 *Price:* ₹${service.price}\n📍 *Location:* Classic Pearl Unisex Salon\n\n_We look forward to pampering you! Reply to this message if you need to reschedule._`;
+      const confirmMsg = `*APPOINTMENT CONFIRMED*\n\nDear ${contact.name || 'Client'},\nYour salon appointment has been booked!\n\n*Service:* ${service.name}\n*Date:* ${payload.date}\n*Time:* ${payload.time}\n*Stylist:* ${staff.name}\n*Price:* ${service.price}\n*Location:* Classic Pearl Unisex Salon\n\n_We look forward to pampering you! Reply to this message if you need to reschedule._`;
 
       await sendWhatsAppText({
         phoneNumberId: account.phone_number_id,
@@ -129,11 +124,9 @@ export async function createSalonAppointment(
         campaign_id: recip.campaign_id,
         engagement_time: recip.created_at,
         conversion_time: new Date().toISOString(),
+        appointment_id: appointment.id,
         revenue_generated: service.price
       });
-      
-      // Update the campaign's total revenue generated
-      // Assuming you might want an RPC for this, but for now we just log it in the attribution table.
     }
   } catch (roiError) {
     console.error('Failed to track campaign ROI attribution:', roiError);
@@ -146,20 +139,20 @@ export async function createSalonAppointment(
  * List all salon appointments for an organization
  */
 export async function getOrganizationAppointments(orgId: string): Promise<AppointmentRecord[]> {
-  const { data: contacts } = await supabaseAdmin
-    .from('contacts')
-    .select('id, name, phone_number, attributes')
-    .eq('organization_id', orgId);
+  const { data: appointments, error } = await supabaseAdmin
+    .from('appointments')
+    .select('*, contacts(name, phone_number)')
+    .eq('organization_id', orgId)
+    .order('created_at', { ascending: false });
 
-  const appointments: AppointmentRecord[] = [];
+  if (error) {
+    console.error('Failed to fetch appointments:', error);
+    return [];
+  }
 
-  (contacts || []).forEach(c => {
-    const contactApts = (c.attributes as any)?.appointments;
-    if (Array.isArray(contactApts)) {
-      appointments.push(...contactApts);
-    }
-  });
-
-  appointments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  return appointments;
+  return (appointments || []).map(a => ({
+    ...a,
+    customer_name: a.contacts?.name || 'Valued Customer',
+    customer_phone: a.contacts?.phone_number || ''
+  })) as AppointmentRecord[];
 }

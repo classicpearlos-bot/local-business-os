@@ -5,6 +5,11 @@ import { sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
 export const maxDuration = 60; // Full 60s execution window on Vercel Serverless
 
 export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   let totalProcessed = 0;
   let successCount = 0;

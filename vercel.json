@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/flows/worker",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/whatsapp/campaigns/worker",
+      "schedule": "* * * * *"
+    }
+  ]
+}
