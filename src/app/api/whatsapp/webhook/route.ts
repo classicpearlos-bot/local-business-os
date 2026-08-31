@@ -190,7 +190,13 @@ export async function POST(request: Request) {
                 }
 
                 let textBody = '';
-                if (msg.type === 'text') textBody = msg.text?.body || '';
+                let buttonId = '';
+                if (msg.type === 'text') {
+                  textBody = msg.text?.body || '';
+                } else if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
+                  textBody = msg.interactive.button_reply.title || '';
+                  buttonId = msg.interactive.button_reply.id || '';
+                }
 
                 const normalizedCommand = textBody.trim().toLowerCase();
                 const STOP_WORDS = ['stop', 'unsubscribe', 'cancel', 'optout', 'opt-out', 'remove', 'remove me', 'do not message', 'end', 'quit', 'block'];
@@ -291,7 +297,8 @@ export async function POST(request: Request) {
                     conversationId,
                     messageId,
                     textBody,
-                    contactPhone
+                    contactPhone,
+                    buttonId
                   );
                 }
 

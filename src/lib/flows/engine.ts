@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { FlowDefinition, FlowNodeType, FlowEdge, FlowNode } from './types';
-import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
+import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppInteractive } from '@/lib/meta/whatsapp';
 
 export class FlowExecutionEngine {
   constructor(private executionId: string, private orgId: string) {}
@@ -254,6 +254,49 @@ export class FlowExecutionEngine {
       
       case 'message_template':
         // Implementation for template sending
+        return {};
+
+      case 'message_buttons':
+        const bodyText = (config.text || '').replace(/{{name}}/g, contact.name || 'Friend');
+        const buttons = config.buttons || [];
+        
+        if (buttons.length > 0) {
+          const interactivePayload = {
+            type: 'button',
+            body: { text: bodyText },
+            action: {
+              buttons: buttons.slice(0, 3).map((btn: any) => ({
+                type: 'reply',
+                reply: {
+                  id: btn.id.substring(0, 256),
+                  title: btn.title.substring(0, 20)
+                }
+              }))
+            }
+          };
+          
+          const btnRes = await sendWhatsAppInteractive({
+            phoneNumberId: account.phone_number_id,
+            accessToken: account.access_token,
+            to: contact.phone_number
+          }, interactivePayload);
+
+          if (btnRes.error) throw new Error(btnRes.error.message);
+
+          if (btnRes.messages?.[0]?.id && exec.conversation_id) {
+            await supabaseAdmin.from('messages').insert({
+              organization_id: this.orgId,
+              conversation_id: exec.conversation_id,
+              contact_id: exec.contact_id,
+              direction: 'OUTBOUND',
+              type: 'interactive',
+              content: { interactive: interactivePayload },
+              status: 'SENT',
+              wam_id: btnRes.messages[0].id
+            });
+            await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', exec.conversation_id);
+          }
+        }
         return {};
 
       case 'logic_condition':

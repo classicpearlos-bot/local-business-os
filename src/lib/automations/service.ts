@@ -9,7 +9,8 @@ export async function evaluateAutomations(
   conversationId: string, 
   messageId: string, 
   inboundText: string,
-  contactPhone: string
+  contactPhone: string,
+  buttonId?: string
 ) {
   if (!inboundText) return;
 

@@ -130,6 +130,37 @@ export async function sendWhatsAppMedia(
 }
 
 /**
+ * Sends an interactive message (Buttons or List) via WhatsApp Cloud API
+ */
+export async function sendWhatsAppInteractive(
+  options: SendMessageOptions,
+  interactivePayload: any
+) {
+  const payload = {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to: options.to,
+    type: 'interactive',
+    interactive: interactivePayload
+  };
+
+  const response = await fetch(`https://graph.facebook.com/v19.0/${options.phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${options.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(`WhatsApp API Error: ${response.statusText} - ${JSON.stringify(errorData)}`);
+  }
+  return response.json();
+}
+
+/**
  * Sends an approved template message with optional media header and variable interpolation
  */
 export async function sendWhatsAppTemplate(
