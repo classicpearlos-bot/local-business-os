@@ -282,8 +282,9 @@ export class FlowExecutionEngine {
         const buttons = config.buttons || [];
         
         if (buttons.length > 0) {
-          const interactivePayload = {
+          const interactivePayload: any = {
             type: 'button',
+            ...(config.header_image_url ? { header: { type: 'image', image: { link: config.header_image_url } } } : {}),
             body: { text: bodyText },
             action: {
               buttons: buttons.slice(0, 3).map((btn: any) => ({

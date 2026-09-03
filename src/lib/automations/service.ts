@@ -29,8 +29,15 @@ export async function evaluateAutomations(
       .eq('trigger_type', 'KEYWORD');
 
     for (const flow of (flows || [])) {
-      const keywords = (flow.trigger_config as any)?.keywords || [];
-      if (keywords.some((k: string) => k.toLowerCase() === normalizedInput || normalizedInput.includes(k.toLowerCase()))) {
+      const config = flow.trigger_config as any || {};
+      const keywords = config.keywords || [];
+      const matchAll = config.match_all === true;
+      
+      const isMatch = matchAll || keywords.some((k: string) => 
+        k.toLowerCase() === normalizedInput || normalizedInput.includes(k.toLowerCase())
+      );
+
+      if (isMatch) {
         // Trigger match! Start flow execution
         const execId = await FlowExecutionEngine.start(orgId, flow.id, contactId, conversationId, messageId);
         if (execId) return; // Flow handled it, exit.

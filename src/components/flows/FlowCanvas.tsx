@@ -67,7 +67,7 @@ function FlowNode({ data, selected }: any) {
 
   const previewText = (() => {
     const cfg = data.config || {};
-    if (data.node_type === 'trigger') return (cfg.keywords || []).join(', ') || 'Set keywords in properties →';
+    if (data.node_type === 'trigger') return cfg.match_all ? 'ANY message (Catch-all)' : ((cfg.keywords || []).join(', ') || 'Set keywords in properties →');
     if (data.node_type === 'message_text') return cfg.text?.substring(0, 60) + (cfg.text?.length > 60 ? '...' : '') || 'Set message text →';
     if (data.node_type === 'message_image') return cfg.caption || (cfg.url ? 'Image attached' : 'Set image URL →');
     if (data.node_type === 'message_buttons') return `${(cfg.buttons || []).length} button(s) — ${cfg.text?.substring(0, 40) || 'Set message →'}`;
@@ -261,16 +261,29 @@ function PropertiesPanel({ node, onChange, onDelete, onClose }: { node: Node; on
 
         {/* TRIGGER */}
         {type === 'trigger' && (
-          <div>
-            <label className="block text-[11px] font-bold text-[#706B61] mb-1">Keywords (comma separated)</label>
-            <input
-              type="text"
-              value={(cfg.keywords || []).join(', ')}
-              onChange={e => onChange('keywords', e.target.value.split(',').map((k: string) => k.trim()).filter(Boolean))}
-              placeholder="hi, hello, menu, services"
-              className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] text-xs outline-none focus:border-[#B08D57]"
-            />
-            <p className="text-[10px] text-[#9E968D] mt-1">Customer messages matching any keyword will start this flow.</p>
+          <div className="space-y-3">
+            <label className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={cfg.match_all || false} 
+                onChange={e => onChange('match_all', e.target.checked)} 
+                className="w-3.5 h-3.5 accent-[#B08D57]"
+              />
+              <span className="text-[11px] font-bold text-[#292722]">Trigger on ANY message (Catch-all)</span>
+            </label>
+            {!cfg.match_all && (
+              <div>
+                <label className="block text-[11px] font-bold text-[#706B61] mb-1">Keywords (comma separated)</label>
+                <input
+                  type="text"
+                  value={(cfg.keywords || []).join(', ')}
+                  onChange={e => onChange('keywords', e.target.value.split(',').map((k: string) => k.trim()).filter(Boolean))}
+                  placeholder="hi, hello, menu, services"
+                  className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] text-xs outline-none focus:border-[#B08D57]"
+                />
+                <p className="text-[10px] text-[#9E968D] mt-1">Customer messages matching any keyword will start this flow.</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -318,6 +331,16 @@ function PropertiesPanel({ node, onChange, onDelete, onClose }: { node: Node; on
         {/* INTERACTIVE BUTTONS */}
         {type === 'message_buttons' && (
           <>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Header Image URL (Optional)</label>
+              <input
+                type="text"
+                value={cfg.header_image_url || ''}
+                onChange={e => onChange('header_image_url', e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] text-xs outline-none focus:border-[#B08D57]"
+              />
+            </div>
             <div>
               <label className="block text-[11px] font-bold text-[#706B61] mb-1">Message Body</label>
               <textarea
