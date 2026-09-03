@@ -73,22 +73,43 @@ export class FlowExecutionEngine {
   }
 
   /**
-   * Resumes a WAITING flow execution (e.g., from a scheduler).
+   * Resumes a WAITING flow execution (e.g., from a scheduler or interaction).
    */
-  static async resume(executionId: string, orgId: string) {
+  static async resume(executionId: string, orgId: string, edgeHandle?: string) {
     const { data: exec } = await supabaseAdmin
       .from('flow_executions')
       .update({ status: 'RUNNING', resume_at: null })
       .eq('id', executionId)
       .eq('organization_id', orgId)
       .eq('status', 'WAITING')
-      .select('id')
+      .select('id, current_node_id, flow_id')
       .single();
 
     if (!exec) return; // Not waiting or doesn't exist
 
     const engine = new FlowExecutionEngine(executionId, orgId);
-    engine.processNextNode().catch(e => console.error('Flow processing error:', e));
+    
+    let overrideNodeId = undefined;
+    if (edgeHandle) {
+      const { data: flow } = await supabaseAdmin.from('flows').select('definition').eq('id', exec.flow_id).single();
+      if (flow) {
+        overrideNodeId = engine.getNextNodeId(exec.current_node_id, flow.definition.edges, edgeHandle);
+        if (overrideNodeId) {
+          await engine.updateExecutionCurrentNode(overrideNodeId);
+        } else {
+          // Handle edge case where button branch has no target node
+          overrideNodeId = engine.getNextNodeId(exec.current_node_id, flow.definition.edges, null);
+          if (overrideNodeId) {
+             await engine.updateExecutionCurrentNode(overrideNodeId);
+          } else {
+             await engine.completeExecution();
+             return;
+          }
+        }
+      }
+    }
+
+    engine.processNextNode(overrideNodeId).catch(e => console.error('Flow processing error:', e));
   }
 
   /**
@@ -297,6 +318,52 @@ export class FlowExecutionEngine {
             await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', exec.conversation_id);
           }
         }
+        // Pause execution indefinitely, waiting for user to click a button
+        return { wait_until: '2099-12-31T23:59:59.999Z' };
+
+      case 'message_cta':
+        const ctaText = (config.text || '').replace(/{{name}}/g, contact.name || 'Friend');
+        const ctaType = config.action_type === 'call' ? 'cta_call' : 'cta_url';
+        
+        const ctaPayload = {
+          type: ctaType,
+          body: { text: ctaText },
+          action: {
+            name: ctaType,
+            parameters: {
+              display_text: (config.action_title || 'Click Here').substring(0, 20),
+              ...(ctaType === 'cta_url' ? { url: config.action_payload || 'https://' } : {}),
+              ...(ctaType === 'cta_call' ? { phone_number: config.action_payload || '' } : {}) // Note: phone_number or payload depending on WA version, we will safely provide both if needed, but phone_number is standard for templates.
+            }
+          }
+        };
+
+        const ctaRes = await sendWhatsAppInteractive({
+          phoneNumberId: account.phone_number_id,
+          accessToken: account.access_token,
+          to: contact.phone_number
+        }, ctaPayload);
+
+        if (ctaRes.error) {
+           // Fallback to text if CTA interactive is rejected by WA API
+           await sendWhatsAppText({
+             phoneNumberId: account.phone_number_id,
+             accessToken: account.access_token,
+             to: contact.phone_number
+           }, `${ctaText}\n\n📍 ${config.action_title}: ${config.action_payload}`);
+        } else if (ctaRes.messages?.[0]?.id && exec.conversation_id) {
+          await supabaseAdmin.from('messages').insert({
+            organization_id: this.orgId,
+            conversation_id: exec.conversation_id,
+            contact_id: exec.contact_id,
+            direction: 'OUTBOUND',
+            type: 'interactive',
+            content: { interactive: ctaPayload },
+            status: 'SENT',
+            wam_id: ctaRes.messages[0].id
+          });
+          await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', exec.conversation_id);
+        }
         return {};
 
       case 'logic_condition':
@@ -340,7 +407,7 @@ export class FlowExecutionEngine {
     }
   }
 
-  private getNextNodeId(currentNodeId: string, edges: FlowEdge[], sourceHandle: string | null = null): string | null {
+  public getNextNodeId(currentNodeId: string, edges: FlowEdge[], sourceHandle: string | null = null): string | null {
     const edge = edges.find(e => {
       if (e.source !== currentNodeId) return false;
       if (sourceHandle && e.sourceHandle !== sourceHandle) return false;

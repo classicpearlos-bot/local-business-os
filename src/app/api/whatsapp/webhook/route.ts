@@ -292,14 +292,36 @@ export async function POST(request: Request) {
                     }
                   }
                 } else {
-                  await evaluateAutomations(
-                    accountOrgId,
-                    conversationId,
-                    messageId,
-                    textBody,
-                    contactPhone,
-                    buttonId
-                  );
+                  let handledByFlow = false;
+                  
+                  if (buttonId) {
+                    const { FlowExecutionEngine } = await import('@/lib/flows/engine');
+                    const { data: waitingExec } = await supabaseAdmin
+                      .from('flow_executions')
+                      .select('id')
+                      .eq('organization_id', accountOrgId)
+                      .eq('contact_id', contact.id)
+                      .eq('status', 'WAITING')
+                      .order('updated_at', { ascending: false })
+                      .limit(1)
+                      .maybeSingle();
+
+                    if (waitingExec) {
+                      await FlowExecutionEngine.resume(waitingExec.id, accountOrgId, buttonId);
+                      handledByFlow = true;
+                    }
+                  }
+
+                  if (!handledByFlow) {
+                    await evaluateAutomations(
+                      accountOrgId,
+                      conversationId,
+                      messageId,
+                      textBody,
+                      contactPhone,
+                      buttonId
+                    );
+                  }
                 }
 
                 // Queue developer webhook dispatch

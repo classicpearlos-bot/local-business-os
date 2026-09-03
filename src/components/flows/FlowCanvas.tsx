@@ -47,6 +47,7 @@ const NODE_STYLES: Record<string, { bg: string; border: string; icon: any; color
   message_text:    { bg: '#F0FDF4', border: '#22C55E', icon: MessageSquare,     color: '#16A34A', label: 'Text Message' },
   message_image:   { bg: '#FFF7ED', border: '#F97316', icon: ImageIcon,         color: '#EA580C', label: 'Image / Media' },
   message_buttons: { bg: '#F5F3FF', border: '#A855F7', icon: MousePointerClick, color: '#9333EA', label: 'Interactive Buttons' },
+  message_cta:     { bg: '#FFF1F2', border: '#E11D48', icon: Globe,             color: '#BE123C', label: 'Link / Call Action' },
   message_card:    { bg: '#FFF7ED', border: '#F59E0B', icon: LayoutGrid,        color: '#D97706', label: 'Card (Image + Caption + Buttons)' },
   logic_condition: { bg: '#FFFBEB', border: '#EAB308', icon: Split,             color: '#CA8A04', label: 'Condition (IF / ELSE)' },
   timing_delay:    { bg: '#F0F9FF', border: '#0EA5E9', icon: Clock,             color: '#0284C7', label: 'Wait / Delay' },
@@ -70,6 +71,7 @@ function FlowNode({ data, selected }: any) {
     if (data.node_type === 'message_text') return cfg.text?.substring(0, 60) + (cfg.text?.length > 60 ? '...' : '') || 'Set message text →';
     if (data.node_type === 'message_image') return cfg.caption || (cfg.url ? 'Image attached' : 'Set image URL →');
     if (data.node_type === 'message_buttons') return `${(cfg.buttons || []).length} button(s) — ${cfg.text?.substring(0, 40) || 'Set message →'}`;
+    if (data.node_type === 'message_cta') return `${cfg.action_type || 'URL'} — ${cfg.action_title || 'Action'}`;
     if (data.node_type === 'message_card') return cfg.title || 'Set card title →';
     if (data.node_type === 'logic_condition') return `IF ${cfg.field || '?'} ${cfg.operator || '?'} ${cfg.value ?? ''}`;
     if (data.node_type === 'timing_delay') {
@@ -121,12 +123,45 @@ function FlowNode({ data, selected }: any) {
             ))}
           </div>
         )}
+        {/* CTA preview */}
+        {data.node_type === 'message_cta' && data.config?.action_title && (
+          <div className="mt-2 px-2 py-1 rounded-lg border border-rose-200 bg-white text-[10px] font-bold text-rose-700 text-center truncate flex justify-center items-center gap-1">
+             {data.config.action_title}
+          </div>
+        )}
       </div>
 
       {/* Output handles */}
-      {!isEnd && !isCondition && (
+      {!isEnd && !isCondition && data.node_type !== 'message_buttons' && (
         <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-white" style={{ borderColor: style.border, borderWidth: 2 }} />
       )}
+
+      {/* Button Branching Handles */}
+      {data.node_type === 'message_buttons' && (
+        <div className="flex justify-evenly pb-2 relative h-4 w-full px-4">
+          {(data.config?.buttons || []).map((btn: any, idx: number) => {
+             const left = 20 + (60 * (idx / Math.max(1, (data.config.buttons.length - 1)))) + '%';
+             return (
+               <Handle 
+                 key={btn.id}
+                 type="source" 
+                 position={Position.Bottom} 
+                 id={btn.id}
+                 title={`Branch: ${btn.title}`}
+                 style={{ 
+                   borderColor: style.border, 
+                   borderWidth: 2, 
+                   backgroundColor: 'white', 
+                   width: 12, 
+                   height: 12,
+                   left: (data.config.buttons.length === 1) ? '50%' : left
+                 }} 
+               />
+             )
+          })}
+        </div>
+      )}
+
       {isCondition && (
         <>
           <Handle type="source" position={Position.Bottom} id="true" style={{ left: '30%', borderColor: '#22C55E', borderWidth: 2, backgroundColor: 'white', width: 12, height: 12 }} />
@@ -146,6 +181,7 @@ const nodeTypes = {
   message_text: FlowNode,
   message_image: FlowNode,
   message_buttons: FlowNode,
+  message_cta: FlowNode,
   message_card: FlowNode,
   logic_condition: FlowNode,
   timing_delay: FlowNode,
@@ -161,6 +197,7 @@ const NODE_LIBRARY = [
     { type: 'message_text',    label: 'Text Message',            defaultConfig: { text: '' } },
     { type: 'message_image',   label: 'Image / Media',           defaultConfig: { url: '', caption: '' } },
     { type: 'message_buttons', label: 'Interactive Buttons',     defaultConfig: { text: 'Choose an option:', buttons: [{ id: 'btn_1', title: 'Option 1' }] } },
+    { type: 'message_cta',     label: 'Link / Call Action',      defaultConfig: { text: 'Contact us:', action_type: 'url', action_title: 'Visit Website', action_payload: 'https://' } },
     { type: 'message_card',    label: 'Card (Image + Buttons)',  defaultConfig: { image_url: '', title: '', body: '', buttons: [{ id: 'btn_1', title: 'Learn More' }] } },
   ]},
   { section: 'Logic & Flow', items: [
@@ -328,6 +365,37 @@ function PropertiesPanel({ node, onChange, onDelete, onClose }: { node: Node; on
                 </div>
               )}
               <p className="text-[10px] text-[#9E968D] mt-1">WhatsApp allows up to 3 interactive buttons per message.</p>
+            </div>
+          </>
+        )}
+
+        {/* CTA LINK / CALL */}
+        {type === 'message_cta' && (
+          <>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Message Body</label>
+              <textarea
+                rows={3}
+                value={cfg.text || ''}
+                onChange={e => onChange('text', e.target.value)}
+                placeholder="Message explaining the link..."
+                className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-[#292722] text-xs outline-none focus:border-rose-400 resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Action Type</label>
+              <select value={cfg.action_type || 'url'} onChange={e => onChange('action_type', e.target.value)} className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none">
+                <option value="url">URL Link (Directions / Web)</option>
+                <option value="call">Phone Call</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Button Title</label>
+              <input type="text" value={cfg.action_title || ''} onChange={e => onChange('action_title', e.target.value)} placeholder="Visit Website" className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-rose-400" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Target (URL or Phone)</label>
+              <input type="text" value={cfg.action_payload || ''} onChange={e => onChange('action_payload', e.target.value)} placeholder="https://..." className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-rose-400" />
             </div>
           </>
         )}

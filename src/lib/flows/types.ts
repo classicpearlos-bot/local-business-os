@@ -5,6 +5,7 @@ export type FlowNodeType =
   | 'message_template'
   | 'message_card'
   | 'message_buttons'
+  | 'message_cta'
   | 'logic_condition'
   | 'timing_delay'
   | 'integration_api'
