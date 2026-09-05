@@ -4,10 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import {
-  Search, RefreshCw, FileText, CheckCircle2, AlertCircle,
+  Search, RefreshCw, FileText,
   Eye, Plus, X, Phone, Globe, MessageSquare, Upload, Loader2, Image as ImageIcon
 } from "lucide-react";
-import { supabase } from '@/lib/supabase';
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
