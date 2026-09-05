@@ -240,15 +240,25 @@ export default function Inbox() {
       })
       .subscribe();
 
-    // Event-driven Realtime message updates (Instant WebSocket delivery)
+    // Event-driven Realtime message updates — only for the active conversation
     const msgChannel = supabase
       .channel('inbox-messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        // Only append to current view if the message belongs to the active conversation
         setMessages((prev) => {
-          if (prev.some(m => m.id === payload.new.id)) return prev;
+          const activeId = activeConvId; // captured from closure — may be null initially
+          if (!activeId || payload.new.conversation_id !== activeId) {
+            // Still refresh the conversation list so unread counts update
+            fetchConversations();
+            return prev;
+          }
+          if (prev.some(m => m.id === payload.new.id || m.id?.startsWith('optimistic_'))) {
+            // Deduplicate: remove any optimistic placeholder then add the real message
+            return [...prev.filter(m => !m.id?.startsWith('optimistic_')), payload.new];
+          }
+          fetchConversations();
           return [...prev, payload.new];
         });
-        fetchConversations();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
         setMessages((prev) => prev.map(m => m.id === payload.new.id ? payload.new : m));
@@ -411,16 +421,44 @@ export default function Inbox() {
 
     try {
       if (isInternalNote) {
+        // Optimistic insert for internal notes
+        const optimisticNote = {
+          id: `optimistic_${Date.now()}`,
+          conversation_id: activeConvId,
+          direction: 'OUTBOUND',
+          type: 'internal_note',
+          content: { internal_note: { body: textToSend } },
+          status: 'SENT',
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, optimisticNote]);
+
         const res = await fetch(`/api/conversations/${activeConvId}/notes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: textToSend })
         });
         if (res.ok) {
-          fetchMessagesForConv(activeConvId);
           setIsInternalNote(false);
+          // Replace optimistic with real after short delay
+          setTimeout(() => fetchMessagesForConv(activeConvId), 800);
+        } else {
+          // Rollback optimistic on failure
+          setMessages(prev => prev.filter(m => m.id !== optimisticNote.id));
         }
       } else {
+        // Optimistic insert for outbound text messages — appears instantly
+        const optimisticMsg = {
+          id: `optimistic_${Date.now()}`,
+          conversation_id: activeConvId,
+          direction: 'OUTBOUND',
+          type: 'text',
+          content: { text: { body: textToSend } },
+          status: 'SENT',
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
+
         const res = await fetch('/api/whatsapp/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -430,11 +468,15 @@ export default function Inbox() {
           })
         });
         if (res.ok) {
-          fetchMessagesForConv(activeConvId);
+          // Replace optimistic with real server record after short delay
+          setTimeout(() => fetchMessagesForConv(activeConvId), 1000);
+        } else {
+          // Rollback on failure
+          setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
         }
       }
     } catch (err) {
-      console.error("Error sending", err);
+      console.error('Error sending', err);
     } finally {
       setSending(false);
     }
@@ -914,14 +956,30 @@ export default function Inbox() {
                         const isDocument = msg.type === 'document';
                         const isTemplate = msg.type === 'template';
                         const isNote = msg.type === 'internal_note';
+
+                        // content can be a JSON string (from Supabase Realtime) or an object (from REST API)
+                        let c: any = msg.content;
+                        if (typeof c === 'string') {
+                          try { c = JSON.parse(c); } catch { /* plain text string */ }
+                        }
+
                         const imageUrl = isImage
-                          ? (msg.content?.image?.link || msg.content?.image?.url)
-                          : (isTemplate ? (msg.content?.template?.header_image || msg.content?.image?.url) : null);
-                        const caption = msg.content?.[msg.type]?.caption
-                          || (isTemplate ? (msg.content?.template?.body_text || msg.content?.text?.body) : msg.content?.text?.body)
-                          || msg.content?.text
-                          || (typeof msg.content === 'string' ? msg.content : null);
-                        const templateButtons = msg.content?.template?.buttons || [];
+                          ? (c?.image?.link || c?.image?.url || c?.url)
+                          : (isTemplate ? (c?.template?.header_image || c?.image?.url) : null);
+
+                        // Try every known content shape to find the displayable text
+                        const caption =
+                          c?.text?.body                              // inbound: { text: { body: "hi" } }
+                          || c?.text                                 // outbound simple: { text: "hi" }
+                          || c?.[msg.type]?.body                     // { image: { body: "..." } }
+                          || c?.[msg.type]?.caption                  // { image: { caption: "..." } }
+                          || c?.caption                              // flat caption
+                          || c?.body                                 // flat body
+                          || (isTemplate ? (c?.template?.body_text || c?.template?.text) : null) // template
+                          || c?.internal_note?.body                  // internal note
+                          || (typeof msg.content === 'string' && !msg.content.startsWith('{') ? msg.content : null); // raw string
+
+                        const templateButtons = c?.template?.buttons || [];
 
                         return (
                           <div
@@ -978,7 +1036,7 @@ export default function Inbox() {
 
                               {isNote ? (
                                 <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                  {msg.content?.internal_note?.body || msg.content}
+                                  {c?.internal_note?.body || c?.body || (typeof msg.content === 'string' ? msg.content : '')}
                                 </p>
                               ) : caption ? (
                                 <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
