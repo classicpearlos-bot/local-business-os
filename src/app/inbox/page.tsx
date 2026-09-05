@@ -871,132 +871,154 @@ export default function Inbox() {
                     Classic Pearl Unisex Salon • WhatsApp Business Encrypted
                   </span>
                 </div>
+                {(() => {
+                  // Group messages by date for WhatsApp-style day separators
+                  const getDateLabel = (dateStr: string) => {
+                    const d = new Date(dateStr);
+                    const today = new Date();
+                    const yesterday = new Date();
+                    yesterday.setDate(today.getDate() - 1);
+                    if (d.toDateString() === today.toDateString()) return 'Today';
+                    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+                    return d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                  };
 
-                {messages.map((msg) => {
-                  const isInbound = msg.direction === 'INBOUND';
-                  const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const grouped: { label: string; msgs: any[] }[] = [];
+                  let currentLabel = '';
+                  for (const msg of messages) {
+                    const label = getDateLabel(msg.created_at);
+                    if (label !== currentLabel) {
+                      currentLabel = label;
+                      grouped.push({ label, msgs: [] });
+                    }
+                    grouped[grouped.length - 1].msgs.push(msg);
+                  }
 
-                  const isImage = msg.type === 'image';
-                  const isVideo = msg.type === 'video';
-                  const isDocument = msg.type === 'document';
-                  const isTemplate = msg.type === 'template';
-                  const isNote = msg.type === 'internal_note';
-                  
-                  const imageUrl = isImage ? (msg.content?.image?.link || msg.content?.image?.url) : (isTemplate ? (msg.content?.template?.header_image || msg.content?.image?.url) : null);
-                  const caption = msg.content?.[msg.type]?.caption || (isTemplate ? (msg.content?.template?.body_text || msg.content?.text?.body) : msg.content?.text?.body);
-                  const templateButtons = msg.content?.template?.buttons || [];
+                  return grouped.map(({ label, msgs }) => (
+                    <div key={label}>
+                      {/* Day separator */}
+                      <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-[#E5DED2]" />
+                        <span className="text-[10px] font-bold text-[#9E968D] bg-[#F4EFE6] px-3 py-1 rounded-full border border-[#E5DED2] shadow-xs whitespace-nowrap">
+                          {label}
+                        </span>
+                        <div className="flex-1 h-px bg-[#E5DED2]" />
+                      </div>
 
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex group ${isNote ? 'justify-end' : (isInbound ? 'justify-start' : 'justify-end')}`}
-                    >
-                      <div
-                        className={`max-w-[78%] sm:max-w-[65%] rounded-2xl p-3 shadow-md space-y-2 relative ${
-                          isNote
-                            ? 'bg-gradient-to-r from-amber-950/90 to-amber-900/80 text-amber-200 border border-amber-600/50 rounded-tr-xs'
-                            : isInbound
-                            ? 'bg-[#121927] text-[#292722] rounded-tl-xs border border-[#DFBE7E]/60/80 shadow-md shadow-black/30'
-                            : 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-[#292722] rounded-tr-xs shadow-md shadow-emerald-950/40'
-                        }`}
-                      >
-                        <button
-                          onClick={() => deleteMessage(msg.id)}
-                          className={`absolute top-2 ${isInbound ? '-right-7' : '-left-7'} opacity-0 group-hover:opacity-100 p-1 text-[#9E968D] hover:text-red-400 transition-all cursor-pointer z-10`}
-                          title="Delete for me"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      {/* Messages for this day */}
+                      {msgs.map((msg) => {
+                        const isInbound = msg.direction === 'INBOUND';
+                        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const isImage = msg.type === 'image';
+                        const isVideo = msg.type === 'video';
+                        const isDocument = msg.type === 'document';
+                        const isTemplate = msg.type === 'template';
+                        const isNote = msg.type === 'internal_note';
+                        const imageUrl = isImage
+                          ? (msg.content?.image?.link || msg.content?.image?.url)
+                          : (isTemplate ? (msg.content?.template?.header_image || msg.content?.image?.url) : null);
+                        const caption = msg.content?.[msg.type]?.caption
+                          || (isTemplate ? (msg.content?.template?.body_text || msg.content?.text?.body) : msg.content?.text?.body)
+                          || msg.content?.text
+                          || (typeof msg.content === 'string' ? msg.content : null);
+                        const templateButtons = msg.content?.template?.buttons || [];
 
-                        {isNote && (
-                          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
-                            <Tag className="w-3 h-3" />
-                            Internal Staff Note
-                          </div>
-                        )}
-
-                        {/* Image / Template Header Media */}
-                        {imageUrl && (
-                          <div 
-                            onClick={() => setPreviewImageUrl(imageUrl)}
-                            className="rounded-xl overflow-hidden max-h-80 bg-black/40 border border-white/10 shadow-xs cursor-pointer group/img relative hover:brightness-105 transition-all"
-                            title="Click to view full picture"
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`flex group ${isNote ? 'justify-end' : isInbound ? 'justify-start' : 'justify-end'}`}
                           >
-                            <img 
-                              src={imageUrl} 
-                              alt="WhatsApp Image" 
-                              className="w-full h-auto max-h-80 object-contain rounded-xl" 
-                            />
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                              <span className="bg-black/80 text-[#292722] text-[11px] font-bold px-3 py-1 rounded-full border border-white/20 shadow-lg flex items-center gap-1.5">
-                                🔍 Click to view full image
-                              </span>
+                            <div
+                              className={`max-w-[78%] sm:max-w-[65%] rounded-2xl p-3 shadow-md space-y-2 relative ${
+                                isNote
+                                  ? 'bg-amber-950/90 text-amber-200 border border-amber-600/50 rounded-tr-sm'
+                                  : isInbound
+                                  ? 'bg-white text-[#1E1B18] border border-[#E5DED2] rounded-tl-sm shadow-sm'
+                                  : 'bg-[#25D366] text-white rounded-tr-sm shadow-md'
+                              }`}
+                            >
+                              <button
+                                onClick={() => deleteMessage(msg.id)}
+                                className={`absolute top-2 ${isInbound ? '-right-7' : '-left-7'} opacity-0 group-hover:opacity-100 p-1 text-[#9E968D] hover:text-red-400 transition-all cursor-pointer z-10`}
+                                title="Delete for me"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+
+                              {isNote && (
+                                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-amber-300 mb-0.5">
+                                  <Tag className="w-3 h-3" />
+                                  Internal Staff Note
+                                </div>
+                              )}
+
+                              {imageUrl && (
+                                <div
+                                  onClick={() => setPreviewImageUrl(imageUrl)}
+                                  className="rounded-xl overflow-hidden max-h-80 border border-black/10 cursor-pointer hover:brightness-95 transition-all"
+                                  title="Click to view full picture"
+                                >
+                                  <img src={imageUrl} alt="WhatsApp Image" className="w-full h-auto max-h-80 object-contain rounded-xl" />
+                                </div>
+                              )}
+
+                              {isVideo && (
+                                <div className="p-3 bg-black/10 rounded-xl flex items-center gap-2.5">
+                                  <Video className="w-5 h-5 opacity-70" />
+                                  <span className="text-xs font-bold">Video Message</span>
+                                </div>
+                              )}
+
+                              {isDocument && (
+                                <div className="p-2.5 bg-black/10 rounded-xl flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-rose-500" />
+                                  <span className="text-xs font-bold truncate">Document Attachment</span>
+                                </div>
+                              )}
+
+                              {isNote ? (
+                                <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                  {msg.content?.internal_note?.body || msg.content}
+                                </p>
+                              ) : caption ? (
+                                <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                  {caption}
+                                </p>
+                              ) : null}
+
+                              {isTemplate && templateButtons.length > 0 && (
+                                <div className="pt-2 border-t border-black/10 space-y-1.5">
+                                  {templateButtons.map((btn: any, bIdx: number) => (
+                                    <div key={bIdx}
+                                      className="w-full py-1.5 px-3 rounded-lg bg-black/10 text-center text-xs font-bold border border-black/10 flex items-center justify-center gap-1.5">
+                                      {btn.type === 'PHONE_NUMBER' ? <Phone className="w-3 h-3" /> : <ExternalLink className="w-3 h-3" />}
+                                      <span>{btn.text || btn.phone_number || 'Action'}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 font-bold pt-0.5">
+                                <span>{time}</span>
+                                {!isInbound && !isNote && (
+                                  <span>
+                                    {msg.status === 'READ' ? (
+                                      <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
+                                    ) : msg.status === 'DELIVERED' ? (
+                                      <CheckCheck className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <Check className="w-3.5 h-3.5" />
+                                    )}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        )}
-
-                        {isVideo && (
-                          <div className="p-3 bg-black/40 text-[#292722] rounded-xl flex items-center gap-2.5">
-                            <Video className="w-5 h-5 text-[#292722]/80" />
-                            <span className="text-xs font-bold">Video Message</span>
-                          </div>
-                        )}
-
-                        {isDocument && (
-                          <div className="p-2.5 bg-black/30 rounded-xl flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-rose-400" />
-                            <span className="text-xs font-bold truncate">Document Attachment</span>
-                          </div>
-                        )}
-
-                        {/* Text / Caption Content */}
-                        {isNote ? (
-                          <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                            {msg.content?.internal_note?.body || msg.content}
-                          </p>
-                        ) : caption ? (
-                          <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                            {caption}
-                          </p>
-                        ) : null}
-
-                        {/* Interactive Template Buttons */}
-                        {isTemplate && templateButtons.length > 0 && (
-                          <div className="pt-2 border-t border-white/15 space-y-1.5">
-                            {templateButtons.map((btn: any, bIdx: number) => (
-                              <div
-                                key={bIdx}
-                                className="w-full py-1.5 px-3 rounded-lg bg-black/25 text-center text-xs font-bold text-emerald-200 border border-emerald-400/30 flex items-center justify-center gap-1.5 shadow-xs"
-                              >
-                                {btn.type === 'PHONE_NUMBER' ? (
-                                  <Phone className="w-3 h-3 text-emerald-300" />
-                                ) : (
-                                  <ExternalLink className="w-3 h-3 text-emerald-300" />
-                                )}
-                                <span>{btn.text || btn.phone_number || 'Action Button'}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-end gap-1 text-[10px] text-[#5D564E] font-bold pt-0.5">
-                          <span>{time}</span>
-                          {!isInbound && !isNote && (
-                            <span>
-                              {msg.status === 'READ' ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
-                              ) : msg.status === 'DELIVERED' ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-[#5D564E]" />
-                              ) : (
-                                <Check className="w-3.5 h-3.5 text-[#5D564E]" />
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  ));
+                })()}
                 <div ref={messagesEndRef} />
               </div>
 
