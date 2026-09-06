@@ -317,14 +317,12 @@ export default function TemplatesPage() {
   };
 
   const validate = (): string | null => {
-    if (!name) return 'Template name is required.';
-    if (!/^[a-z0-9_]+$/.test(name)) return 'Name must be lowercase letters, numbers and underscores only.';
-    if (!bodyText) return 'Body text is required.';
-    if (/\*\*.*?\*\*|\*.*?\*|__.*?__|_.*?_/.test(bodyText)) return 'No bold/italic markdown in body — Meta rejects it. Plain text only.';
+    if (!name.trim()) return 'Template name is required.';
+    if (!bodyText.trim()) return 'Body text is required.';
     for (const btn of buttons) {
       if (!btn.text?.trim()) return 'All buttons must have text.';
-      if (btn.type === 'PHONE_NUMBER' && !/^\+\d{7,15}$/.test((btn.phone_number || '').replace(/\s/g, ''))) {
-        return `Call button phone number must be international format: +917483654138 (no spaces).`;
+      if (btn.type === 'PHONE_NUMBER' && !/^\+?\d{7,15}$/.test((btn.phone_number || '').replace(/[\s\-\(\)]/g, ''))) {
+        return `Call button phone number is invalid. Use format: +919876543210.`;
       }
       if (btn.type === 'URL' && !/^https?:\/\/.+/.test(btn.url || '')) {
         return 'URL button must have a valid https:// address.';
@@ -360,10 +358,12 @@ export default function TemplatesPage() {
         components.push({ type: 'BUTTONS', buttons });
       }
 
+      const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/^_+|_+$/g, '') || ('template_' + Date.now());
+
       const res = await fetch('/api/whatsapp/templates/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, language, category, components })
+        body: JSON.stringify({ name: cleanName, language, category, components })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to submit template');
