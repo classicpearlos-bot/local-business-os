@@ -54,6 +54,8 @@ export async function POST(request: Request) {
       upsert: false
     });
 
+    const { data: { publicUrl } } = supabaseAdmin.storage.from('whatsapp-media').getPublicUrl(storagePath);
+
     if (purpose === 'template') {
       // Use resumable upload API to get a template-compatible handle
       try {
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
           mimeType,
           filename
         );
-        return NextResponse.json({ success: true, handle }, { status: 200 });
+        return NextResponse.json({ success: true, handle, url: publicUrl }, { status: 200 });
       } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }

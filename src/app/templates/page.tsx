@@ -42,10 +42,11 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
     try {
       const form = new FormData();
       form.append('file', file);
+      form.append('purpose', 'template');
       const res = await fetch('/api/media/upload', { method: 'POST', body: form });
       const json = await res.json();
-      if (json.url) {
-        onChange(json.url, json.meta_handle);
+      if (res.ok && (json.url || json.handle)) {
+        onChange(json.url || URL.createObjectURL(file), json.meta_handle || json.handle);
       } else {
         setError(json.error || 'Upload failed.');
       }

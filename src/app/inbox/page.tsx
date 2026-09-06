@@ -438,13 +438,13 @@ export default function Inbox() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: textToSend })
         });
+        const resData = await res.json().catch(() => ({}));
         if (res.ok) {
           setIsInternalNote(false);
-          // Replace optimistic with real after short delay
           setTimeout(() => fetchMessagesForConv(activeConvId), 800);
         } else {
-          // Rollback optimistic on failure
-          setMessages(prev => prev.filter(m => m.id !== optimisticNote.id));
+          toast.error(resData.error || 'Failed to add note');
+          setMessages(prev => prev.map(m => m.id === optimisticNote.id ? { ...m, status: 'FAILED' } : m));
         }
       } else {
         // Optimistic insert for outbound text messages — appears instantly
@@ -467,12 +467,14 @@ export default function Inbox() {
             text: textToSend
           })
         });
+        const resData = await res.json().catch(() => ({}));
         if (res.ok) {
           // Replace optimistic with real server record after short delay
           setTimeout(() => fetchMessagesForConv(activeConvId), 1000);
         } else {
-          // Rollback on failure
-          setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
+          // Show error and mark as FAILED
+          toast.error(resData.error || 'Failed to send message');
+          setMessages(prev => prev.map(m => m.id === optimisticMsg.id ? { ...m, status: 'FAILED' } : m));
         }
       }
     } catch (err) {
@@ -1060,8 +1062,10 @@ export default function Inbox() {
                                 <span>{time}</span>
                                 {!isInbound && !isNote && (
                                   <span>
-                                    {msg.status === 'READ' ? (
-                                      <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
+                                    {msg.status === 'FAILED' ? (
+                                      <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                    ) : msg.status === 'READ' ? (
+                                      <CheckCheck className="w-3.5 h-3.5 text-sky-400" />
                                     ) : msg.status === 'DELIVERED' ? (
                                       <CheckCheck className="w-3.5 h-3.5" />
                                     ) : (
