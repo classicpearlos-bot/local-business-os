@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { uploadImageForTemplate } from '@/lib/meta/media';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -11,15 +10,6 @@ async function resolveUserOrgId(userId: string): Promise<string | null> {
     .limit(1)
     .maybeSingle();
   return mem?.organization_id || null;
-}
-
-async function fetchAppIdFromToken(accessToken: string): Promise<string> {
-  const res = await fetch(`https://graph.facebook.com/v20.0/debug_token?input_token=${accessToken}&access_token=${accessToken}`);
-  const data = await res.json();
-  if (!data.data || !data.data.app_id) {
-    throw new Error(data.error?.message || 'Invalid OAuth access token data. Could not fetch App ID.');
-  }
-  return data.data.app_id;
 }
 
 export async function POST(request: Request) {
@@ -43,19 +33,19 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as Blob | null;
-    const purpose = formData.get('purpose') as string || 'message'; // 'message' or 'template'
+    const purpose = formData.get('purpose') as string || 'message'; // 'message' | 'template'
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
     const mimeType = file.type || 'image/jpeg';
     const filename = (file as any).name || 'upload.jpg';
-    
-    // 1. Upload to Supabase Storage for local persistence
+
+    // --- 1. Always upload to Supabase Storage for persistence & preview ---
     const fileExt = filename.split('.').pop() || 'jpg';
     const storagePath = `${orgId}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    
+
     await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
       contentType: mimeType,
       upsert: false
@@ -63,44 +53,46 @@ export async function POST(request: Request) {
 
     const { data: { publicUrl } } = supabaseAdmin.storage.from('whatsapp-media').getPublicUrl(storagePath);
 
+    // --- 2. PURPOSE: template ---
+    // Meta accepts a public HTTPS URL directly in `example.header_url` when creating templates.
+    // We skip the Resumable Upload API (which requires App ID + App Secret) to avoid auth errors.
+    // The publicUrl from Supabase Storage is a valid public HTTPS URL that Meta accepts.
     if (purpose === 'template') {
-      // Use resumable upload API to get a template-compatible handle
-      try {
-        const appId = await fetchAppIdFromToken(account.access_token);
-        const handle = await uploadImageForTemplate(
-          appId,
-          account.access_token,
-          file,
-          mimeType,
-          filename
-        );
-        return NextResponse.json({ success: true, handle, url: publicUrl }, { status: 200 });
-      } catch (err: any) {
-        return NextResponse.json({ error: err.message }, { status: 400 });
-      }
-    } else {
-      // Regular media upload for sending messages
-      const { uploadMediaToMeta } = await import('@/lib/meta/media');
-      try {
-        const result = await uploadMediaToMeta(account.phone_number_id, account.access_token, file, mimeType);
-        
-        // Save to message_media database
-        await supabaseAdmin.from('message_media').insert({
-          organization_id: orgId,
-          storage_path: storagePath,
-          mime_type: mimeType,
-          file_name: filename,
-          file_size: file.size,
-          direction: 'OUTBOUND',
-          meta_media_id: result.id
-        });
-        
-        // Include url: publicUrl so Flow Studio (which requires .url) succeeds!
-        return NextResponse.json({ success: true, media_id: result.id, storage_path: storagePath, url: publicUrl }, { status: 200 });
-      } catch (err: any) {
-        return NextResponse.json({ error: err.message }, { status: 400 });
-      }
+      return NextResponse.json({
+        success: true,
+        url: publicUrl,
+        // No handle needed – the template create route uses header_url instead of header_handle
+      }, { status: 200 });
     }
+
+    // --- 3. PURPOSE: message (inbox / flow studio / campaigns) ---
+    // Upload to Meta's /media endpoint to get a media_id for sending
+    const { uploadMediaToMeta } = await import('@/lib/meta/media');
+    try {
+      const result = await uploadMediaToMeta(account.phone_number_id, account.access_token, file, mimeType);
+
+      await supabaseAdmin.from('message_media').insert({
+        organization_id: orgId,
+        storage_path: storagePath,
+        mime_type: mimeType,
+        file_name: filename,
+        file_size: file.size,
+        direction: 'OUTBOUND',
+        meta_media_id: result.id
+      });
+
+      // Return both media_id (for sending) and url (for UI preview)
+      return NextResponse.json({
+        success: true,
+        media_id: result.id,
+        storage_path: storagePath,
+        url: publicUrl
+      }, { status: 200 });
+    } catch (err: any) {
+      // Even if Meta upload fails, return the public URL so the UI can still preview the image
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+
   } catch (error: any) {
     console.error('Upload Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

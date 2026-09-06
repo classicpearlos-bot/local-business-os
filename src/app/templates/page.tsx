@@ -45,8 +45,8 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
       form.append('purpose', 'template');
       const res = await fetch('/api/media/upload', { method: 'POST', body: form });
       const json = await res.json();
-      if (res.ok && (json.url || json.handle)) {
-        onChange(json.url || URL.createObjectURL(file), json.meta_handle || json.handle);
+      if (res.ok && json.url) {
+        onChange(json.url); // publicUrl from Supabase Storage – no handle needed
       } else {
         setError(json.error || 'Upload failed.');
       }
@@ -332,9 +332,8 @@ export default function TemplatesPage() {
       if (headerType === 'TEXT' && headerText) {
         components.push({ type: 'HEADER', format: 'TEXT', text: headerText });
       } else if (headerType === 'IMAGE') {
-        if (headerImageHandle) {
-          components.push({ type: 'HEADER', format: 'IMAGE', example: { header_handle: [headerImageHandle] } });
-        } else if (headerImageUrl) {
+        if (headerImageUrl) {
+          // Use public URL directly — Meta accepts HTTPS URLs in header_url for template approval
           components.push({ type: 'HEADER', format: 'IMAGE', example: { header_url: [headerImageUrl] } });
         }
       }
