@@ -473,9 +473,10 @@ export default function Inbox() {
           // Replace optimistic with real server record after short delay
           setTimeout(() => fetchMessagesForConv(activeConvId), 1000);
         } else {
-          // Show error and mark as FAILED
+          // Show error and fetch the persistent FAILED message from the DB
           toast.error(resData.error || 'Failed to send message');
           setMessages(prev => prev.map(m => m.id === optimisticMsg.id ? { ...m, status: 'FAILED' } : m));
+          setTimeout(() => fetchMessagesForConv(activeConvId), 1200);
         }
       }
     } catch (err) {

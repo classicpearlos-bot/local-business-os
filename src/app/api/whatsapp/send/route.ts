@@ -96,11 +96,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unsupported message type.' }, { status: 400 });
     }
 
-    if (response.error) {
-       return NextResponse.json({ error: response.error.message }, { status: 400 });
-    }
-
-    const messageId = response.messages?.[0]?.id;
+    const isError = !!response.error;
+    const messageId = response.messages?.[0]?.id || `outbound_${Date.now()}`;
 
     // Log outbound message using admin
     try {
@@ -116,11 +113,11 @@ export async function POST(request: Request) {
           organization_id: orgId,
           conversation_id: conv.id,
           contact_id: payload.contactId,
-          wam_id: messageId || `outbound_${Date.now()}`,
+          wam_id: messageId,
           direction: 'OUTBOUND',
           type: msgType,
-          content: msgContent,
-          status: 'SENT'
+          content: isError ? { ...msgContent, error: response.error.message } : msgContent,
+          status: isError ? 'FAILED' : 'SENT'
         });
 
         // Update conversation last_message_at
@@ -130,6 +127,10 @@ export async function POST(request: Request) {
       }
     } catch (logErr) {
       console.error('Failed to log outbound message:', logErr);
+    }
+
+    if (isError) {
+       return NextResponse.json({ error: response.error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, message_id: messageId }, { status: 200 });
