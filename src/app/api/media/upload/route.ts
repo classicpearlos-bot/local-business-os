@@ -58,14 +58,15 @@ export async function POST(request: Request) {
 
     // --- 2. PURPOSE: template ---
     if (purpose === 'template') {
-      if (!account.app_id) {
+      const appId = account.app_id || process.env.META_APP_ID || '2566956740405929';
+      if (!appId) {
         return NextResponse.json({ error: 'Meta App ID is required to upload template images. Please configure it in Settings.' }, { status: 400 });
       }
       
       const { uploadImageForTemplate } = await import('@/lib/meta/media');
       try {
         const handle = await uploadImageForTemplate(
-          account.app_id,
+          appId,
           account.access_token,
           file,
           mimeType,
