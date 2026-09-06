@@ -31,6 +31,7 @@ import {
   Zap,
   ExternalLink
 } from "lucide-react";
+import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';

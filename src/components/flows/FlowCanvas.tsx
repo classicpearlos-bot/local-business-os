@@ -296,11 +296,19 @@ function FlowNode({ data, selected }: any) {
           </div>
         )}
         {isButtons && btns.length > 0 && (
-          <div className="mt-2 flex flex-col gap-1">
+          <div className="mt-2 flex flex-col gap-1.5 relative">
             {btns.map((btn: any, i: number) => (
-              <div key={i} className="px-2 py-1 rounded-lg border text-[9px] font-bold text-center truncate"
-                style={{ borderColor: style.border + '44', backgroundColor: style.border + '11', color: style.color }}>
+              <div key={i} className="relative px-2 py-1.5 rounded-lg border text-[9px] font-bold text-center truncate shadow-sm"
+                style={{ borderColor: style.border + '55', backgroundColor: style.border + '15', color: style.color }}>
                 {btn.title}
+                <Handle 
+                  type="source" 
+                  position={Position.Right} 
+                  id={btn.id}
+                  title={`Branch: ${btn.title}`}
+                  className="!w-3.5 !h-3.5 !bg-white !border-2"
+                  style={{ borderColor: style.border, right: '-16px', top: '50%', transform: 'translateY(-50%)' }} 
+                />
               </div>
             ))}
           </div>
@@ -310,26 +318,7 @@ function FlowNode({ data, selected }: any) {
         <Handle type="source" position={Position.Bottom}
           className="!w-3.5 !h-3.5 !bg-white !border-2" style={{ borderColor: style.border }} />
       )}
-      {isButtons && btns.length > 0 && (
-        <div className="relative" style={{ height: 28, paddingBottom: 4 }}>
-          {btns.map((btn: any, idx: number) => {
-            const pct = btns.length === 1 ? 50 : 20 + 30 * idx;
-            return (
-              <Handle key={btn.id} type="source" position={Position.Bottom} id={btn.id}
-                title={`Branch: ${btn.title}`}
-                className="!w-3.5 !h-3.5 !bg-white !border-2"
-                style={{ borderColor: style.border, left: `${pct}%` }} />
-            );
-          })}
-          <div className="flex justify-around px-2 pt-1">
-            {btns.map((btn: any, idx: number) => (
-              <span key={idx} className="text-[8px] font-bold truncate max-w-[60px] text-center" style={{ color: style.color }}>
-                {btn.title}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+
       {isCondition && (
         <>
           <Handle type="source" position={Position.Bottom} id="true"
