@@ -61,16 +61,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to resolve organization' }, { status: 500 });
     }
 
-    const { waba_id, phone_number_id, access_token, webhook_verify_token } = await request.json();
+    const { app_id, waba_id, phone_number_id, access_token, webhook_verify_token } = await request.json();
 
-    if (!waba_id || !phone_number_id || !access_token) {
+    if (!app_id || !waba_id || !phone_number_id || !access_token) {
       return NextResponse.json({ 
-        error: 'waba_id, phone_number_id, and access_token are required' 
+        error: 'app_id, waba_id, phone_number_id, and access_token are required' 
       }, { status: 400 });
     }
 
     const { error } = await supabaseAdmin.from('whatsapp_accounts').upsert({
       organization_id: orgId,
+      app_id,
       waba_id,
       phone_number_id,
       access_token,
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
 
     const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
-      .select('waba_id, phone_number_id, webhook_verify_token, created_at')
+      .select('app_id, waba_id, phone_number_id, webhook_verify_token, created_at')
       .eq('organization_id', orgId)
       .limit(1)
       .maybeSingle();

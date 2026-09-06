@@ -114,8 +114,13 @@ export async function POST(request: Request) {
 
     } catch (metaErr: any) {
       console.error('Meta Template Creation Error:', metaErr);
-      // Return the raw Meta error message so the user can understand exactly what failed
-      const errMsg = metaErr?.data?.error?.message || metaErr?.message || 'Failed to create template on Meta';
+      
+      let errMsg = metaErr?.data?.error?.message || metaErr?.message || 'Failed to create template on Meta';
+      
+      if (errMsg.includes('Invalid OAuth access token data') || metaErr?.data?.error?.code === 190) {
+        errMsg = 'Your Meta Access Token is expired or lacks permissions (whatsapp_business_management). Please generate a new one in the Meta Developer portal and save it in Settings.';
+      }
+
       return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 

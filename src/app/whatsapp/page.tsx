@@ -20,8 +20,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { toast } from 'react-hot-toast';
 
 export default function WhatsAppSettings() {
+  const [appId, setAppId] = useState('');
   const [wabaId, setWabaId] = useState('');
   const [phoneNumberId, setPhoneNumberId] = useState('');
   const [accessToken, setAccessToken] = useState('');
@@ -32,12 +34,13 @@ export default function WhatsAppSettings() {
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchAccount = async () => {
       try {
         const res = await fetch('/api/whatsapp/account');
         if (res.ok) {
           const data = await res.json();
           if (data.account) {
+            setAppId(data.account.app_id || '');
             setWabaId(data.account.waba_id || '');
             setPhoneNumberId(data.account.phone_number_id || '');
             setVerifyToken(data.account.webhook_verify_token || '');
@@ -45,17 +48,22 @@ export default function WhatsAppSettings() {
             setVerifyToken('nx_verify_' + Math.random().toString(36).substring(2, 10));
           }
         }
-      } catch (e) {
-        console.error('Failed to load WhatsApp settings', e);
+      } catch (err) {
+        console.error('Failed to fetch account', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchSettings();
+    fetchAccount();
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!wabaId || !phoneNumberId || !accessToken || !appId) {
+      toast.error('App ID, WABA ID, Phone Number ID, and Access Token are required');
+      return;
+    }
+
     setSaving(true);
     setStatusMsg(null);
 
@@ -64,6 +72,7 @@ export default function WhatsAppSettings() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          app_id: appId.trim(),
           waba_id: wabaId.trim(),
           phone_number_id: phoneNumberId.trim(),
           access_token: accessToken.trim(),
@@ -140,6 +149,15 @@ export default function WhatsAppSettings() {
 
             <form onSubmit={handleSave}>
               <CardContent className="space-y-5">
+                <Input
+                  label="Meta App ID *"
+                  placeholder="e.g. 123456789012345"
+                  value={appId}
+                  onChange={(e) => setAppId(e.target.value)}
+                  helperText="Located at the top of your Meta Developer App Dashboard."
+                  required
+                />
+
                 <Input
                   label="WhatsApp Business Account ID (WABA ID) *"
                   placeholder="e.g. 109283746554321"

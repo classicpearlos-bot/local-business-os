@@ -45,8 +45,8 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
       form.append('purpose', 'template');
       const res = await fetch('/api/media/upload', { method: 'POST', body: form });
       const json = await res.json();
-      if (res.ok && json.url) {
-        onChange(json.url); // publicUrl from Supabase Storage – no handle needed
+      if (res.ok && (json.url || json.handle)) {
+        onChange(json.url || URL.createObjectURL(file), json.meta_handle || json.handle);
       } else {
         setError(json.error || 'Upload failed.');
       }
@@ -76,7 +76,7 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
         {uploading ? 'Uploading…' : value ? 'Replace Image' : 'Upload Header Image'}
       </button>
-      <input type="text" value={value} onChange={e => onChange(e.target.value)}
+      <input type="text" value={value} onChange={e => { setError(''); onChange(e.target.value); }}
         placeholder="or paste an image URL…"
         className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
       {error && <p className="text-[11px] text-red-500">{error}</p>}
@@ -332,8 +332,10 @@ export default function TemplatesPage() {
       if (headerType === 'TEXT' && headerText) {
         components.push({ type: 'HEADER', format: 'TEXT', text: headerText });
       } else if (headerType === 'IMAGE') {
-        if (headerImageUrl) {
-          // Use public URL directly — Meta accepts HTTPS URLs in header_url for template approval
+        if (headerImageHandle) {
+          components.push({ type: 'HEADER', format: 'IMAGE', example: { header_handle: [headerImageHandle] } });
+        } else if (headerImageUrl) {
+          // Fallback if handle isn't available
           components.push({ type: 'HEADER', format: 'IMAGE', example: { header_url: [headerImageUrl] } });
         }
       }

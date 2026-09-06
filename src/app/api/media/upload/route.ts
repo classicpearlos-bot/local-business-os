@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
-      .select('phone_number_id, access_token')
+      .select('app_id, phone_number_id, access_token')
       .eq('organization_id', orgId)
       .maybeSingle();
 
@@ -46,6 +46,9 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Make sure bucket is public so LivePreview works (catches case where user created private bucket)
+    await supabaseAdmin.storage.updateBucket('whatsapp-media', { public: true }).catch(() => {});
+
     await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
       contentType: mimeType,
       upsert: false
@@ -54,15 +57,24 @@ export async function POST(request: Request) {
     const { data: { publicUrl } } = supabaseAdmin.storage.from('whatsapp-media').getPublicUrl(storagePath);
 
     // --- 2. PURPOSE: template ---
-    // Meta accepts a public HTTPS URL directly in `example.header_url` when creating templates.
-    // We skip the Resumable Upload API (which requires App ID + App Secret) to avoid auth errors.
-    // The publicUrl from Supabase Storage is a valid public HTTPS URL that Meta accepts.
     if (purpose === 'template') {
-      return NextResponse.json({
-        success: true,
-        url: publicUrl,
-        // No handle needed – the template create route uses header_url instead of header_handle
-      }, { status: 200 });
+      if (!account.app_id) {
+        return NextResponse.json({ error: 'Meta App ID is required to upload template images. Please configure it in Settings.' }, { status: 400 });
+      }
+      
+      const { uploadImageForTemplate } = await import('@/lib/meta/media');
+      try {
+        const handle = await uploadImageForTemplate(
+          account.app_id,
+          account.access_token,
+          file,
+          mimeType,
+          filename
+        );
+        return NextResponse.json({ success: true, handle, url: publicUrl }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
     }
 
     // --- 3. PURPOSE: message (inbox / flow studio / campaigns) ---
