@@ -113,11 +113,31 @@ export async function GET(request: Request) {
         }
 
         try {
+          // Inject dynamic variables into the template components for this specific recipient
+          const customerName = contact.name || 'Valued Customer';
+          const firstName = customerName.split(' ')[0] || 'Valued Customer';
+          const phone = contact.phone_number || '';
+
+          const dynamicComponents = JSON.parse(JSON.stringify(campaign.template_components || []));
+          
+          dynamicComponents.forEach((comp: any) => {
+            if (comp.parameters) {
+              comp.parameters.forEach((param: any) => {
+                if (param.type === 'text' && typeof param.text === 'string') {
+                  param.text = param.text
+                    .replace(/{{name}}/gi, customerName)
+                    .replace(/{{first_name}}/gi, firstName)
+                    .replace(/{{phone}}/gi, phone);
+                }
+              });
+            }
+          });
+
           const response = await sendWhatsAppTemplate({
             phoneNumberId: account.phone_number_id,
             accessToken: account.access_token,
             to: recipient.phone_number
-          }, campaign.template_name, campaign.template_language, campaign.template_components || []);
+          }, campaign.template_name, campaign.template_language, dynamicComponents);
 
           if (response.error) {
             const isRetryable = response.error.code === 429 || response.error.code === 131056;

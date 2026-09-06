@@ -56,6 +56,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Meta WhatsApp account not connected for your organization.' }, { status: 400 });
     }
 
+    // Inject dynamic test variables into the template components
+    const dynamicComponents = JSON.parse(JSON.stringify(template_components || []));
+    
+    dynamicComponents.forEach((comp: any) => {
+      if (comp.parameters) {
+        comp.parameters.forEach((param: any) => {
+          if (param.type === 'text' && typeof param.text === 'string') {
+            param.text = param.text
+              .replace(/{{name}}/gi, 'Test User')
+              .replace(/{{first_name}}/gi, 'Test')
+              .replace(/{{phone}}/gi, normalizedPhone);
+          }
+        });
+      }
+    });
+
     // Dispatch test message through Meta Cloud API
     const response = await sendWhatsAppTemplate(
       {
@@ -65,7 +81,7 @@ export async function POST(request: Request) {
       },
       template_name,
       template_language || 'en_US',
-      template_components || []
+      dynamicComponents
     );
 
     if (response.error) {
