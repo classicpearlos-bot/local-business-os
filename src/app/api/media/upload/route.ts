@@ -50,13 +50,21 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Make sure bucket is public so LivePreview works (catches case where user created private bucket)
+    // Make sure bucket is public so LivePreview works
     await supabaseAdmin.storage.updateBucket('whatsapp-media', { public: true }).catch(() => {});
 
-    await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
+    const { error: uploadError } = await supabaseAdmin.storage.from('whatsapp-media').upload(storagePath, buffer, {
       contentType: mimeType,
-      upsert: false
+      upsert: true
     });
+
+    if (uploadError) {
+      console.warn('Upload to whatsapp-media error, falling back to whatsapp_media:', uploadError);
+      await supabaseAdmin.storage.from('whatsapp_media').upload(storagePath, buffer, {
+        contentType: mimeType,
+        upsert: true
+      });
+    }
 
     const { data: { publicUrl } } = supabaseAdmin.storage.from('whatsapp-media').getPublicUrl(storagePath);
 

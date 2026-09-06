@@ -38,6 +38,11 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
     if (!file.type.startsWith('image/')) { setError('Please select an image.'); return; }
     if (file.size > 5 * 1024 * 1024) { setError('Max 5MB.'); return; }
     setError('');
+    
+    // Instant local preview so the image NEVER renders broken
+    const localPreview = URL.createObjectURL(file);
+    onChange(localPreview);
+    
     setUploading(true);
     try {
       const form = new FormData();
@@ -46,12 +51,13 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
       const res = await fetch('/api/media/upload', { method: 'POST', body: form });
       const json = await res.json();
       if (res.ok && (json.url || json.handle)) {
-        onChange(json.url || URL.createObjectURL(file), json.meta_handle || json.handle);
+        // Keep the local preview URL for crisp display or use the permanent storage URL
+        onChange(json.url || localPreview, json.meta_handle || json.handle);
       } else {
         setError(json.error || 'Upload failed.');
       }
     } catch {
-      setError('Network error.');
+      setError('Network error. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -118,7 +124,13 @@ function LivePreview({ headerType, headerText, headerImageUrl, bodyText, buttons
             <div className="bg-white rounded-xl overflow-hidden shadow-sm">
               {/* Image header */}
               {headerType === 'IMAGE' && headerImageUrl && (
-                <img src={headerImageUrl} alt="header" className="w-full object-cover" style={{ maxHeight: 120 }} />
+                <img 
+                  src={headerImageUrl} 
+                  alt="header" 
+                  className="w-full object-cover" 
+                  style={{ maxHeight: 130 }}
+                  onError={(e: any) => { e.target.style.display = 'none'; }}
+                />
               )}
               {headerType === 'IMAGE' && !headerImageUrl && (
                 <div className="bg-[#F0EBE3] h-24 flex items-center justify-center">
