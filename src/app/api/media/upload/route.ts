@@ -13,7 +13,14 @@ async function resolveUserOrgId(userId: string): Promise<string | null> {
   return mem?.organization_id || null;
 }
 
-const META_APP_ID = '2566956740405929';
+async function fetchAppIdFromToken(accessToken: string): Promise<string> {
+  const res = await fetch(`https://graph.facebook.com/v20.0/debug_token?input_token=${accessToken}&access_token=${accessToken}`);
+  const data = await res.json();
+  if (!data.data || !data.data.app_id) {
+    throw new Error(data.error?.message || 'Invalid OAuth access token data. Could not fetch App ID.');
+  }
+  return data.data.app_id;
+}
 
 export async function POST(request: Request) {
   try {
@@ -59,8 +66,9 @@ export async function POST(request: Request) {
     if (purpose === 'template') {
       // Use resumable upload API to get a template-compatible handle
       try {
+        const appId = await fetchAppIdFromToken(account.access_token);
         const handle = await uploadImageForTemplate(
-          META_APP_ID,
+          appId,
           account.access_token,
           file,
           mimeType,
@@ -87,7 +95,8 @@ export async function POST(request: Request) {
           meta_media_id: result.id
         });
         
-        return NextResponse.json({ success: true, media_id: result.id, storage_path: storagePath }, { status: 200 });
+        // Include url: publicUrl so Flow Studio (which requires .url) succeeds!
+        return NextResponse.json({ success: true, media_id: result.id, storage_path: storagePath, url: publicUrl }, { status: 200 });
       } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
