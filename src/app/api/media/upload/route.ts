@@ -21,11 +21,15 @@ export async function POST(request: Request) {
     const orgId = await resolveUserOrgId(user.id);
     if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { data: account } = await supabaseAdmin
+    const { data: account, error: accErr } = await supabaseAdmin
       .from('whatsapp_accounts')
-      .select('app_id, phone_number_id, access_token')
+      .select('*')
       .eq('organization_id', orgId)
       .maybeSingle();
+
+    if (accErr) {
+      console.error('DB Error fetching account:', accErr);
+    }
 
     if (!account?.access_token) {
       return NextResponse.json({ error: 'Meta WhatsApp account not configured' }, { status: 400 });

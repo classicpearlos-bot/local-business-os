@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    const { error } = await supabaseAdmin.from('whatsapp_accounts').upsert({
+    let { error } = await supabaseAdmin.from('whatsapp_accounts').upsert({
       organization_id: orgId,
       app_id,
       waba_id,
@@ -77,6 +77,18 @@ export async function POST(request: Request) {
       access_token,
       webhook_verify_token: webhook_verify_token || 'classic_pearls_secret_webhook_token'
     }, { onConflict: 'waba_id' });
+
+    // Fallback if the user hasn't run the migration to add app_id to the database
+    if (error && error.code === 'PGRST204') {
+      const { error: fallbackErr } = await supabaseAdmin.from('whatsapp_accounts').upsert({
+        organization_id: orgId,
+        waba_id,
+        phone_number_id,
+        access_token,
+        webhook_verify_token: webhook_verify_token || 'classic_pearls_secret_webhook_token'
+      }, { onConflict: 'waba_id' });
+      error = fallbackErr;
+    }
 
     if (error) {
       console.error('Failed to save WhatsApp account:', error);
@@ -109,7 +121,7 @@ export async function GET(request: Request) {
 
     const { data: account } = await supabaseAdmin
       .from('whatsapp_accounts')
-      .select('app_id, waba_id, phone_number_id, webhook_verify_token, created_at')
+      .select('*')
       .eq('organization_id', orgId)
       .limit(1)
       .maybeSingle();
