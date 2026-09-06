@@ -241,7 +241,7 @@ function FlowNode({ data, selected }: any) {
   const isCondition = data.node_type === 'logic_condition';
   const isTrigger = data.node_type === 'trigger';
   const isEnd = data.node_type === 'end';
-  const isButtons = data.node_type === 'message_buttons';
+  const isButtons = data.node_type === 'message_buttons' || data.node_type === 'message_card';
   const btns: any[] = isButtons ? (data.config?.buttons || []).slice(0, 3) : [];
 
   const previewText = (() => {
@@ -266,7 +266,7 @@ function FlowNode({ data, selected }: any) {
 
   return (
     <div
-      className="rounded-2xl shadow-lg overflow-hidden transition-all duration-150"
+      className="rounded-2xl shadow-lg relative transition-all duration-150"
       style={{
         minWidth: 220, maxWidth: 280,
         backgroundColor: style.bg,
@@ -278,7 +278,7 @@ function FlowNode({ data, selected }: any) {
         <Handle type="target" position={Position.Top}
           className="!w-3.5 !h-3.5 !bg-white !border-2" style={{ borderColor: style.border }} />
       )}
-      <div className="flex items-center gap-2 px-3.5 py-2.5"
+      <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-t-2xl"
         style={{ background: `linear-gradient(135deg, ${style.border}33 0%, ${style.border}18 100%)` }}>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: style.border + '22' }}>
           <Icon className="w-3.5 h-3.5" style={{ color: style.color }} />
@@ -288,33 +288,49 @@ function FlowNode({ data, selected }: any) {
       <div className="px-3.5 py-2.5">
         <p className="text-[11px] font-bold text-[#292722] mb-1 leading-tight">{data.label}</p>
         {previewText && <p className="text-[10px] text-[#706B61] leading-snug line-clamp-2">{previewText}</p>}
-        {(data.node_type === 'message_image' || data.node_type === 'message_buttons') && (data.config?.url || data.config?.header_image_url) && (
+        {(data.node_type === 'message_image' || data.node_type === 'message_buttons' || data.node_type === 'message_card') && (data.config?.url || data.config?.header_image_url || data.config?.image_url) && (
           <div className="mt-1.5 rounded-lg overflow-hidden border border-[#E5DED2]" style={{ height: 48 }}>
-            <img src={data.config.url || data.config.header_image_url} alt=""
+            <img src={data.config.url || data.config.header_image_url || data.config.image_url} alt=""
               className="w-full h-full object-cover"
               onError={(e: any) => { e.target.style.display = 'none'; }} />
           </div>
         )}
         {isButtons && btns.length > 0 && (
-          <div className="mt-2 flex flex-col gap-1.5 relative">
+          <div className="mt-2.5 flex flex-col gap-2">
             {btns.map((btn: any, i: number) => (
-              <div key={i} className="relative px-2 py-1.5 rounded-lg border text-[9px] font-bold text-center truncate shadow-sm"
-                style={{ borderColor: style.border + '55', backgroundColor: style.border + '15', color: style.color }}>
-                {btn.title}
-                <Handle 
-                  type="source" 
-                  position={Position.Right} 
-                  id={btn.id}
-                  title={`Branch: ${btn.title}`}
-                  className="!w-3.5 !h-3.5 !bg-white !border-2"
-                  style={{ borderColor: style.border, right: '-16px', top: '50%', transform: 'translateY(-50%)' }} 
+              <div
+                key={btn.id || i}
+                className="relative flex items-center justify-between px-3 py-2 rounded-xl border text-[10px] font-bold shadow-sm"
+                style={{
+                  borderColor: style.border + '66',
+                  backgroundColor: '#FFFFFF',
+                  color: style.color
+                }}
+              >
+                <span className="truncate pr-2">{btn.title}</span>
+                <span className="text-[8px] font-bold text-[#9E968D] tracking-wider shrink-0 flex items-center gap-0.5">
+                  Connect <span className="text-[10px]">→</span>
+                </span>
+                <Handle
+                  type="source"
+                  position={Position.Right}
+                  id={btn.id || `btn_${i}`}
+                  title={`Connect branch for: ${btn.title}`}
+                  className="!w-4 !h-4 !bg-white !border-2 hover:!scale-125 transition-transform !cursor-crosshair shadow-md"
+                  style={{
+                    borderColor: style.color,
+                    right: '-22px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 20
+                  }}
                 />
               </div>
             ))}
           </div>
         )}
       </div>
-      {!isEnd && !isCondition && !isButtons && (
+      {!isEnd && !isCondition && (!isButtons || btns.length === 0) && (
         <Handle type="source" position={Position.Bottom}
           className="!w-3.5 !h-3.5 !bg-white !border-2" style={{ borderColor: style.border }} />
       )}
