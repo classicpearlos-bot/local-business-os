@@ -6,6 +6,8 @@ export type FlowNodeType =
   | 'message_card'
   | 'message_buttons'
   | 'message_cta'
+  | 'whatsapp_redirect'
+  | 'add_tag'
   | 'logic_condition'
   | 'timing_delay'
   | 'integration_api'

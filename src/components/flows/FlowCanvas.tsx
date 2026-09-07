@@ -42,7 +42,8 @@ import {
   Loader2,
   Pencil,
   Phone,
-  Link
+  Link,
+  MessageCircle
 } from 'lucide-react';
 import type { FlowDefinition, FlowNode as FlowNodeType, FlowEdge } from '@/lib/flows/types';
 import { Button } from '@/components/ui/Button';
@@ -50,14 +51,15 @@ import { Button } from '@/components/ui/Button';
 // ─── Node Styles ─────────────────────────────────────────────────────────────
 
 const NODE_STYLES: Record<string, { bg: string; border: string; icon: any; color: string; label: string }> = {
-  trigger:         { bg: '#EEF2FF', border: '#6366F1', icon: Zap,              color: '#4F46E5', label: 'Trigger' },
-  message_text:    { bg: '#F0FDF4', border: '#22C55E', icon: MessageSquare,     color: '#16A34A', label: 'Text Message' },
-  message_image:   { bg: '#FFF7ED', border: '#F97316', icon: ImageIcon,         color: '#EA580C', label: 'Image / Media' },
-  message_buttons: { bg: '#F5F3FF', border: '#A855F7', icon: MousePointerClick, color: '#9333EA', label: 'Interactive Buttons' },
-  message_cta:     { bg: '#FFF1F2', border: '#E11D48', icon: Globe,             color: '#BE123C', label: 'Link / Call Action' },
-  message_card:    { bg: '#FFF7ED', border: '#F59E0B', icon: LayoutGrid,        color: '#D97706', label: 'Card (Image + Buttons)' },
-  logic_condition: { bg: '#FFFBEB', border: '#EAB308', icon: Split,             color: '#CA8A04', label: 'Condition (IF / ELSE)' },
-  timing_delay:    { bg: '#F0F9FF', border: '#0EA5E9', icon: Clock,             color: '#0284C7', label: 'Wait / Delay' },
+  trigger:           { bg: '#EEF2FF', border: '#6366F1', icon: Zap,              color: '#4F46E5', label: 'Trigger' },
+  message_text:      { bg: '#F0FDF4', border: '#22C55E', icon: MessageSquare,     color: '#16A34A', label: 'Text Message' },
+  message_image:     { bg: '#FFF7ED', border: '#F97316', icon: ImageIcon,         color: '#EA580C', label: 'Image / Media' },
+  message_buttons:   { bg: '#F5F3FF', border: '#A855F7', icon: MousePointerClick, color: '#9333EA', label: 'Interactive Buttons' },
+  whatsapp_redirect: { bg: '#F0FDF4', border: '#25D366', icon: MessageCircle,     color: '#16A34A', label: 'WhatsApp Booking' },
+  message_cta:       { bg: '#FFF1F2', border: '#E11D48', icon: Globe,             color: '#BE123C', label: 'Link / Call Action' },
+  message_card:      { bg: '#FFF7ED', border: '#F59E0B', icon: LayoutGrid,        color: '#D97706', label: 'Card (Image + Buttons)' },
+  logic_condition:   { bg: '#FFFBEB', border: '#EAB308', icon: Split,             color: '#CA8A04', label: 'Condition (IF / ELSE)' },
+  timing_delay:      { bg: '#F0F9FF', border: '#0EA5E9', icon: Clock,             color: '#0284C7', label: 'Wait / Delay' },
   add_tag:         { bg: '#F0FDF4', border: '#10B981', icon: Tag,               color: '#059669', label: 'Add Tag' },
   integration_api: { bg: '#FDF4FF', border: '#D946EF', icon: Globe,             color: '#C026D3', label: 'API / Webhook' },
   end:             { bg: '#F9FAFB', border: '#6B7280', icon: CheckCircle2,      color: '#4B5563', label: 'End Flow' }
@@ -250,6 +252,7 @@ function FlowNode({ data, selected }: any) {
     if (data.node_type === 'message_text') return cfg.text?.substring(0, 60) + (cfg.text?.length > 60 ? '…' : '') || 'Set message text →';
     if (data.node_type === 'message_image') return cfg.caption?.substring(0, 40) || (cfg.url ? '📷 Image attached' : 'Upload image →');
     if (data.node_type === 'message_buttons') return cfg.text?.substring(0, 40) || 'Set message body →';
+    if (data.node_type === 'whatsapp_redirect') return `📲 WhatsApp: ${cfg.phone_number || '+91...'} ("${(cfg.message || '').substring(0, 26)}…")`;
     if (data.node_type === 'message_cta') return `${cfg.action_type === 'call' ? '📞' : '🔗'} ${cfg.action_title || 'Set action →'}`;
     if (data.node_type === 'message_card') return cfg.title || 'Set card title →';
     if (data.node_type === 'logic_condition') return `IF ${cfg.field || '?'} ${cfg.operator || '?'} ${cfg.value ?? ''}`;
@@ -354,17 +357,18 @@ function FlowNode({ data, selected }: any) {
 const nodeTypes = {
   trigger: FlowNode, message_text: FlowNode, message_image: FlowNode,
   message_buttons: FlowNode, message_cta: FlowNode, message_card: FlowNode,
-  logic_condition: FlowNode, timing_delay: FlowNode, add_tag: FlowNode,
-  integration_api: FlowNode, end: FlowNode
+  whatsapp_redirect: FlowNode, logic_condition: FlowNode, timing_delay: FlowNode,
+  add_tag: FlowNode, integration_api: FlowNode, end: FlowNode
 };
 
 const NODE_LIBRARY = [
   { section: 'Messages', items: [
-    { type: 'message_text',    label: 'Text Message',        defaultConfig: { text: '' } },
-    { type: 'message_image',   label: 'Image + Caption',     defaultConfig: { url: '', caption: '' } },
-    { type: 'message_buttons', label: 'Buttons (Branching)', defaultConfig: { text: 'Choose an option:', buttons: [{ id: `btn_${Date.now()}`, title: 'Option 1' }] } },
-    { type: 'message_cta',     label: 'Link / Call Button',  defaultConfig: { text: '', action_type: 'url', action_title: 'Visit Website', action_payload: 'https://' } },
-    { type: 'message_card',    label: 'Card (Image + Btns)', defaultConfig: { image_url: '', title: '', body: '', buttons: [{ id: `btn_${Date.now()}`, title: 'Learn More' }] } },
+    { type: 'message_text',        label: 'Text Message',            defaultConfig: { text: '' } },
+    { type: 'message_image',       label: 'Image + Caption',         defaultConfig: { url: '', caption: '' } },
+    { type: 'message_buttons',     label: 'Buttons (Branching)',     defaultConfig: { text: 'Welcome to Classic Pearl Unisex Salon! How can we assist you?', buttons: [{ id: `btn_${Date.now()}_1`, title: 'View Services' }, { id: `btn_${Date.now()}_2`, title: 'Book Appointment' }] } },
+    { type: 'whatsapp_redirect',   label: 'Book Appointment Link',  defaultConfig: { phone_number: '+918310730322', button_title: 'Book Appointment on WhatsApp', message: 'Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon.' } },
+    { type: 'message_cta',         label: 'Link / Call Button',      defaultConfig: { text: 'Check out our full services menu & member pricing:', action_type: 'url', action_title: 'View Services Menu', action_payload: 'https://local-business-os-amber.vercel.app/menu' } },
+    { type: 'message_card',        label: 'Card (Image + Btns)',     defaultConfig: { image_url: '', title: '', body: '', buttons: [{ id: `btn_${Date.now()}`, title: 'Learn More' }] } },
   ]},
   { section: 'Logic & Flow', items: [
     { type: 'logic_condition', label: 'IF / ELSE Condition', defaultConfig: { field: 'opted_in', operator: 'is_true', value: '' } },
@@ -520,6 +524,36 @@ function PropertiesPanel({ node, onChange, onDelete, onClose }: {
                 className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-rose-400" />
             </div>
           </>
+        )}
+
+        {type === 'whatsapp_redirect' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Target WhatsApp Number</label>
+              <input type="text" value={cfg.phone_number || ''} onChange={e => onChange('phone_number', e.target.value)}
+                placeholder="+91 83107 30322" className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-green-500" />
+              <p className="text-[10px] text-[#9E968D] mt-1">Customers will be redirected to chat with this number.</p>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Button Title</label>
+              <input type="text" value={cfg.button_title || ''} onChange={e => onChange('button_title', e.target.value)}
+                placeholder="Book Appointment on WhatsApp" className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-green-500" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[#706B61] mb-1">Automatic Pop-up Message</label>
+              <textarea rows={3} value={cfg.message || ''} onChange={e => onChange('message', e.target.value)}
+                placeholder="Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon." className="w-full px-3 py-2 bg-[#F8F5EF] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-green-500 resize-none" />
+              <p className="text-[10px] text-[#9E968D] mt-1">This message will be prefilled automatically when WhatsApp opens on their phone.</p>
+            </div>
+            {cfg.phone_number && (
+              <div className="p-2.5 rounded-xl bg-green-50 border border-green-200 space-y-1">
+                <span className="text-[10px] font-black text-green-800">Generated Direct Link:</span>
+                <p className="text-[9px] font-mono text-green-700 break-all select-all">
+                  {`https://wa.me/${(cfg.phone_number || '').replace(/\D/g, '')}?text=${encodeURIComponent(cfg.message || 'Hi, I want to book an appointment.')}`}
+                </p>
+              </div>
+            )}
+          </div>
         )}
 
         {type === 'message_card' && (

@@ -367,6 +367,52 @@ export class FlowExecutionEngine {
         }
         return {};
 
+      case 'whatsapp_redirect':
+        const targetPhone = (config.phone_number || '+918310730322').replace(/\D/g, '');
+        const prefilledMsg = config.message || 'Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon.';
+        const waLink = `https://wa.me/${targetPhone}?text=${encodeURIComponent(prefilledMsg)}`;
+        const buttonTitle = (config.button_title || 'Book on WhatsApp').substring(0, 20);
+        const introText = config.intro_text || `Tap below to chat or book directly on WhatsApp with our team:`;
+
+        const waRedirectPayload = {
+          type: 'cta_url',
+          body: { text: introText },
+          action: {
+            name: 'cta_url',
+            parameters: {
+              display_text: buttonTitle,
+              url: waLink
+            }
+          }
+        };
+
+        const redirectRes = await sendWhatsAppInteractive({
+          phoneNumberId: account.phone_number_id,
+          accessToken: account.access_token,
+          to: contact.phone_number
+        }, waRedirectPayload);
+
+        if (redirectRes.error) {
+          await sendWhatsAppText({
+            phoneNumberId: account.phone_number_id,
+            accessToken: account.access_token,
+            to: contact.phone_number
+          }, `${introText}\n\n👉 ${buttonTitle}: ${waLink}`);
+        } else if (redirectRes.messages?.[0]?.id && exec.conversation_id) {
+          await supabaseAdmin.from('messages').insert({
+            organization_id: this.orgId,
+            conversation_id: exec.conversation_id,
+            contact_id: exec.contact_id,
+            direction: 'OUTBOUND',
+            type: 'interactive',
+            content: { interactive: waRedirectPayload },
+            status: 'SENT',
+            wam_id: redirectRes.messages[0].id
+          });
+          await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', exec.conversation_id);
+        }
+        return {};
+
       case 'logic_condition':
         // Simple condition evaluator
         const field = config.field;

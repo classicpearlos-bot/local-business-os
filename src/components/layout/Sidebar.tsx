@@ -19,7 +19,8 @@ import {
   ChevronRight,
   MoreVertical,
   Calendar,
-  GitBranch
+  GitBranch,
+  Sparkles
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CommandPalette } from './CommandPalette';
@@ -59,6 +60,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
     { label: 'Campaigns', href: '/campaigns', icon: Send },
     { label: 'Automations', href: '/automations', icon: Zap },
     { label: 'Flow Studio', href: '/flows', icon: GitBranch },
+    { label: 'Services', href: '/services', icon: Sparkles },
     { label: 'Appointments', href: '/appointments', icon: Calendar },
     { label: 'Templates', href: '/templates', icon: FileText },
     { label: 'Analytics', href: '/analytics', icon: BarChart3 },
