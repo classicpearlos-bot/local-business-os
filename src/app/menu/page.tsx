@@ -335,7 +335,7 @@ export default function CustomerServicesMenu() {
 
                         {savings > 0 && (
                           <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-[#D6B878] text-[#292722] text-[9px] font-black shadow-xs">
-                            <Crown className="w-2.5 h-2.5" /> Save ?{savings}
+                            <Crown className="w-2.5 h-2.5" /> Save &#8377;{savings}
                           </span>
                         )}
                       </div>
@@ -364,23 +364,23 @@ export default function CustomerServicesMenu() {
 
                   {/* Pricing Breakdown & WhatsApp Action Buttons */}
                   <div className="p-4 pt-2 border-t border-[#F0EBE3] space-y-3 bg-[#FAF8F5]/50">
-                    {/* Price Comparison */}
-                    <div className="flex items-end justify-between">
+                    {/* Price Comparison Container - Perfectly Aligned */}
+                    <div className="flex items-center justify-between bg-white rounded-xl p-2.5 border border-[#EBE4D8] shadow-2xs">
                       <div>
                         <span className="text-[9px] font-bold text-[#9E968D] block uppercase tracking-wider">
                           Non-Member
                         </span>
                         <span className="text-xs font-semibold text-[#706B61] line-through">
-                          ?{service.regular_price}
+                          &#8377;{service.regular_price}
                         </span>
                       </div>
 
                       <div className="text-right">
                         <span className="text-[9px] font-black text-[#B08D57] block uppercase tracking-wider flex items-center justify-end gap-1">
-                          <Crown className="w-2.5 h-2.5" /> Member Price
+                          <Crown className="w-2.5 h-2.5 text-[#B08D57]" /> Member Price
                         </span>
-                        <span className="text-lg font-serif font-black text-[#292722]">
-                          ?{service.member_price}
+                        <span className="text-base font-serif font-black text-[#292722]">
+                          &#8377;{service.member_price}
                         </span>
                       </div>
                     </div>

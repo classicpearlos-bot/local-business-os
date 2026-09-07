@@ -249,7 +249,7 @@ export default function ServicesAdminPage() {
             </div>
             <div className="bg-white p-5 rounded-2xl border border-[#E5DED2] shadow-xs">
               <span className="text-[10px] font-black uppercase tracking-wider text-[#9E968D]">Avg Member Savings</span>
-              <p className="text-2xl font-serif font-black text-[#B08D57] mt-1">₹30 – ₹100</p>
+              <p className="text-2xl font-serif font-black text-[#B08D57] mt-1">&#8377;30 – &#8377;100</p>
             </div>
             <div className="bg-white p-5 rounded-2xl border border-[#E5DED2] shadow-xs">
               <span className="text-[10px] font-black uppercase tracking-wider text-[#9E968D]">Booking WhatsApp</span>
@@ -352,15 +352,15 @@ export default function ServicesAdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-[#706B61] font-semibold">
-                            ₹{service.regular_price}
+                            &#8377;{service.regular_price}
                           </td>
                           <td className="px-6 py-4 font-black text-[#B08D57]">
-                            ₹{service.member_price}
+                            &#8377;{service.member_price}
                           </td>
                           <td className="px-6 py-4">
                             {savings > 0 ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-50 text-green-700 font-black text-[10px] border border-green-200">
-                                Save ₹{savings}
+                                Save &#8377;{savings}
                               </span>
                             ) : (
                               <span className="text-[#9E968D] text-[10px]">—</span>
@@ -443,7 +443,7 @@ export default function ServicesAdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Regular Price (₹) *</label>
+                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Regular Price (&#8377;) *</label>
                   <input
                     type="number"
                     required
@@ -455,7 +455,7 @@ export default function ServicesAdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Member Price (₹) *</label>
+                  <label className="block text-[11px] font-bold text-[#706B61] mb-1">Member Price (&#8377;) *</label>
                   <input
                     type="number"
                     required
