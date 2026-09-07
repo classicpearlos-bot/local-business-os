@@ -25,9 +25,11 @@ import { toast } from 'react-hot-toast';
 interface ServiceItem {
   id: string | number;
   name: string;
+  tier?: string;
   category: string;
   regular_price: number;
   member_price: number;
+  image_url?: string;
   description?: string;
   whatsapp_number?: string;
 }
@@ -314,12 +316,35 @@ export default function ServicesAdminPage() {
                       return (
                         <tr key={service.id} className="hover:bg-[#F8F5EF]/60 transition-colors">
                           <td className="px-6 py-4 font-bold text-[#292722]">
-                            {service.name}
-                            {service.description && (
-                              <p className="text-[10px] font-normal text-[#9E968D] line-clamp-1 mt-0.5">
-                                {service.description}
-                              </p>
-                            )}
+                            <div className="flex items-center gap-3">
+                              {service.image_url ? (
+                                <img
+                                  src={service.image_url}
+                                  alt=""
+                                  onError={(e: any) => { e.target.style.display = 'none'; }}
+                                  className="w-10 h-10 rounded-lg object-cover border border-[#E5DED2] shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-[#FAF7F2] border border-[#E5DED2] flex items-center justify-center text-[#B08D57] shrink-0 font-serif font-black text-xs">
+                                  CP
+                                </div>
+                              )}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span>{service.name}</span>
+                                  {service.tier && (
+                                    <span className="px-1.5 py-0.5 rounded bg-[#292722] text-[#D6B878] text-[9px] font-black uppercase">
+                                      {service.tier}
+                                    </span>
+                                  )}
+                                </div>
+                                {service.description && (
+                                  <p className="text-[10px] font-normal text-[#9E968D] line-clamp-1 mt-0.5">
+                                    {service.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className="inline-block px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5DED2] text-[10px] font-semibold text-[#706B61]">

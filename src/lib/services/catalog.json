@@ -1,0 +1,1632 @@
+[
+  {
+    "id": "men_1",
+    "name": "Basic Hair Cut for Little Champ",
+    "tier": "Men",
+    "category": "Men - Haircut",
+    "regular_price": 249,
+    "member_price": 219,
+    "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_2",
+    "name": "Basic Hair Cut for Little Champ with Wash and Blast Dry",
+    "tier": "Men",
+    "category": "Men - Haircut",
+    "regular_price": 349,
+    "member_price": 299,
+    "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_3",
+    "name": "Men Hair Cut",
+    "tier": "Men",
+    "category": "Men - Haircut",
+    "regular_price": 249,
+    "member_price": 219,
+    "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_4",
+    "name": "Men Hair Cut with Wash and Blast Dry",
+    "tier": "Men",
+    "category": "Men - Haircut",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_5",
+    "name": "Men Head Shave",
+    "tier": "Men",
+    "category": "Men - Haircut",
+    "regular_price": 249,
+    "member_price": 219,
+    "image_url": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_6",
+    "name": "Men Beard Shave",
+    "tier": "Men",
+    "category": "Men - Beard",
+    "regular_price": 109,
+    "member_price": 99,
+    "image_url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_7",
+    "name": "Men Beard Shave twice",
+    "tier": "Men",
+    "category": "Men - Beard",
+    "regular_price": 149,
+    "member_price": 129,
+    "image_url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_8",
+    "name": "Men Beard Styling",
+    "tier": "Men",
+    "category": "Men - Beard",
+    "regular_price": 119,
+    "member_price": 99,
+    "image_url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_9",
+    "name": "Men Shampoo and Conditioner wash",
+    "tier": "Men",
+    "category": "Men - Hair Wash",
+    "regular_price": 129,
+    "member_price": 109,
+    "image_url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_10",
+    "name": "Men Almond / Olive",
+    "tier": "Men",
+    "category": "Men - Head Massage",
+    "regular_price": 399,
+    "member_price": 369,
+    "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_11",
+    "name": "Men Navarathna/Coconut Oil",
+    "tier": "Men",
+    "category": "Men - Head Massage",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_12",
+    "name": "Men Anti-Dandruff / Hair Fall Spa",
+    "tier": "Men",
+    "category": "Men - Hair Spa",
+    "regular_price": 999,
+    "member_price": 949,
+    "image_url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_13",
+    "name": "Men Damage Repair Hair Spa",
+    "tier": "Men",
+    "category": "Men - Hair Spa",
+    "regular_price": 779,
+    "member_price": 729,
+    "image_url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_14",
+    "name": "Men Deep Nourishing Hair Spa",
+    "tier": "Men",
+    "category": "Men - Hair Spa",
+    "regular_price": 579,
+    "member_price": 549,
+    "image_url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_15",
+    "name": "Men Deluxe Hair Spa",
+    "tier": "Men",
+    "category": "Men - Hair Spa",
+    "regular_price": 949,
+    "member_price": 899,
+    "image_url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_16",
+    "name": "Men Anti - Dandruff Treatment",
+    "tier": "Men",
+    "category": "Men - Hair Treatment",
+    "regular_price": 1099,
+    "member_price": 999,
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_17",
+    "name": "Men Anti - Hair Fall Treatment",
+    "tier": "Men",
+    "category": "Men - Hair Treatment",
+    "regular_price": 1099,
+    "member_price": 999,
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_18",
+    "name": "Men Ammonia Free Deluxe",
+    "tier": "Men",
+    "category": "Men - Hair Color",
+    "regular_price": 899,
+    "member_price": 849,
+    "image_url": "https://images.unsplash.com/photo-1517832606589-7629c3397143?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_19",
+    "name": "Men Ammonia Free Premium",
+    "tier": "Men",
+    "category": "Men - Hair Color",
+    "regular_price": 799,
+    "member_price": 749,
+    "image_url": "https://images.unsplash.com/photo-1517832606589-7629c3397143?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_20",
+    "name": "Men Beard color",
+    "tier": "Men",
+    "category": "Men - Hair Color",
+    "regular_price": 299,
+    "member_price": 249,
+    "image_url": "https://images.unsplash.com/photo-1517832606589-7629c3397143?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_21",
+    "name": "Men Cap Highlights",
+    "tier": "Men",
+    "category": "Men - Hair Color",
+    "regular_price": 1499,
+    "member_price": 1399,
+    "image_url": "https://images.unsplash.com/photo-1517832606589-7629c3397143?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_22",
+    "name": "Men BOTOX",
+    "tier": "Men",
+    "category": "Men - Advanced Hair Treatment",
+    "regular_price": 3999,
+    "member_price": 3799,
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_23",
+    "name": "Men Keratin",
+    "tier": "Men",
+    "category": "Men - Advanced Hair Treatment",
+    "regular_price": 3499,
+    "member_price": 3299,
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_24",
+    "name": "Men Nano Plastia",
+    "tier": "Men",
+    "category": "Men - Advanced Hair Treatment",
+    "regular_price": 4999,
+    "member_price": 4499,
+    "image_url": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_31",
+    "name": "Men Haircut + Anti-Dandruff/Anti-Hair Fall Spa",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 1209,
+    "member_price": 1125,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_32",
+    "name": "Men Haircut + Beard + Hair Wash",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 439,
+    "member_price": 399,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_33",
+    "name": "Men Haircut + De-Tan (Face & Neck)",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 849,
+    "member_price": 799,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_34",
+    "name": "Men Haircut + Hair Color + Hair Wash",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 1099,
+    "member_price": 999,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_35",
+    "name": "Men Haircut + Head & Neck Massage + Foot Massage",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 1099,
+    "member_price": 999,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_36",
+    "name": "Men Haircut + Head Massage + Hair Wash",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 659,
+    "member_price": 599,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "men_37",
+    "name": "Men Head & Neck Massage + Shoulder Massage + Foot Massage",
+    "tier": "Men",
+    "category": "Men - Combo",
+    "regular_price": 1319,
+    "member_price": 1199,
+    "image_url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_1",
+    "name": "Front Bangs",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 150,
+    "member_price": 140,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_2",
+    "name": "Girl Advanced Hair Cut (Below 10 years)",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 399,
+    "member_price": 369,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_3",
+    "name": "Girl Basic Hair Cut (Below 10 years)",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 329,
+    "member_price": 299,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_4",
+    "name": "Women Advance Hair Cut With Shampoo & Conditioner Wash + Blast Dry",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 749,
+    "member_price": 695,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_5",
+    "name": "Women Advance Hair Cut With Shampoo & Conditioner Wash + Blow Dry & Setting",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 899,
+    "member_price": 835,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_6",
+    "name": "Women Basic Hair Cut With Shampoo & Conditioner Wash + Blast Dry",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 399,
+    "member_price": 349,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_7",
+    "name": "Women Basic Hair Cut With Shampoo & Conditioner Wash + Blow Dry & Setting",
+    "tier": "Women",
+    "category": "Women - Haircut",
+    "regular_price": 599,
+    "member_price": 549,
+    "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_12",
+    "name": "Women Advanced Streaks Per Streak",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_13",
+    "name": "Women Balayage/Ombre Long",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 7999,
+    "member_price": 7499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_14",
+    "name": "Women Balayage/Ombre Medium",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 6999,
+    "member_price": 6499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_15",
+    "name": "Women Balayage/Ombre Small",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 5999,
+    "member_price": 5499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_17",
+    "name": "Women Creative Hair Color Long",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 6999,
+    "member_price": 6499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_18",
+    "name": "Women Creative Hair Color Medium",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 5999,
+    "member_price": 5499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_19",
+    "name": "Women Creative Hair Color Small",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 4999,
+    "member_price": 4499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_20",
+    "name": "Women Deluxe Root Touch Up Ammonia Free",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 1499,
+    "member_price": 1449,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_21",
+    "name": "Women Full Highlights 16 Streaks",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 3999,
+    "member_price": 3499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_22",
+    "name": "Women Global Ammonia Free Long",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 4999,
+    "member_price": 4699,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_23",
+    "name": "Women Global Ammonia Free Medium",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 3999,
+    "member_price": 3699,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_24",
+    "name": "Women Global Ammonia Free Small",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 2999,
+    "member_price": 2699,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_25",
+    "name": "Women Global With Ammonia Long",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 4999,
+    "member_price": 4799,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_26",
+    "name": "Women Global With Ammonia Medium",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 3999,
+    "member_price": 3499,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_27",
+    "name": "Women Global With Ammonia Small",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 2999,
+    "member_price": 2799,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_30",
+    "name": "Women Partial Highlights 8 Streaks",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 1999,
+    "member_price": 1860,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_31",
+    "name": "Women Premium Root Touch Up Ammonia Free",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 1249,
+    "member_price": 1199,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_32",
+    "name": "Women Root Touch Up With Ammonia",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 1149,
+    "member_price": 1070,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_33",
+    "name": "Women Streaks (Per Streaks)",
+    "tier": "Women",
+    "category": "Women - Hair Color",
+    "regular_price": 249,
+    "member_price": 219,
+    "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_34",
+    "name": "Women Anti Dandruff / Hair Fall Long",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1599,
+    "member_price": 1485,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_35",
+    "name": "Women Anti Dandruff / Hair Fall Medium",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1399,
+    "member_price": 1300,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_36",
+    "name": "Women Anti Dandruff / Hair Fall Small",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1199,
+    "member_price": 1115,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_37",
+    "name": "Women Damage Repair Hair Spa Long",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1399,
+    "member_price": 1300,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_38",
+    "name": "Women Damage Repair Hair Spa Medium",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1199,
+    "member_price": 1115,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_39",
+    "name": "Women Damage Repair Hair Spa Small",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 899,
+    "member_price": 835,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_40",
+    "name": "Women Deep Nourishing Spa Long",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 999,
+    "member_price": 930,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_41",
+    "name": "Women Deep Nourishing Spa Medium",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 849,
+    "member_price": 790,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_42",
+    "name": "Women Deep Nourishing Spa Small",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 699,
+    "member_price": 665,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_43",
+    "name": "Women Deluxe Hair Spa Long",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1799,
+    "member_price": 1675,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_44",
+    "name": "Women Deluxe Hair Spa Medium",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1499,
+    "member_price": 1395,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_45",
+    "name": "Women Deluxe Hair Spa Small",
+    "tier": "Women",
+    "category": "Women - Hair Spa",
+    "regular_price": 1199,
+    "member_price": 1115,
+    "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_46",
+    "name": "Women Anti Dandruff/Hairfall Treatment Long",
+    "tier": "Women",
+    "category": "Women - Hair Treatment",
+    "regular_price": 1499,
+    "member_price": 1449,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_47",
+    "name": "Women Anti Dandruff/Hairfall Treatment Medium",
+    "tier": "Women",
+    "category": "Women - Hair Treatment",
+    "regular_price": 1399,
+    "member_price": 1349,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_48",
+    "name": "Women Anti Dandruff/Hairfall Treatment Small",
+    "tier": "Women",
+    "category": "Women - Hair Treatment",
+    "regular_price": 1299,
+    "member_price": 1249,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_49",
+    "name": "Women BOTOX Small",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 3999,
+    "member_price": 3999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_50",
+    "name": "Women Medium Botox",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 5999,
+    "member_price": 5999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_51",
+    "name": "Women Long Botox",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 6999,
+    "member_price": 6999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_52",
+    "name": "Women KERATIN Small",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 3999,
+    "member_price": 3999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_53",
+    "name": "Women KERATIN Medium",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 5699,
+    "member_price": 5699,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_54",
+    "name": "Women Long Keratin",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 5999,
+    "member_price": 5999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_55",
+    "name": "Women Nano Plastia Small",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 5999,
+    "member_price": 5999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_56",
+    "name": "Women Medium Nano Plastia",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 6999,
+    "member_price": 6999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_57",
+    "name": "Women Long Nano Plastia",
+    "tier": "Women",
+    "category": "Women - Advanced Hair Treatment",
+    "regular_price": 7999,
+    "member_price": 7999,
+    "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_58",
+    "name": "Women Almond / Olive",
+    "tier": "Women",
+    "category": "Women - Head Massage",
+    "regular_price": 499,
+    "member_price": 449,
+    "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_59",
+    "name": "Women Coconut / Navarathna",
+    "tier": "Women",
+    "category": "Women - Head Massage",
+    "regular_price": 499,
+    "member_price": 449,
+    "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_60",
+    "name": "Women Shampoo & Conditioner Wash Add-on",
+    "tier": "Women",
+    "category": "Women - Head Massage",
+    "regular_price": 249,
+    "member_price": 235,
+    "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_61",
+    "name": "Hair Perming",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 5999,
+    "member_price": 4999,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_62",
+    "name": "Women Ironing / Tongs Long",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 999,
+    "member_price": 949,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_63",
+    "name": "Women Ironing / Tongs Medium",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 899,
+    "member_price": 849,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_64",
+    "name": "Women Ironing / Tongs Small",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 699,
+    "member_price": 649,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_65",
+    "name": "Women Long Shampoo and Conditioning with Blast Dry",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 529,
+    "member_price": 505,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_66",
+    "name": "Women Medium Shampoo and Conditioning with Blast Dry",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 449,
+    "member_price": 425,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_67",
+    "name": "Women Small Shampoo and Conditioning with Blast Dry",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 399,
+    "member_price": 349,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_68",
+    "name": "Women Shampoo and Conditioning With Blow Dry & Setting Long",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 799,
+    "member_price": 749,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_69",
+    "name": "Women Shampoo and Conditioning With Blow Dry & Setting Medium",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 749,
+    "member_price": 699,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_70",
+    "name": "Women Shampoo and Conditioning With Blow Dry & Setting Small",
+    "tier": "Women",
+    "category": "Women - Styling & Makeover",
+    "regular_price": 649,
+    "member_price": 599,
+    "image_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_71",
+    "name": "Women Chin waxing",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 109,
+    "member_price": 99,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_72",
+    "name": "Women Full Face waxing",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 449,
+    "member_price": 399,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_73",
+    "name": "Women Lower lip waxing",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 55,
+    "member_price": 49,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_74",
+    "name": "Women Side locks waxing",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 149,
+    "member_price": 139,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_75",
+    "name": "Women Threading",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 55,
+    "member_price": 49,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_76",
+    "name": "Women Upper Lips Waxing",
+    "tier": "Women",
+    "category": "Women - Face Waxing",
+    "regular_price": 99,
+    "member_price": 79,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_78",
+    "name": "Full Face Threading",
+    "tier": "Women",
+    "category": "Women - Threading",
+    "regular_price": 399,
+    "member_price": 369,
+    "image_url": "https://images.unsplash.com/photo-1512290900672-1f55b9a8973d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_79",
+    "name": "Women Threading",
+    "tier": "Women",
+    "category": "Women - Threading",
+    "regular_price": 55,
+    "member_price": 49,
+    "image_url": "https://images.unsplash.com/photo-1512290900672-1f55b9a8973d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_80",
+    "name": "Full Body Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 3999,
+    "member_price": 3799,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_81",
+    "name": "Women Bikini Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 2699,
+    "member_price": 2510,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_82",
+    "name": "Women Full Arms Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 549,
+    "member_price": 529,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_83",
+    "name": "Women Full Back Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 599,
+    "member_price": 570,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_84",
+    "name": "Women Full Legs Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 699,
+    "member_price": 679,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_85",
+    "name": "Women Half Arms Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 319,
+    "member_price": 299,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_86",
+    "name": "Women Half Legs Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 549,
+    "member_price": 529,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_87",
+    "name": "Women Stomach Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 549,
+    "member_price": 519,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_88",
+    "name": "Women Under - Arms Rica Waxing",
+    "tier": "Women",
+    "category": "Women - Rica Waxing",
+    "regular_price": 229,
+    "member_price": 209,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_89",
+    "name": "Women Bikini Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 2999,
+    "member_price": 2799,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_90",
+    "name": "Women Full Arms Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 799,
+    "member_price": 745,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_91",
+    "name": "Women Full Back Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 799,
+    "member_price": 745,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_92",
+    "name": "Women Full Legs Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 1199,
+    "member_price": 1115,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_93",
+    "name": "Women Half Arms Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 499,
+    "member_price": 475,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_94",
+    "name": "Women Half Legs Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 799,
+    "member_price": 745,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_95",
+    "name": "Women Stomach Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 699,
+    "member_price": 665,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_96",
+    "name": "Women Under - Arms Brazzilian Waxing",
+    "tier": "Women",
+    "category": "Women - Brazilian Waxing",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_97",
+    "name": "Women Clean Up + Eyebrow + Upper Lip",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 749,
+    "member_price": 695,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_98",
+    "name": "Women Clean Up + Threading (Eye Brows + UL) + Head Massage",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1049,
+    "member_price": 975,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_99",
+    "name": "Women Facial (basic) + Threading + Head Massage",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1599,
+    "member_price": 1485,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_100",
+    "name": "Women Full Arms + Full Legs & Under Arms",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1499,
+    "member_price": 1395,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_101",
+    "name": "Women Full Arms + Half Legs & Under Arms",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1349,
+    "member_price": 1255,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_102",
+    "name": "Women Hair Spa + Haircut + Blast Dry",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1449,
+    "member_price": 1350,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_103",
+    "name": "Women Head & Neck Massage + Foot Massage",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1099,
+    "member_price": 1020,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_104",
+    "name": "Women Head & Neck Massage + Shoulder Massage + Foot Massage",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 1319,
+    "member_price": 1225,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "women_105",
+    "name": "Women Head Massage + Foot Massage",
+    "tier": "Women",
+    "category": "Women - Combo",
+    "regular_price": 949,
+    "member_price": 885,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_1",
+    "name": "Advance Whitening Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 2249,
+    "member_price": 2090,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_2",
+    "name": "Fruit_Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 1399,
+    "member_price": 1300,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_3",
+    "name": "Gold Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 1649,
+    "member_price": 1535,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_4",
+    "name": "Hydra Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 2899,
+    "member_price": 2695,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_5",
+    "name": "Korean Glass Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 2199,
+    "member_price": 2045,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_6",
+    "name": "O3+ Bridal Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 4149,
+    "member_price": 3940,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_7",
+    "name": "O3+ Whitening Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 3549,
+    "member_price": 3370,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_8",
+    "name": "Raaga Facial",
+    "tier": "Both",
+    "category": "Both - Facial",
+    "regular_price": 2899,
+    "member_price": 2695,
+    "image_url": "https://images.unsplash.com/photo-1512290903241-079800f9556d?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_9",
+    "name": "Fruit Clean Up",
+    "tier": "Both",
+    "category": "Both - Clean Up",
+    "regular_price": 699,
+    "member_price": 679,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_10",
+    "name": "Face & Neck",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 599,
+    "member_price": 549,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_11",
+    "name": "Face Detan",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_12",
+    "name": "Foot",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 339,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_13",
+    "name": "Full Arms",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 899,
+    "member_price": 835,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_14",
+    "name": "Full Legs",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 1099,
+    "member_price": 1020,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_15",
+    "name": "Half Arms",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 579,
+    "member_price": 550,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_16",
+    "name": "Half Legs",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 689,
+    "member_price": 655,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_17",
+    "name": "Under - Arms",
+    "tier": "Both",
+    "category": "Both - De-Tan",
+    "regular_price": 219,
+    "member_price": 210,
+    "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_18",
+    "name": "Basic Manicure",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 449,
+    "member_price": 435,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_19",
+    "name": "Chocolate Crystal Manicure",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 699,
+    "member_price": 665,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_20",
+    "name": "Cut File and Polish",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 249,
+    "member_price": 229,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_21",
+    "name": "De - Tan Manicure",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 549,
+    "member_price": 519,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_22",
+    "name": "Lotus Manicure",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 649,
+    "member_price": 619,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_23",
+    "name": "Sara Rose Manicure",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 499,
+    "member_price": 475,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_24",
+    "name": "Aroma Magic",
+    "tier": "Both",
+    "category": "Both - Manicure",
+    "regular_price": 549,
+    "member_price": 499,
+    "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_25",
+    "name": "Basic Pedicure",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 649,
+    "member_price": 629,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_26",
+    "name": "Chocolate Crystal Pedicure",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 1099,
+    "member_price": 999,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_27",
+    "name": "Cut File and Polish",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 249,
+    "member_price": 199,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_28",
+    "name": "De - Tan Pedicure",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 799,
+    "member_price": 745,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_29",
+    "name": "Lotus Pedicure",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 999,
+    "member_price": 949,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_30",
+    "name": "Sara Rose Pedicure",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 749,
+    "member_price": 699,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_31",
+    "name": "Aroma Magic",
+    "tier": "Both",
+    "category": "Both - Pedicure",
+    "regular_price": 849,
+    "member_price": 799,
+    "image_url": "https://images.unsplash.com/photo-1519014816548-bf785179c289?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_32",
+    "name": "Hand Massage",
+    "tier": "Both",
+    "category": "Both - Massage",
+    "regular_price": 549,
+    "member_price": 499,
+    "image_url": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_33",
+    "name": "Foot Massage",
+    "tier": "Both",
+    "category": "Both - Massage",
+    "regular_price": 699,
+    "member_price": 649,
+    "image_url": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_34",
+    "name": "Back Massage",
+    "tier": "Both",
+    "category": "Both - Massage",
+    "regular_price": 649,
+    "member_price": 599,
+    "image_url": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  },
+  {
+    "id": "both_35",
+    "name": "Neck and shoulder Massage",
+    "tier": "Both",
+    "category": "Both - Massage",
+    "regular_price": 349,
+    "member_price": 329,
+    "image_url": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&auto=format&fit=crop&q=80",
+    "whatsapp_number": "+91 83107 30322"
+  }
+]
