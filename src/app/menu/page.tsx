@@ -42,7 +42,11 @@ export default function CustomerServicesMenu() {
       .then(res => res.json())
       .then(data => {
         if (data.services) {
-          setServices(data.services);
+          // Exclude non-head massages strictly from the public menu
+          const publicServices = data.services.filter(
+            (s: ServiceItem) => s.category !== 'Both - Massage'
+          );
+          setServices(publicServices);
         }
       })
       .catch(err => console.error('Failed to load services:', err))
