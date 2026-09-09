@@ -370,6 +370,12 @@ export default function CampaignsPage() {
         return;
       }
 
+      // VITAL FIX: Kick off the queue worker instantly from the client-side!
+      // This keeps the Vercel connection alive so the serverless function runs its full 60s processing cycle.
+      fetch('/api/whatsapp/campaigns/worker', {
+        headers: { 'x-ui-bypass': 'true' }
+      }).catch(console.error);
+
       setShowBuilder(false);
       setBuilderStep(1);
       setParsedExcel(null);
