@@ -271,6 +271,29 @@ export async function GET(request: Request) {
       }
     }
 
+    // Safety sweep: Also check for any campaigns stuck in QUEUED with 0 recipients
+    const { data: stuckCampaigns } = await supabaseAdmin
+      .from('campaigns')
+      .select('id')
+      .eq('status', 'QUEUED');
+      
+    if (stuckCampaigns && stuckCampaigns.length > 0) {
+      for (const camp of stuckCampaigns) {
+        const { count: recCount } = await supabaseAdmin
+          .from('campaign_recipients')
+          .select('id', { count: 'exact', head: true })
+          .eq('campaign_id', camp.id)
+          .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
+          
+        if (recCount === 0) {
+          await supabaseAdmin.from('campaigns').update({ 
+            status: 'COMPLETED',
+            completed_at: new Date().toISOString()
+          }).eq('id', camp.id);
+        }
+      }
+    }
+
     // Remaining count in queue
     const { count: totalRemaining } = await supabaseAdmin
       .from('campaign_recipients')
