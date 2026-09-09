@@ -88,8 +88,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Trigger worker
-    fetch(`${request.headers.get('origin') || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`).catch(() => {});
+    // Trigger worker asynchronously to immediately start processing
+    fetch(`${request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`, {
+      headers: { 'Authorization': `Bearer ${process.env.CRON_SECRET}` }
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, campaign_id: campaign.id });
 
