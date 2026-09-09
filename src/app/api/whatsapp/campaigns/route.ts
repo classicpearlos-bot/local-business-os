@@ -24,20 +24,35 @@ export async function POST(request: Request) {
       template_language,
       template_components,
       scheduled_at,
-      contact_ids
+      contact_ids,
+      audience_type
     } = payload;
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json({ error: 'Campaign name is required' }, { status: 400 });
     }
 
-    const recipientIds = Array.isArray(contact_ids) ? contact_ids : [];
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
     const orgId = await resolveUserOrgId(user.id);
     if (!orgId) return new NextResponse('Forbidden', { status: 403 });
+
+    let recipientIds = Array.isArray(contact_ids) ? contact_ids : [];
+
+    // CRITICAL FIX: The UI cannot fetch CRM contact IDs reliably due to RLS.
+    // If the user selected 'crm', the server must fetch all opted-in CRM contact IDs natively using admin rights.
+    if (audience_type === 'crm') {
+      const { data: crmContacts } = await supabaseAdmin
+        .from('contacts')
+        .select('id')
+        .eq('organization_id', orgId)
+        .eq('opted_in', true);
+        
+      if (crmContacts) {
+        recipientIds = crmContacts.map(c => c.id);
+      }
+    }
 
     const { data: campaign, error: campError } = await supabaseAdmin
       .from('campaigns')

@@ -360,7 +360,8 @@ export default function CampaignsPage() {
           template_language: formData.templateLanguage,
           template_components: getCompiledComponents(),
           scheduled_at: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-          contact_ids: contactIds
+          contact_ids: contactIds,
+          audience_type: audienceSource
         })
       });
 
