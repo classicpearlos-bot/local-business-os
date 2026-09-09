@@ -1,17 +1,22 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
-const font = Plus_Jakarta_Sans({ 
+const inter = Inter({ 
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   variable: '--font-sans',
 });
 
+const cormorant = Cormorant_Garamond({ 
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: '--font-serif',
+});
+
 export const metadata: Metadata = {
-  title: "NEXCHAT - Classic Pearl Salon",
-  description: "Next Generation Customer Engagement & Marketing Automation OS",
+  title: "Classic Pearl Salon OS",
+  description: "Next Generation Customer Engagement",
 };
 
 export default function RootLayout({
@@ -20,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="antialiased selection:bg-amber-500/30">
-      <body className={`${font.variable} font-sans bg-[#F7F3EA] text-[#1E1B18]`}>
+    <html lang="en" className="antialiased selection:bg-[#D4AF37]/30">
+      <body className={`${inter.variable} ${cormorant.variable} font-sans bg-[#FAFAFA] text-[#111111] antialiased`}>
         {children}
         <Toaster position="bottom-right" />
       </body>

@@ -11,16 +11,12 @@ import {
   Zap,
   FileText,
   BarChart3,
-  MessageSquareQuote,
-  UserCheck,
-  Code2,
-  Settings,
-  Crown,
-  ChevronRight,
-  MoreVertical,
-  Calendar,
   GitBranch,
-  Sparkles
+  Sparkles,
+  Calendar,
+  Settings,
+  MoreVertical,
+  ChevronRight
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CommandPalette } from './CommandPalette';
@@ -64,41 +60,31 @@ export function Sidebar({ className = '' }: SidebarProps) {
     { label: 'Appointments', href: '/appointments', icon: Calendar },
     { label: 'Templates', href: '/templates', icon: FileText },
     { label: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { label: 'Developers', href: '/developers', icon: Code2 },
     { label: 'Settings', href: '/whatsapp', icon: Settings }
   ];
 
   return (
     <>
       <CommandPalette />
-      <aside className={`w-64 bg-[#FAF7F2] text-[#2C2723] flex flex-col justify-between shrink-0 border-r border-[#EFE3CF] select-none z-20 shadow-xs ${className}`}>
-        {/* Brand Crest Header */}
+      <aside className={`w-64 bg-white text-[#111111] flex flex-col justify-between shrink-0 border-r border-[#E5E7EB] select-none z-20 ${className}`}>
+        {/* Brand Header */}
         <div>
-          <div className="pt-7 pb-5 px-6 flex flex-col items-center justify-center border-b border-[#EFE3CF]/70">
+          <div className="pt-10 pb-8 px-8 flex flex-col items-center justify-center">
             <Link href="/" className="flex flex-col items-center text-center group">
-              {/* Royal Gold Crest Monogram */}
-              <div className="relative mb-2">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5EADB] border-2 border-[#D4AF37] flex items-center justify-center shadow-md shadow-[#C59E3F]/15 group-hover:scale-105 transition-transform duration-200">
-                  <div className="relative flex flex-col items-center justify-center">
-                    <Crown className="w-4 h-4 text-[#C59E3F] absolute -top-3 drop-shadow-xs" />
-                    <span className="font-serif font-black text-xl text-[#B88B2A] tracking-tighter">CP</span>
-                  </div>
-                </div>
-                {/* Subtle Laurel Wreath Ring Accent */}
-                <div className="absolute inset-0 rounded-full border border-dashed border-[#D4AF37]/50 animate-spin-slow pointer-events-none" />
+              <div className="w-12 h-12 flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-105">
+                <span className="font-serif font-medium text-4xl tracking-tighter text-[#111111]">Cp</span>
               </div>
-
-              <h1 className="font-serif font-extrabold text-lg text-[#1E1B18] tracking-widest mt-1">
+              <h1 className="font-serif text-xl text-[#111111] tracking-[0.15em] font-medium">
                 NEXCHAT
               </h1>
-              <p className="text-[9px] font-bold tracking-[0.2em] text-[#8C6514] uppercase mt-0.5">
-                CLASSIC PEARL
+              <p className="text-[10px] font-light tracking-[0.2em] text-[#71717A] uppercase mt-1">
+                Classic Pearl
               </p>
             </Link>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3.5 space-y-1 overflow-y-auto max-h-[calc(100vh-270px)]">
+          <nav className="px-4 space-y-0.5 overflow-y-auto max-h-[calc(100vh-270px)]">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -107,27 +93,29 @@ export function Sidebar({ className = '' }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 group ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-md text-[13px] transition-all duration-300 group relative ${
                     isActive
-                      ? 'gold-pill-active'
-                      : 'text-[#5D564E] hover:text-[#1E1B18] hover:bg-[#F2ECE0]/70'
+                      ? 'text-[#111111] font-medium bg-[#FAFAFA]'
+                      : 'text-[#71717A] font-light hover:text-[#111111] hover:bg-[#FAFAFA]/50'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 transition-colors ${
-                      isActive ? 'text-[#8C6514]' : 'text-[#8C827A] group-hover:text-[#5D564E]'
+                  {/* Minimalist Active Indicator Line */}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-1/2 bg-[#D4AF37] rounded-r-full" />
+                  )}
+
+                  <div className="flex items-center gap-4">
+                    <Icon className={`w-[18px] h-[18px] stroke-[1.5] transition-colors ${
+                      isActive ? 'text-[#D4AF37]' : 'text-[#A1A1AA] group-hover:text-[#111111]'
                     }`} />
                     <span className="tracking-wide">{item.label}</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F3DCA9] text-[#6A4A0A] border border-[#E8CE92]">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-sm bg-[#111111] text-white">
                         {item.badge}
                       </span>
-                    )}
-                    {isActive && (
-                      <ChevronRight className="w-3.5 h-3.5 text-[#8C6514]" />
                     )}
                   </div>
                 </Link>
@@ -136,40 +124,21 @@ export function Sidebar({ className = '' }: SidebarProps) {
           </nav>
         </div>
 
-        {/* Bottom Profile & Plan Card */}
-        <div className="p-3.5 border-t border-[#EFE3CF]/80 space-y-2.5 bg-[#F7F3EA]/90">
-          {/* User Profile Card */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-white/90 border border-[#EFE3CF] shadow-xs">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EBD4A4] to-[#C59E3F] p-0.5 flex items-center justify-center shrink-0 shadow-xs">
-                <div className="w-full h-full rounded-full bg-[#2C2723] text-[#DFB755] flex items-center justify-center font-bold text-xs">
-                  J
-                </div>
+        {/* Bottom Profile Area */}
+        <div className="p-6 mt-auto">
+          <div className="flex items-center justify-between pt-6 border-t border-[#E5E7EB]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
+                <span className="font-serif text-white font-medium text-sm">J</span>
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#1E1B18] truncate leading-tight">Jessica</p>
-                <p className="text-[10px] text-[#8C827A] font-medium truncate">Owner & Founder</p>
+                <p className="text-[13px] font-medium text-[#111111] truncate">Jessica</p>
+                <p className="text-[10px] font-light tracking-wide text-[#71717A] uppercase truncate mt-0.5">Owner</p>
               </div>
             </div>
-            <button className="text-[#8C827A] hover:text-[#1E1B18] p-1 cursor-pointer">
-              <MoreVertical className="w-3.5 h-3.5" />
+            <button className="text-[#A1A1AA] hover:text-[#111111] transition-colors">
+              <MoreVertical className="w-4 h-4 stroke-[1.5]" />
             </button>
-          </div>
-
-          {/* Premium Plan Card */}
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#FDFBF7] via-[#FAF4E6] to-[#F5EADB] border border-[#DFBE7E]/70 shadow-xs text-center">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#8C6514]">
-              <Crown className="w-3.5 h-3.5 text-[#C59E3F]" />
-              <span>Premium Plan</span>
-            </div>
-            <p className="text-[10px] text-[#7C756D] mt-0.5">Expires on 12 Sep, 2026</p>
-            <Link 
-              href="/whatsapp" 
-              className="inline-flex items-center gap-1 text-[10px] font-bold text-[#B88B2A] hover:text-[#8C6514] mt-1 hover:underline cursor-pointer"
-            >
-              <span>View Plan Details</span>
-              <ChevronRight className="w-2.5 h-2.5" />
-            </Link>
           </div>
         </div>
       </aside>
