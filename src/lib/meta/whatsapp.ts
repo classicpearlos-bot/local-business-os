@@ -35,12 +35,10 @@ export function buildTemplateComponents(
     const mediaObj: any = {};
     if (mediaHeader.id) {
       mediaObj.id = mediaHeader.id;
-    } else if (mediaHeader.url && mediaHeader.url.startsWith('http')) {
+    } else if (mediaHeader.url && mediaHeader.url.startsWith('http') && !mediaHeader.url.startsWith('blob:')) {
       mediaObj.link = mediaHeader.url;
     } else {
-      // If no valid ID or HTTP URL (e.g., local blob), skip or handle error
-      // But we must provide something if we claim to have a media header.
-      // A local blob URL will crash Meta API.
+      throw new Error("Invalid media. Please wait for the upload to complete before launching the broadcast.");
     }
 
     if (mediaHeader.type === 'document' && mediaHeader.filename) {

@@ -100,7 +100,7 @@ export function MediaUploader({
 
       onChange({
         type: mediaType,
-        url: objectUrl,
+        url: data.url || objectUrl,
         media_id: data.media_id,  // for regular messages
         handle: data.handle,       // for template header_handle
         filename: file.name,
