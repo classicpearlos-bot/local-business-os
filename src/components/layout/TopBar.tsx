@@ -103,4 +103,3 @@ export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
     </header>
   );
 }
-}
