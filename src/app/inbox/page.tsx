@@ -121,7 +121,7 @@ export default function Inbox() {
 
     const { data } = await supabase
       .from('conversations')
-      .select('id, status, assigned_to, unread_count, last_message_at, contacts(id, name, phone_number, opted_in, created_at)')
+      .select('id, status, assigned_to, unread_count, last_message_at, contacts(id, name, phone_number, opted_in, created_at, attributes)')
       .order('last_message_at', { ascending: false });
 
     if (data) setConversations(data);
@@ -1220,6 +1220,28 @@ export default function Inbox() {
                   onClick={toggleOptIn}
                   className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 cursor-pointer ${
                     activeConv.contacts?.opted_in !== false ? 'bg-emerald-600 justify-end' : 'bg-slate-700 justify-start'
+                  }`}
+                >
+                  <div className="w-4 h-4 rounded-full bg-white shadow-xs" />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#706B61]">AI Automation Mode</h4>
+              <div className="p-3 rounded-xl bg-[#E5DED2] border border-[#E5DED2] flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-[#292722] block">
+                    {(activeConv.contacts?.attributes as any)?.bot_active !== false ? 'AI Bot Enabled' : 'Manual Mode'}
+                  </span>
+                  <span className="text-[10px] text-[#706B61]">
+                    {(activeConv.contacts?.attributes as any)?.bot_active !== false ? 'Gemini AI responds autonomously' : 'Bot paused. Human only.'}
+                  </span>
+                </div>
+                <button
+                  onClick={toggleBot}
+                  className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 cursor-pointer ${
+                    (activeConv.contacts?.attributes as any)?.bot_active !== false ? 'bg-indigo-500 justify-end' : 'bg-slate-700 justify-start'
                   }`}
                 >
                   <div className="w-4 h-4 rounded-full bg-white shadow-xs" />

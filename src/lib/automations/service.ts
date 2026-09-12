@@ -17,8 +17,10 @@ export async function evaluateAutomations(
   const normalizedInput = inboundText.trim().toLowerCase();
 
   // 1. Evaluate Visual Flows First (P0 Priority)
-  const { data: contact } = await supabaseAdmin.from('conversations').select('contact_id').eq('id', conversationId).single();
-  const contactId = contact?.contact_id;
+  const { data: convData } = await supabaseAdmin.from('conversations').select('contact_id, contacts(attributes)').eq('id', conversationId).single();
+  const contactId = convData?.contact_id;
+  const contactAttrs = (convData?.contacts as any)?.attributes || {};
+  const botActive = contactAttrs.bot_active !== false; // defaults to true
 
   if (contactId) {
     const { data: flows } = await supabaseAdmin
@@ -102,20 +104,21 @@ export async function evaluateAutomations(
     }
   }
 
-  // AI Fallback if no keywords matched
-  if (!process.env.GEMINI_API_KEY) {
-    await supabaseAdmin.from('messages').insert({
-      organization_id: orgId,
-      conversation_id: conversationId,
-      direction: 'OUTBOUND',
-      type: 'internal_note',
-      content: { internal_note: { body: "SYSTEM ERROR: GEMINI_API_KEY is not set in Vercel Environment Variables. AI cannot respond." } },
-      status: 'READ'
-    });
-  } else if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 0) {
-    try {
-      // Fetch recent conversation history for context
-      const { data: recentMsgs } = await supabaseAdmin
+  // AI Fallback if no keywords matched AND Bot is in Automation Mode
+  if (botActive) {
+    if (!process.env.GEMINI_API_KEY) {
+      await supabaseAdmin.from('messages').insert({
+        organization_id: orgId,
+        conversation_id: conversationId,
+        direction: 'OUTBOUND',
+        type: 'internal_note',
+        content: { internal_note: { body: "SYSTEM ERROR: GEMINI_API_KEY is not set in Vercel Environment Variables. AI cannot respond." } },
+        status: 'READ'
+      });
+    } else if (process.env.GEMINI_API_KEY && inboundText && inboundText.length > 0) {
+      try {
+        // Fetch recent conversation history for context
+        const { data: recentMsgs } = await supabaseAdmin
         .from('messages')
         .select('direction, type, content')
         .eq('conversation_id', conversationId)
@@ -217,6 +220,7 @@ Reply as the Assistant to keep the customer engaged:`;
       console.error("AI Fallback Error:", aiErr);
     }
   }
+}
 }
 
 async function executeAction(automation: any, orgId: string, convId: string, msgId: string, matchedKeyword: string, phone: string) {
