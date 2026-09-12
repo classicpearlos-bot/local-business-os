@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     const payload = await request.json();
 
-    const appId = account.app_id || process.env.META_APP_ID || '2566956740405929';
+    const appId = (account as any).app_id || process.env.META_APP_ID || '2566956740405929';
 
     // Validate name
     if (payload.name && !/^[a-z0-9_]+$/.test(payload.name)) {
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
         // Detect all numbered variables {{1}}, {{2}} and supply mandatory example values for Meta
         const matches = cleanText.match(/\{\{(\d+)\}\}/g);
         if (matches && matches.length > 0) {
-          const uniqueIndices = Array.from(new Set(matches.map((m: string) => parseInt(m.replace(/\D/g, ''), 10)))).sort((a: number, b: number) => a - b);
+          const uniqueIndices = Array.from<number>(new Set(matches.map((m: string) => parseInt(m.replace(/\D/g, ''), 10)))).sort((a: number, b: number) => a - b);
           const sampleValues = uniqueIndices.map((idx: number) => {
             if (idx === 1) return 'Guest';
             if (idx === 2) return 'Classic Pearl';

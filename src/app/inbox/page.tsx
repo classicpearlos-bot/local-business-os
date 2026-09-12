@@ -578,6 +578,15 @@ export default function Inbox() {
     fetchConversations();
   };
 
+  const toggleBot = async () => {
+    if (!activeConv?.contacts?.id) return;
+    const currentAttrs = (activeConv.contacts.attributes as any) || {};
+    const currentBotStatus = currentAttrs.bot_active !== false; // defaults to true
+    const newAttrs = { ...currentAttrs, bot_active: !currentBotStatus };
+    await supabase.from('contacts').update({ attributes: newAttrs }).eq('id', activeConv.contacts.id);
+    fetchConversations();
+  };
+
   return (
     <div className="flex h-screen bg-[#F8F5EF] text-[#1E1B18] font-sans antialiased selection:bg-indigo-500 selection:text-[#292722]">
       <Sidebar className="hidden md:flex" />
