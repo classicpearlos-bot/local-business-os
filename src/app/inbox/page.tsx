@@ -848,6 +848,15 @@ export default function Inbox() {
                           Opted Out
                         </span>
                       )}
+                      {(activeConv.contacts?.attributes as any)?.bot_active !== false ? (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0 flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5" /> AI Auto
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0 flex items-center gap-1">
+                          <User className="w-2.5 h-2.5" /> Manual
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-[#706B61] font-semibold flex items-center gap-1.5 mt-0.5">
                       <Phone className="w-3 h-3 text-[#3F7D58] shrink-0" />
