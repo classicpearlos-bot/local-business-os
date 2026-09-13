@@ -175,16 +175,24 @@ Reply as the Assistant to keep the customer engaged:`;
         contents: prompt
       });
 
-      if (response.text) {
-        const aiText = response.text.trim();
-        let finalReply = aiText;
-
-        if (aiText.includes("HUMAN_HANDOVER")) {
-           finalReply = "I'm not quite sure how to help with that. Let me connect you with a human staff member who will assist you shortly!";
-           // TODO: Update conversation status to 'open' / 'waiting' for a human if applicable.
-        }
-
-        // Fetch Account info
+        if (response.text) {
+          const aiText = response.text.trim();
+          let finalReply = aiText;
+  
+          if (aiText.includes("HUMAN_HANDOVER")) {
+             finalReply = "I'm not quite sure how to help with that. Let me connect you with a human staff member who will assist you shortly!";
+             // TODO: Update conversation status to 'open' / 'waiting' for a human if applicable.
+          } else {
+             // Convert standard markdown to WhatsApp supported markdown
+             finalReply = finalReply
+               .replace(/\*\*(.*?)\*\*/g, '*$1*') // Bold: **text** -> *text*
+               .replace(/__(.*?)__/g, '_$1_') // Italic: __text__ -> _text_
+               .replace(/###\s*(.*)/g, '*$1*') // H3: ### Header -> *Header*
+               .replace(/##\s*(.*)/g, '*$1*') // H2: ## Header -> *Header*
+               .replace(/#\s*(.*)/g, '*$1*'); // H1: # Header -> *Header*
+          }
+  
+          // Fetch Account info
         const { data: account } = await supabaseAdmin
           .from('whatsapp_accounts')
           .select('phone_number_id, access_token')

@@ -366,7 +366,7 @@ const NODE_LIBRARY = [
     { type: 'message_text',        label: 'Text Message',            defaultConfig: { text: '' } },
     { type: 'message_image',       label: 'Image + Caption',         defaultConfig: { url: '', caption: '' } },
     { type: 'message_buttons',     label: 'Buttons (Branching)',     defaultConfig: { text: 'Welcome to Classic Pearl Unisex Salon! How can we assist you?', buttons: [{ id: `btn_${Date.now()}_1`, title: 'View Services' }, { id: `btn_${Date.now()}_2`, title: 'Book Appointment' }] } },
-    { type: 'whatsapp_redirect',   label: 'Book Appointment Link',  defaultConfig: { phone_number: '+918310730322', button_title: 'Book Appointment on WhatsApp', message: 'Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon.' } },
+    { type: 'whatsapp_redirect',   label: 'Book Appointment Link',  defaultConfig: { phone_number: '+919535035544', button_title: 'Book Appointment on WhatsApp', message: 'Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon.' } },
     { type: 'message_cta',         label: 'Link / Call Button',      defaultConfig: { text: 'Check out our full services menu & member pricing:', action_type: 'url', action_title: 'View Services Menu', action_payload: 'https://local-business-os-amber.vercel.app/menu' } },
     { type: 'message_card',        label: 'Card (Image + Btns)',     defaultConfig: { image_url: '', title: '', body: '', buttons: [{ id: `btn_${Date.now()}`, title: 'Learn More' }] } },
   ]},

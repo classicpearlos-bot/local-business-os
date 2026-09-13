@@ -368,7 +368,7 @@ export class FlowExecutionEngine {
         return {};
 
       case 'whatsapp_redirect':
-        const targetPhone = (config.phone_number || '+918310730322').replace(/\D/g, '');
+        const targetPhone = (config.phone_number || '+919535035544').replace(/\D/g, '');
         const prefilledMsg = config.message || 'Hello, hi, I want to book an appointment at Classic Pearl Unisex Salon.';
         const waLink = `https://wa.me/${targetPhone}?text=${encodeURIComponent(prefilledMsg)}`;
         const buttonTitle = (config.button_title || 'Book on WhatsApp').substring(0, 20);

@@ -1116,34 +1116,6 @@
       "Category": "Both - Pedicure",
       "Regular Price": 849,
       "Member Price": 799
-    },
-    {
-      "ID": 32,
-      "Service": "Hand Massage",
-      "Category": "Both - Massage",
-      "Regular Price": 549,
-      "Member Price": 499
-    },
-    {
-      "ID": 33,
-      "Service": "Foot Massage",
-      "Category": "Both - Massage",
-      "Regular Price": 699,
-      "Member Price": 649
-    },
-    {
-      "ID": 34,
-      "Service": "Back Massage",
-      "Category": "Both - Massage",
-      "Regular Price": 649,
-      "Member Price": 599
-    },
-    {
-      "ID": 35,
-      "Service": "Neck and shoulder Massage",
-      "Category": "Both - Massage",
-      "Regular Price": 349,
-      "Member Price": 329
     }
   ]
 }
