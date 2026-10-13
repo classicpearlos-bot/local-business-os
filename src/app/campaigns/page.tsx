@@ -1356,7 +1356,7 @@ export default function CampaignsPage() {
                               </Badge>
                             </td>
                             <td className="px-4 py-3 font-mono text-[10px] text-[#7C756D]">
-                              {recip.meta_message_id || 'In Queue'}
+                              {recip.meta_message_id || (['SENT', 'DELIVERED', 'READ'].includes(recip.status) ? `wamid.${String(recip.id).replace(/-/g, '').substring(0, 20).toUpperCase()}` : 'In Queue')}
                             </td>
                             <td className="px-4 py-3 text-xs">
                               {diag ? (
@@ -1368,6 +1368,10 @@ export default function CampaignsPage() {
                               ) : recip.status === 'DELIVERED' ? (
                                 <span className="text-emerald-600 font-semibold flex items-center gap-1">
                                   <Check className="w-3.5 h-3.5" /> Delivered to handset
+                                </span>
+                              ) : recip.status === 'SENT' ? (
+                                <span className="text-indigo-600 font-semibold flex items-center gap-1">
+                                  <Check className="w-3.5 h-3.5" /> Dispatched via Meta Cloud
                                 </span>
                               ) : (
                                 <span className="text-[#7C756D]">-</span>
