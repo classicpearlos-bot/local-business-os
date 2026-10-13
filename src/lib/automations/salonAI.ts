@@ -24,13 +24,13 @@ export const SALON_INFO = {
   bookingPhone: '+91 83107 30322',
 };
 
-export function formatPriceList(title: string, items: ServiceItem[], note?: string): string {
-  const displayItems = items.slice(0, 5);
+export function formatPriceList(title: string, items: ServiceItem[], note?: string, maxItems: number = 6): string {
+  const displayItems = items.slice(0, maxItems);
   let text = `✨ *${title}* 🟢\n\n`;
   for (const item of displayItems) {
     text += `🟢 *${item.Service}:* ₹${item['Regular Price']} _(Member: ₹${item['Member Price']})_\n`;
   }
-  if (items.length > 5) {
+  if (items.length > maxItems) {
     text += `_...and more options available at the salon!_\n`;
   }
   if (note) {
@@ -39,6 +39,244 @@ export function formatPriceList(title: string, items: ServiceItem[], note?: stri
   text += `\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
   return text.trim();
 }
+
+/**
+ * Searches backwards from the most recent turns to find the exact service context
+ * being asked about (e.g. customer texted 'haircut', bot asked 'Men or Women?').
+ */
+export function getLastInquiryContext(
+  chatHistory: string
+): 'haircut' | 'hair_spa' | 'head_massage' | 'hair_color' | 'chemical' | 'hair_wash' | null {
+  if (!chatHistory) return null;
+
+  const lines = chatHistory
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .reverse();
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+
+    // Skip generic greetings/menus that mention multiple categories together
+    if (
+      lower.includes('welcome to classic pearl') ||
+      lower.includes('popular services:') ||
+      lower.includes('classic pearl unisex salon menu') ||
+      lower.includes('which service would you like') ||
+      lower.includes('how can we pamper you today') ||
+      lower.includes('hair care & hair spa (haircut')
+    ) {
+      continue;
+    }
+
+    // 1. Haircut
+    if (
+      lower.includes('haircut') ||
+      lower.includes('hair cut') ||
+      lower.includes('hair trim') ||
+      lower.includes('little champ') ||
+      lower.includes('girls haircut') ||
+      lower.includes('basic haircut') ||
+      lower.includes('advance haircut') ||
+      /\bcut\b/.test(lower)
+    ) {
+      return 'haircut';
+    }
+
+    // 2. Hair Spa
+    if (lower.includes('hair spa') || (lower.includes('spa') && !lower.includes('body'))) {
+      return 'hair_spa';
+    }
+
+    // 3. Head Massage
+    if (lower.includes('head massage') || (lower.includes('massage') && !lower.includes('body'))) {
+      return 'head_massage';
+    }
+
+    // 4. Hair Color
+    if (
+      lower.includes('color') ||
+      lower.includes('colour') ||
+      lower.includes('highlight') ||
+      lower.includes('streaks') ||
+      lower.includes('balayage')
+    ) {
+      return 'hair_color';
+    }
+
+    // 5. Chemical Treatments
+    if (
+      lower.includes('keratin') ||
+      lower.includes('botox') ||
+      lower.includes('nanoplastia') ||
+      lower.includes('smoothen') ||
+      lower.includes('straighten')
+    ) {
+      return 'chemical';
+    }
+
+    // 6. Hair Wash / Blow Dry
+    if (
+      lower.includes('hair wash') ||
+      lower.includes('blow dry') ||
+      lower.includes('blowdry') ||
+      lower.includes('blast dry')
+    ) {
+      return 'hair_wash';
+    }
+  }
+
+  return null;
+}
+
+export function formatWomenHaircuts(): string {
+  return `✨ *Women Haircut Services* 🟢
+
+🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_
+🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_
+🟢 *Women Advance Haircut (Wash + Blast Dry):* ₹749 _(Member: ₹695)_
+🟢 *Women Advance Haircut (Wash + Blow Dry & Setting):* ₹899 _(Member: ₹835)_
+🟢 *Girl Basic Haircut (Below 10 yrs):* ₹329 _(Member: ₹299)_
+🟢 *Girl Advanced Haircut (Below 10 yrs):* ₹399 _(Member: ₹369)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHaircuts(): string {
+  return `✨ *Men Haircut Services* 🟢
+
+🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_
+🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_
+🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_
+🟢 *Little Champ with Wash & Blast Dry:* ₹349 _(Member: ₹299)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenHairSpa(): string {
+  return `✨ *Women Hair Spa Services* 🟢
+
+🟢 *Deep Nourishing Hair Spa:* ₹599 _(Member: ₹549)_
+🟢 *Damage Repair Hair Spa:* ₹699 _(Member: ₹649)_
+🟢 *Anti-Dandruff Hair Spa:* ₹699 _(Member: ₹649)_
+🟢 *Deluxe Hair Spa:* ₹799 _(Member: ₹749)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHairSpa(): string {
+  return `✨ *Men Hair Spa Services* 🟢
+
+🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_
+🟢 *Damage Repair Hair Spa:* ₹659 _(Member: ₹599)_
+🟢 *Anti-Dandruff Hair Spa:* ₹659 _(Member: ₹599)_
+🟢 *Deluxe Hair Spa:* ₹769 _(Member: ₹699)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenHeadMassage(): string {
+  return `✨ *Women Head Massage Services* 🟢
+
+🟢 *Almond / Olive Head Massage:* ₹399 _(Member: ₹379)_
+🟢 *Navarathna / Coconut Head Massage:* ₹399 _(Member: ₹379)_
+🟢 *Shampoo & Conditioner Wash (Add-on):* ₹249 _(Member: ₹235)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHeadMassage(): string {
+  return `✨ *Men Head Massage Services* 🟢
+
+🟢 *Navarathna / Coconut Head Massage:* ₹349 _(Member: ₹319)_
+🟢 *Almond / Olive Head Massage:* ₹399 _(Member: ₹369)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenHairColor(): string {
+  return `✨ *Women Hair Color & Highlights* 🟢
+
+🟢 *Advanced Streaks (Per Streak):* ₹349 _(Member: ₹329)_
+🟢 *Root Touch Up (Majirel / Inoa):* from ₹1,099 _(Member: ₹999)_
+🟢 *Global Hair Color:* from ₹2,499 _(Member: ₹2,199)_
+🟢 *Balayage / Ombre:* from ₹5,999 _(Member: ₹5,499)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHairColor(): string {
+  return `✨ *Men Hair Color Services* 🟢
+
+🟢 *Men Beard Color:* ₹249 _(Member: ₹229)_
+🟢 *Men Hair Color (Standard):* ₹549 _(Member: ₹499)_
+🟢 *Men Streaks Color:* ₹699 _(Member: ₹649)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenChemical(): string {
+  return `✨ *Women Advanced Hair Treatments* 🟢
+
+🟢 *Hair Smoothening / Straightening:* from ₹3,999
+🟢 *Keratin Protein Treatment:* from ₹4,499
+🟢 *Hair Botox Therapy:* from ₹4,499
+🟢 *Nanoplastia Mirror Finish:* from ₹5,999
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenChemical(): string {
+  return `✨ *Men Advanced Hair Treatments* 🟢
+
+🟢 *Men Keratin Treatment:* ₹3,999 _(Member: ₹3,499)_
+🟢 *Men Hair Botox Therapy:* ₹3,999 _(Member: ₹3,499)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenHairWashAndBlowDry(): string {
+  return `✨ *Women Hair Wash & Blow Dry Services* 🟢
+
+🟢 *Shampoo & Conditioner Wash with Blast Dry:* from ₹399 _(Member: ₹349)_
+🟢 *Shampoo & Conditioner with Blow Dry & Setting:* from ₹649 _(Member: ₹599)_
+🟢 *Shampoo & Conditioner Wash (Add-on):* ₹249 _(Member: ₹235)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHairWash(): string {
+  return `✨ *Men Hair Wash Services* 🟢
+
+🟢 *Men Shampoo & Conditioner Wash:* ₹129 _(Member: ₹109)_
+🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatHairWashOverview(): string {
+  return `✨ *Hair Wash & Blow Dry Services* 🟢
+
+🟢 *Men Shampoo & Conditioner Wash:* ₹129 _(Member: ₹109)_
+🟢 *Women Wash + Blast Dry:* from ₹399 _(Member: ₹349)_
+🟢 *Women Wash + Blow Dry & Setting:* from ₹649 _(Member: ₹599)_
+
+Would you like to see options for *Men* or *Women*? 💇`;
+}
+
 
 /**
  * Deterministic Salon Knowledge Engine:
@@ -257,21 +495,18 @@ export function getSalonDeterministicReply(
     );
   }
 
-  // C. Styling & Makeovers (Perming, Tongs, Ironing, Curls, Blow Dry)
+  // C. Styling & Makeovers (Perming, Tongs, Ironing, Curls)
   if (
     text.includes('perming') || 
     text.includes('tongs') || 
     text.includes('ironing') || 
     text.includes('crimping') || 
-    text.includes('curls') ||
-    text.includes('blow dry') ||
-    text.includes('blowdry')
+    text.includes('curls')
   ) {
     const womenStyling = salonCatalog.women.filter(s => s.Category === 'Women - Styling & Makeover');
     return formatPriceList(
-      'Women Hair Styling & Blow Dry Services',
-      womenStyling,
-      '💡 *Event Styling:* Ask our senior stylists about personalized makeover styling and curls setting for special occasions!'
+      'Women Hair Styling Services',
+      womenStyling
     );
   }
 
@@ -319,109 +554,159 @@ export function getSalonDeterministicReply(
   }
 
   // 13. CONTEXTUAL REPLIES (Single-word answer "men" or "women" following a question)
-  const contextWasHairSpa = historyLower.includes('hair spa') || historyLower.includes('spa');
-  const contextWasHaircut = historyLower.includes('haircut') || historyLower.includes('hair cut');
-  const contextWasHeadMassage = historyLower.includes('head massage') || historyLower.includes('massage');
-  const contextWasColor = historyLower.includes('color') || historyLower.includes('colour') || historyLower.includes('highlight');
+  const isShortMenReply = 
+    text === 'men' || 
+    text === 'for men' || 
+    text === 'gents' || 
+    text === 'for gents' || 
+    text === 'man' || 
+    text === 'male' || 
+    text === 'for male' || 
+    text === 'boy' || 
+    text === 'boys' || 
+    (isMenExplicit && !isWomenExplicit && text.length <= 15);
 
-  if (text === 'men' || text === 'for men' || (isMenExplicit && !isWomenExplicit && text.length <= 15)) {
-    if (contextWasHairSpa) {
-      const menSpa = salonCatalog.men.filter(s => s.Category === 'Men - Hair Spa');
-      return formatPriceList(
-        'Men Hair Spa Services',
-        menSpa,
-        '💡 *Stylist Recommendation:* For dry, damaged, or unmanageable hair, we also offer Advanced Chemical Treatments for Men (Keratin, Botox & Nanoplastia starting from ₹3,999).'
-      );
+  const isShortWomenReply = 
+    text === 'women' || 
+    text === 'for women' || 
+    text === 'ladies' || 
+    text === 'for ladies' || 
+    text === 'woman' || 
+    text === 'female' || 
+    text === 'for female' || 
+    text === 'girl' || 
+    text === 'girls' || 
+    (isWomenExplicit && !isMenExplicit && text.length <= 15);
+
+  if (isShortMenReply) {
+    const lastContext = getLastInquiryContext(chatHistory);
+    if (lastContext === 'haircut') {
+      return formatMenHaircuts();
     }
-    if (contextWasHaircut) {
-      const menCuts = salonCatalog.men.filter(s => s.Category === 'Men - Haircut');
-      return formatPriceList(
-        'Men Haircut Services',
-        menCuts,
-        '💡 *Most Popular:* Upgrade to *Men Hair Cut with Wash & Blast Dry (₹349)* for a refreshing shampoo scalp cleanse and salon styling!'
-      );
+    if (lastContext === 'hair_spa') {
+      return formatMenHairSpa();
     }
-    if (contextWasHeadMassage) {
-      const menMassage = salonCatalog.men.filter(s => s.Category === 'Men - Head Massage');
-      return formatPriceList('Men Head Massage Services', menMassage);
+    if (lastContext === 'head_massage') {
+      return formatMenHeadMassage();
     }
-    if (contextWasColor) {
-      const menColor = salonCatalog.men.filter(s => s.Category === 'Men - Hair Color');
-      return formatPriceList('Men Hair Color Services', menColor);
+    if (lastContext === 'hair_color') {
+      return formatMenHairColor();
     }
+    if (lastContext === 'chemical') {
+      return formatMenChemical();
+    }
+    if (lastContext === 'hair_wash') {
+      return formatMenHairWash();
+    }
+    return `✨ *Classic Pearl Services for Men* 🟢\n\n🟢 *Haircut & Styling* (Men Cut & Little Champ)\n🟢 *Beard Shave, Trimming & Styling*\n🟢 *Relaxing Head Massage* (Almond & Olive)\n🟢 *Deep Nourishing Hair Spa*\n🟢 *Facials, De-Tan & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
   }
 
-  if (text === 'women' || text === 'for women' || (isWomenExplicit && !isMenExplicit && text.length <= 15)) {
-    if (contextWasHairSpa) {
-      const womenSpa = salonCatalog.women.filter(s => s.Category === 'Women - Hair Spa');
-      return formatPriceList(
-        'Women Hair Spa Services',
-        womenSpa,
-        '💡 *Senior Stylist Tip:* For frizzy, dull, or colored hair, our restorative Keratin & Botox infusions deeply strengthen and add mirror-shine!'
-      );
+  if (isShortWomenReply) {
+    const lastContext = getLastInquiryContext(chatHistory);
+    if (lastContext === 'haircut') {
+      return formatWomenHaircuts();
     }
-    if (contextWasHaircut) {
-      const womenCuts = salonCatalog.women.filter(s => s.Category === 'Women - Haircut');
-      return formatPriceList(
-        'Women Haircut Services',
-        womenCuts,
-        '💡 *Signature Service:* Women Basic Hair Cut with Wash, Blast Dry & Setting (₹599) gives you the perfect runway blowout!'
-      );
+    if (lastContext === 'hair_spa') {
+      return formatWomenHairSpa();
     }
-    if (contextWasHeadMassage) {
-      const womenMassage = salonCatalog.women.filter(s => s.Category === 'Women - Head Massage');
-      return formatPriceList('Women Head Massage Services', womenMassage);
+    if (lastContext === 'head_massage') {
+      return formatWomenHeadMassage();
     }
-    if (contextWasColor) {
-      const womenColor = salonCatalog.women.filter(s => s.Category === 'Women - Hair Color');
-      return formatPriceList('Women Hair Color Services', womenColor);
+    if (lastContext === 'hair_color') {
+      return formatWomenHairColor();
     }
+    if (lastContext === 'chemical') {
+      return formatWomenChemical();
+    }
+    if (lastContext === 'hair_wash') {
+      return formatWomenHairWashAndBlowDry();
+    }
+    return `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
   }
 
-  // 14. TRUE DUAL-GENDER SERVICES (Ask Men or Women ONLY when gender unstated)
-  // A. Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
-  if (text.includes('hair spa') || text.includes('spa')) {
+  // 14. SPECIFIC SUB-SERVICE QUERIES (Instant direct matching)
+  // Little Champ (Kids) Haircut
+  if (text.includes('little champ')) {
+    return `✨ *Little Champ Haircut (Kids)* 🟢\n\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n🟢 *Little Champ with Wash & Blast Dry:* ₹349 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // Girls Haircut
+  if (text.includes('girl haircut') || text.includes('girls haircut') || text.includes('girl basic') || text.includes('girl advance')) {
+    return `✨ *Girl Haircut Services (Below 10 yrs)* 🟢\n\n🟢 *Girl Basic Hair Cut:* ₹329 _(Member: ₹299)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // Advance Haircut
+  if (text.includes('advance haircut') || text.includes('advanced haircut') || text.includes('advance cut') || text.includes('advanced cut')) {
+    return `✨ *Advance Haircut Services* 🟢\n\n🟢 *Women Advance Haircut (Wash + Blast Dry):* ₹749 _(Member: ₹695)_\n🟢 *Women Advance Haircut (Wash + Blow Dry & Setting):* ₹899 _(Member: ₹835)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // Basic Haircut
+  if (text.includes('basic haircut') || text.includes('basic cut')) {
     if (isMenExplicit && !isWomenExplicit) {
-      const menSpa = salonCatalog.men.filter(s => s.Category === 'Men - Hair Spa');
-      return formatPriceList(
-        'Men Hair Spa Services',
-        menSpa,
-        '💡 *Advanced Treatments for Men:* Keratin, Botox, and Smoothening / Straightening available from ₹3,999.'
-      );
+      return `✨ *Men Basic Haircut* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
     }
     if (isWomenExplicit && !isMenExplicit) {
-      const womenSpa = salonCatalog.women.filter(s => s.Category === 'Women - Hair Spa');
-      return formatPriceList('Women Hair Spa Services', womenSpa);
+      return `✨ *Women Basic Haircut* 🟢\n\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Girl Basic Hair Cut (Below 10 yrs):* ₹329 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
     }
-    return `✨ *Hair Spa at Classic Pearl* 🟢\n\nWe offer therapeutic hair spa treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? 😊`;
+    return `✨ *Basic Haircut Options* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Little Champ Hair Cut:* ₹249 _(Member: ₹219)_\n\nWould you like options for *Men* or *Women*? 💇`;
   }
 
-  // B. Haircut / Hair Trim
-  if (text.includes('haircut') || text.includes('hair cut') || text.includes('hair trim') || text.includes('cut')) {
+  // Hair Wash, Blow Dry & Blast Dry
+  if (
+    text.includes('hair wash') || 
+    text.includes('hairwash') || 
+    text.includes('blow dry') || 
+    text.includes('blowdry') || 
+    text.includes('blast dry') || 
+    text.includes('wash and blow dry') ||
+    text.includes('wash & blow dry')
+  ) {
     if (isMenExplicit && !isWomenExplicit) {
-      const menCuts = salonCatalog.men.filter(s => s.Category === 'Men - Haircut');
-      return formatPriceList(
-        'Men Haircut Services',
-        menCuts,
-        '💡 *Popular Upgrade:* Upgrade to *Men Hair Cut with Wash & Blast Dry (₹349)* for fresh styling!'
-      );
+      return formatMenHairWash();
     }
     if (isWomenExplicit && !isMenExplicit) {
-      const womenCuts = salonCatalog.women.filter(s => s.Category === 'Women - Haircut');
-      return formatPriceList('Women Haircut Services', womenCuts);
+      return formatWomenHairWashAndBlowDry();
+    }
+    return formatHairWashOverview();
+  }
+
+  // 15. TRUE DUAL-GENDER SERVICES (Ask Men or Women ONLY when gender unstated)
+  // A. Haircut / Hair Trim
+  if (
+    text.includes('haircut') || 
+    text.includes('hair cut') || 
+    text.includes('hair trim') || 
+    text.includes('hair cutting') || 
+    text.includes('hair styling') || 
+    /\bcut\b/.test(text)
+  ) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return formatMenHaircuts();
+    }
+    if (isWomenExplicit && !isMenExplicit) {
+      return formatWomenHaircuts();
     }
     return `✨ *Haircut & Styling at Classic Pearl* 🟢\n\nWe offer professional haircut and styling for both men and women!\n\nWould you like to see options for *Men* or *Women*? 💇`;
   }
 
-  // C. Head Massage
-  if (text.includes('head massage') || text.includes('massage')) {
+  // B. Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
+  if (text.includes('hair spa') || text.includes('hairspa') || (text.includes('spa') && !text.includes('body'))) {
     if (isMenExplicit && !isWomenExplicit) {
-      const menMassage = salonCatalog.men.filter(s => s.Category === 'Men - Head Massage');
-      return formatPriceList('Men Head Massage Services', menMassage);
+      return formatMenHairSpa();
     }
     if (isWomenExplicit && !isMenExplicit) {
-      const womenMassage = salonCatalog.women.filter(s => s.Category === 'Women - Head Massage');
-      return formatPriceList('Women Head Massage Services', womenMassage);
+      return formatWomenHairSpa();
+    }
+    return `✨ *Hair Spa at Classic Pearl* 🟢\n\nWe offer therapeutic hair spa treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? 😊`;
+  }
+
+  // C. Head Massage
+  if (text.includes('head massage') || text.includes('head oil massage')) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return formatMenHeadMassage();
+    }
+    if (isWomenExplicit && !isMenExplicit) {
+      return formatWomenHeadMassage();
     }
     return `✨ *Relaxing Head Massage* 🟢\n\nWe offer soothing head massages with nourishing oils for both men and women!\n\nWould you like options for *Men* or *Women*? 💆`;
   }
@@ -429,12 +714,10 @@ export function getSalonDeterministicReply(
   // D. Hair Color
   if (text.includes('color') || text.includes('colour') || text.includes('highlights') || text.includes('streaks') || text.includes('balayage')) {
     if (isMenExplicit && !isWomenExplicit) {
-      const menColor = salonCatalog.men.filter(s => s.Category === 'Men - Hair Color');
-      return formatPriceList('Men Hair Color Services', menColor);
+      return formatMenHairColor();
     }
     if (isWomenExplicit && !isMenExplicit) {
-      const womenColor = salonCatalog.women.filter(s => s.Category === 'Women - Hair Color').slice(0, 5);
-      return formatPriceList('Women Hair Color & Highlights', womenColor);
+      return formatWomenHairColor();
     }
     return `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium global color and highlights for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`;
   }
@@ -442,11 +725,12 @@ export function getSalonDeterministicReply(
   // E. Chemical Treatments / Advanced Hair Treatments (Botox, Keratin, Nanoplastia)
   if (text.includes('keratin') || text.includes('botox') || text.includes('nanoplastia') || text.includes('smoothen') || text.includes('straighten')) {
     if (isMenExplicit && !isWomenExplicit) {
-      const menAdv = salonCatalog.men.filter(s => s.Category === 'Men - Advanced Hair Treatment');
-      return formatPriceList('Men Advanced Hair Treatments (Botox / Keratin)', menAdv);
+      return formatMenChemical();
     }
-    const womenAdv = salonCatalog.women.filter(s => s.Category === 'Women - Advanced Hair Treatment');
-    return formatPriceList('Advanced Hair Treatments (Botox / Keratin / Nanoplastia)', womenAdv);
+    if (isWomenExplicit && !isMenExplicit) {
+      return formatWomenChemical();
+    }
+    return `✨ *Advanced Hair Treatments (Keratin / Botox / Nanoplastia)* 🟢\n\nWe offer restorative protein treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? ✨`;
   }
 
   // Generic greeting or default fallback (Short & Crisp)
@@ -526,18 +810,27 @@ RULE 4: BOTH / UNISEX SERVICES (NEVER ASK "MEN OR WOMEN?"):
   DO NOT ask "Men or Women?".
   Directly list the available options with Regular Price and Member Price!
 
-RULE 5: TRUE DUAL-GENDER SERVICES ONLY (ONLY ASK IF GENDER NOT SPECIFIED):
+RULE 5: TRUE DUAL-GENDER SERVICES ONLY (CONTEXT-AWARE & PURE SERVICES ONLY):
 - Genuinely dual services with distinct Men and Women offerings:
   • Haircut / Hair Trim
   • Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
   • Head Massage (Almond, Olive, Coconut, Navarathna)
   • Hair Color / Highlights
   • Chemical Treatments (Keratin, Botox, Nanoplastia)
+  • Hair Wash & Blow Dry / Blast Dry
+- STRICT ISOLATION OF HAIRCUT INQUIRIES:
+  • When a customer asks about Haircut, list ONLY haircut options. NEVER mix Hair Spa, Keratin, Botox, or Nanoplastia into Haircut replies!
+  • Women Haircuts: Women Basic Haircut (Wash + Blast Dry: ₹399/₹349), Women Basic Haircut (Wash + Blow Dry & Setting: ₹599/₹549), Women Advance Haircut (Wash + Blast Dry: ₹749/₹695), Women Advance Haircut (Wash + Blow Dry & Setting: ₹899/₹835), Girl Basic Haircut (₹329/₹299), Girl Advanced Haircut (₹399/₹369).
+  • Men Haircuts: Men Hair Cut (₹249/₹219), Men Hair Cut with Wash & Blast Dry (₹349/₹329), Little Champ Hair Cut (₹249/₹219), Little Champ with Wash & Blast Dry (₹349/₹299). DO NOT include head shaves, beard, or chemical treatments in Men haircut replies!
+- STRICT CONTEXT TRACKING ON GENDER REPLIES ("men" or "women"):
+  • When a customer replies with "men" or "women", inspect the most recent previous question!
+  • If the previous turn was about Haircut, return ONLY that gender's haircut options!
+  • If the previous turn was about Hair Spa, return ONLY that gender's hair spa options!
+  • If the previous turn was about Head Massage, return ONLY that gender's head massage options!
+  • NEVER confuse Haircut with Hair Spa!
 - IF GENDER IS NOT SPECIFIED in the query or recent context (e.g. "how much for hair spa?", "haircut price"):
   Politely ask:
   "We offer wonderful [service name] for both men and women! ✨ Would you like to know the options and prices for *Men* or *Women*?"
-- IF GENDER IS SPECIFIED (or customer says "men hair spa" or replies "men"):
-  Immediately list that gender's exact service options and prices.
 
 RULE 6: CASUAL & HIGH-INTENT CONVERSATIONAL QUESTIONS:
 - "Where is your salon located?" / "Where is your salon?" / "Where to come?" / "Address?":
@@ -554,27 +847,23 @@ RULE 6: CASUAL & HIGH-INTENT CONVERSATIONAL QUESTIONS:
 - "Is there any offer going on?" / "Any discounts?":
   Special discounts and exclusive offers are always running at Classic Pearl! The exact discount details and personalized packages are provided when you visit the salon so our stylists can suggest the best offer for your chosen services. Warmly invite them to visit.
 
-RULE 7: CONSULTATIVE UPSELLING (LOW-COST TO PREMIUM VALUE):
-- Gently introduce natural value upgrades without sounding pushy or aggressive:
-  • Haircut: Mention the popular upgrade to Haircut with Wash & Blast Dry (₹349) for a complete fresh blowout.
-  • Clean Up: Mention our radiant Korean Glass Facial or Hydra Facial for deep pore hydration.
-  • Hair Spa: Mention that for frizzy/dry hair, stylists also evaluate for Keratin/Botox protein restoration.
-  • Pedicure: Mention our soothing Chocolate Crystal or De-Tan pedicures for tired feet.
-- Frame upgrades around the client's beauty, relaxation, and confidence!
+RULE 7: CRISP & FOCUSED RESPONSES (DO NOT CLUTTER WITH UNRELATED UPSELLS):
+- Focus 100% on answering what the customer asked for.
+- Do NOT clutter replies with long promotional paragraphs about Keratin or other treatments when they only asked for Haircut or Hair Spa.
+- Keep answers ultra-clean so what they asked for is immediately visible!
 
 RULE 8: ACCURATE PRICING & SINGLE SERVICES ONLY (STRICT NO COMBOS):
-- ALWAYS display both *Regular Price* and *Member Price* in ₹ (e.g. • *Service*: Regular ₹XXX | Member ₹YYY).
+- ALWAYS display both *Regular Price* and *Member Price* in ₹ (e.g. 🟢 *Service:* ₹XXX _(Member: ₹YYY)_).
 - NEVER hallucinate prices.
 - Do NOT list combo packages automatically. If explicitly asked "Do you have combos?", reply:
   "Yes! We offer customized combo packages tailored to your needs. What specific services are you looking to combine so we can offer you the best tailored package?"
 
 RULE 9: SHORT, CRISP & GREEN-HIGHLIGHTED FORMATTING:
 - Format text cleanly and compactly for WhatsApp:
-  • STRICT BREVITY: Keep every response SHORT, CRISP, AND COMPACT (maximum 5 to 7 lines total). Never write long essays or 2-page text. People lose focus if messages are too long.
-  • HIGHLIGHTED SERVICES IN BOLD WITH GREEN ACCENTS: Every service pushed or mentioned MUST be formatted in *bold* with a 🟢 green accent bullet (e.g. 🟢 *Men Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_).
-  • Do NOT dump more than 4-5 service items at once.
+  • STRICT BREVITY: Keep every response SHORT, CRISP, AND COMPACT (under 8 to 10 lines total). Never write long essays or 2-page text. People lose focus if messages are too long.
+  • HIGHLIGHTED SERVICES IN BOLD WITH GREEN ACCENTS: Every service pushed or mentioned MUST be formatted in *bold* with a 🟢 green accent bullet (e.g. 🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_).
   • Do NOT use markdown headers (#, ##, ###).
-  • Always finish with 1 brief, warm line and salon helpline: 📞 *+91 83107 30322*.
+  • Always finish with 1 brief line: 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}.
 - Tone: Warm, welcoming, respectful, professional, always striving to convert them to visit the salon.
 
 --- RECENT CONVERSATION HISTORY ---
