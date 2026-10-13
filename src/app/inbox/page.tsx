@@ -990,19 +990,54 @@ export default function Inbox() {
                           ? (c?.image?.link || c?.image?.url || c?.url)
                           : (isTemplate ? (c?.template?.header_image || c?.image?.url) : null);
 
-                        // Try every known content shape to find the displayable text
-                        const caption =
-                          c?.text?.body                              // inbound: { text: { body: "hi" } }
-                          || c?.text                                 // outbound simple: { text: "hi" }
-                          || c?.[msg.type]?.body                     // { image: { body: "..." } }
-                          || c?.[msg.type]?.caption                  // { image: { caption: "..." } }
-                          || c?.caption                              // flat caption
-                          || c?.body                                 // flat body
-                          || (isTemplate ? (c?.template?.body_text || c?.template?.text) : null) // template
-                          || c?.internal_note?.body                  // internal note
-                          || (typeof msg.content === 'string' && !msg.content.startsWith('{') ? msg.content : null); // raw string
+                        // Safely extract string text from any WhatsApp message payload (raw text, interactive button payload, template, media caption, internal note)
+                        const safeExtractText = (contentObj: any, messageType: string): string => {
+                          if (!contentObj) return '';
+                          if (typeof contentObj === 'string') {
+                            if (!contentObj.startsWith('{')) return contentObj;
+                            try { contentObj = JSON.parse(contentObj); } catch { return contentObj; }
+                          }
 
+                          const unpack = (val: any): string | null => {
+                            if (!val) return null;
+                            if (typeof val === 'string') return val;
+                            if (typeof val === 'number') return String(val);
+                            if (typeof val === 'object') {
+                              if (typeof val.text === 'string') return val.text;
+                              if (typeof val.body === 'string') return val.body;
+                              if (typeof val.title === 'string') return val.title;
+                              if (typeof val.text === 'object') return unpack(val.text);
+                              if (typeof val.body === 'object') return unpack(val.body);
+                            }
+                            return null;
+                          };
+
+                          const str =
+                            unpack(contentObj?.internal_note?.body) ||
+                            unpack(contentObj?.interactive?.body?.text) ||
+                            unpack(contentObj?.interactive?.body) ||
+                            unpack(contentObj?.text?.body) ||
+                            unpack(contentObj?.text) ||
+                            unpack(contentObj?.[messageType]?.body) ||
+                            unpack(contentObj?.[messageType]?.caption) ||
+                            unpack(contentObj?.caption) ||
+                            unpack(contentObj?.body) ||
+                            unpack(contentObj?.template?.body_text) ||
+                            unpack(contentObj?.template?.text) ||
+                            '';
+
+                          return typeof str === 'string' ? str : '';
+                        };
+
+                        const messageText = safeExtractText(c, msg.type);
+
+                        // Extract template or interactive buttons
                         const templateButtons = c?.template?.buttons || [];
+                        const interactiveButtons = (c?.interactive?.action?.buttons || []).map((b: any) => ({
+                          type: b?.type || 'reply',
+                          text: b?.reply?.title || b?.title || b?.text || 'Option'
+                        }));
+                        const displayButtons = isTemplate ? templateButtons : (msg.type === 'interactive' ? interactiveButtons : []);
 
                         return (
                           <div
@@ -1057,23 +1092,19 @@ export default function Inbox() {
                                 </div>
                               )}
 
-                              {isNote ? (
+                              {messageText && (
                                 <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                  {c?.internal_note?.body || c?.body || (typeof msg.content === 'string' ? msg.content : '')}
+                                  {messageText}
                                 </p>
-                              ) : caption ? (
-                                <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                  {caption}
-                                </p>
-                              ) : null}
+                              )}
 
-                              {isTemplate && templateButtons.length > 0 && (
+                              {displayButtons.length > 0 && (
                                 <div className="pt-2 border-t border-black/10 space-y-1.5">
-                                  {templateButtons.map((btn: any, bIdx: number) => (
+                                  {displayButtons.map((btn: any, bIdx: number) => (
                                     <div key={bIdx}
                                       className="w-full py-1.5 px-3 rounded-lg bg-black/10 text-center text-xs font-bold border border-black/10 flex items-center justify-center gap-1.5">
                                       {btn.type === 'PHONE_NUMBER' ? <Phone className="w-3 h-3" /> : <ExternalLink className="w-3 h-3" />}
-                                      <span>{btn.text || btn.phone_number || 'Action'}</span>
+                                      <span>{btn.text || btn?.reply?.title || btn.phone_number || 'Action'}</span>
                                     </div>
                                   ))}
                                 </div>
