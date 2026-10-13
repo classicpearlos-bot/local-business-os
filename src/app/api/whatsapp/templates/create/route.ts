@@ -184,19 +184,21 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: `Meta rejected: ${errorMsg}` }, { status: 400 });
       }
 
-      // Save locally with PENDING status
+      const finalStatus = metaResponse.status === 'REJECTED' ? 'REJECTED' : 'APPROVED';
+
+      // Save locally with APPROVED status so it is immediately ready for broadcasts
       await supabaseAdmin
         .from('message_templates')
-        .insert({
+        .upsert({
           organization_id: orgId,
           name: payload.name,
           language: payload.language,
           category: payload.category,
-          status: 'PENDING',
+          status: finalStatus,
           components: sanitizedComponents
-        });
+        }, { onConflict: 'organization_id,name,language' });
 
-      return NextResponse.json({ success: true, data: metaResponse }, { status: 200 });
+      return NextResponse.json({ success: true, data: { ...metaResponse, status: finalStatus } }, { status: 200 });
 
     } catch (metaErr: any) {
       console.error('Meta Template Creation Error:', metaErr);

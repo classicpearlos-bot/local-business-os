@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { fetchWhatsAppTemplates } from '@/lib/meta/whatsapp';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -25,13 +26,49 @@ export async function GET() {
     if (!orgId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Fetch local templates using admin to bypass RLS
-    const { data: templates, error } = await supabaseAdmin
+    let { data: templates, error } = await supabaseAdmin
       .from('message_templates')
       .select('*')
       .eq('organization_id', orgId)
       .order('name', { ascending: true });
 
     if (error) throw error;
+
+    // Auto-sync with Meta if any template is currently PENDING
+    const hasPending = (templates || []).some((t: any) => t.status === 'PENDING');
+    if (hasPending) {
+      try {
+        const { data: account } = await supabaseAdmin
+          .from('whatsapp_accounts')
+          .select('waba_id, access_token')
+          .eq('organization_id', orgId)
+          .maybeSingle();
+
+        if (account?.waba_id && account?.access_token) {
+          const metaRes = await fetchWhatsAppTemplates({
+            wabaId: account.waba_id,
+            accessToken: account.access_token
+          });
+          const metaList = metaRes?.data || [];
+          for (const mt of metaList) {
+            await supabaseAdmin
+              .from('message_templates')
+              .update({ status: mt.status, components: mt.components })
+              .eq('organization_id', orgId)
+              .eq('name', mt.name);
+          }
+
+          const { data: refreshed } = await supabaseAdmin
+            .from('message_templates')
+            .select('*')
+            .eq('organization_id', orgId)
+            .order('name', { ascending: true });
+          if (refreshed) templates = refreshed;
+        }
+      } catch (syncErr) {
+        console.warn('Background Meta template sync skipped:', syncErr);
+      }
+    }
 
     return NextResponse.json({ data: templates || [] }, { status: 200 });
   } catch (error: any) {

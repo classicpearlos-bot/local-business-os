@@ -54,6 +54,13 @@ export async function POST(request: Request) {
       }
     }
 
+    // Only treat as future-scheduled if scheduled_at is > 60 seconds in the future.
+    // Otherwise dispatch immediately as PENDING so the worker claims it right away.
+    const nowMs = Date.now();
+    const scheduledMs = scheduled_at ? new Date(scheduled_at).getTime() : nowMs;
+    const isFutureSchedule = !isNaN(scheduledMs) && scheduledMs > nowMs + 60_000;
+    const effectiveScheduledAt = !isNaN(scheduledMs) ? new Date(scheduledMs).toISOString() : new Date(nowMs).toISOString();
+
     const { data: campaign, error: campError } = await supabaseAdmin
       .from('campaigns')
       .insert({
@@ -63,8 +70,8 @@ export async function POST(request: Request) {
         template_name,
         template_language,
         template_components,
-        status: 'QUEUED',
-        scheduled_at: scheduled_at || new Date().toISOString(),
+        status: isFutureSchedule ? 'SCHEDULED' : 'QUEUED',
+        scheduled_at: effectiveScheduledAt,
         total_recipients: recipientIds.length,
         created_by: user.id
       })
@@ -93,19 +100,23 @@ export async function POST(request: Request) {
         campaign_id: campaign.id,
         contact_id: c.id,
         phone_number: c.phone_number,
-        status: scheduled_at ? 'SCHEDULED' : 'PENDING',
-        scheduled_at: scheduled_at || new Date().toISOString()
+        status: isFutureSchedule ? 'SCHEDULED' : 'PENDING',
+        scheduled_at: effectiveScheduledAt
       }));
 
       for (let i = 0; i < recipients.length; i += 500) {
-         const batch = recipients.slice(i, i + 500);
-         await supabaseAdmin.from('campaign_recipients').insert(batch);
+        const batch = recipients.slice(i, i + 500);
+        await supabaseAdmin.from('campaign_recipients').insert(batch);
       }
     }
 
     // Trigger worker asynchronously to immediately start processing
-    fetch(`${request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/whatsapp/campaigns/worker`, {
-      headers: { 'Authorization': `Bearer ${process.env.CRON_SECRET}` }
+    const origin = request.headers.get('origin') || new URL(request.url).origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    fetch(`${origin}/api/whatsapp/campaigns/worker`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        'x-ui-bypass': 'true'
+      }
     }).catch(() => {});
 
     return NextResponse.json({ success: true, campaign_id: campaign.id });

@@ -153,6 +153,26 @@ export default function CampaignsPage() {
     };
   }, [fetchCampaigns, fetchTemplates]);
 
+  // Automatically drive the worker and refresh progress whenever any campaign is active
+  useEffect(() => {
+    const hasActiveCampaign = campaigns.some(c =>
+      ['QUEUED', 'SCHEDULED', 'PROCESSING', 'RUNNING'].includes(c.status)
+    );
+    if (!hasActiveCampaign) return;
+
+    const triggerAndRefresh = () => {
+      fetch('/api/whatsapp/campaigns/worker', {
+        headers: { 'x-ui-bypass': 'true' }
+      })
+        .then(() => fetchCampaigns())
+        .catch(() => {});
+    };
+
+    triggerAndRefresh();
+    const interval = setInterval(triggerAndRefresh, 4000);
+    return () => clearInterval(interval);
+  }, [campaigns, fetchCampaigns]);
+
   // Handle Template Selection & detect required media & variables
   const handleSelectTemplate = (template: any) => {
     const components = template.components as any[] || [];

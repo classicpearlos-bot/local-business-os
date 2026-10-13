@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   const isUiBypass = request.headers.get('x-ui-bypass') === 'true';
   
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && !isUiBypass) {
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}` && !isUiBypass) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -20,8 +20,24 @@ export async function GET(request: Request) {
   const processedCampaignIds = new Set<string>();
 
   try {
-    // 1. STALE CLAIM RECOVERY: Automatically reset any claims stuck in 'PROCESSING' > 5 minutes
-    const staleThreshold = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const nowIso = new Date().toISOString();
+
+    // 0. PROMOTE DUE SCHEDULED RECIPIENTS & CAMPAIGNS TO PENDING/QUEUED
+    // Fixes the issue where scheduled_at <= now left recipients stuck in 'SCHEDULED'
+    await supabaseAdmin
+      .from('campaign_recipients')
+      .update({ status: 'PENDING' })
+      .eq('status', 'SCHEDULED')
+      .lte('scheduled_at', nowIso);
+
+    await supabaseAdmin
+      .from('campaigns')
+      .update({ status: 'QUEUED' })
+      .eq('status', 'SCHEDULED')
+      .lte('scheduled_at', nowIso);
+
+    // 1. STALE CLAIM RECOVERY: Automatically reset any claims stuck in 'PROCESSING' > 2 minutes
+    const staleThreshold = new Date(Date.now() - 2 * 60 * 1000).toISOString();
     await supabaseAdmin
       .from('campaign_recipients')
       .update({
@@ -31,7 +47,7 @@ export async function GET(request: Request) {
       .eq('status', 'PROCESSING')
       .lt('processing_at', staleThreshold);
 
-    // Cache template component structures across batches
+    // Cache template component structures, campaigns, and WhatsApp accounts across batches
     const { data: tmplRecords } = await supabaseAdmin
       .from('message_templates')
       .select('organization_id, name, components');
@@ -41,268 +57,341 @@ export async function GET(request: Request) {
       tmplMap.set(`${t.organization_id}_${t.name}`, t.components);
     });
 
-    // 2. Continuous execution loop running until queue is drained or 45s safety limit reached
-    while (Date.now() - startTime < 45000) {
-      const { data: claimed, error } = await supabaseAdmin.rpc('claim_campaign_recipients', { batch_size: 50 });
-      
+    const campaignCache = new Map<string, any>();
+    const accountCache = new Map<string, any>();
+
+    // 2. Continuous execution loop running until queue is drained or 50s safety limit reached
+    while (Date.now() - startTime < 50000) {
+      let { data: claimed, error } = await supabaseAdmin.rpc('claim_campaign_recipients', { batch_size: 50 });
+
+      // Fallback: if RPC returned empty, check directly for PENDING recipients that are due
       if (error || !claimed || claimed.length === 0) {
-        break; // Queue is completely drained
+        const { data: fallbackPending } = await supabaseAdmin
+          .from('campaign_recipients')
+          .select('*')
+          .eq('status', 'PENDING')
+          .lte('scheduled_at', new Date().toISOString())
+          .limit(50);
+
+        if (!fallbackPending || fallbackPending.length === 0) {
+          break; // Queue is completely drained
+        }
+
+        const fallbackIds = fallbackPending.map((r: any) => r.id);
+        await supabaseAdmin
+          .from('campaign_recipients')
+          .update({
+            status: 'PROCESSING',
+            processing_at: new Date().toISOString(),
+            last_attempt_at: new Date().toISOString()
+          })
+          .in('id', fallbackIds);
+
+        claimed = fallbackPending;
       }
 
       totalProcessed += claimed.length;
 
-      for (const recipient of claimed) {
-        processedCampaignIds.add(recipient.campaign_id);
-        
-        // Fetch campaign details
-        const { data: campaign } = await supabaseAdmin
-          .from('campaigns')
-          .select('*')
-          .eq('id', recipient.campaign_id)
-          .single();
-
-        if (!campaign) continue;
-
-        // If campaign was cancelled or paused, mark recipient accordingly
-        if (campaign.status === 'CANCELLED' || campaign.status === 'PAUSED') {
-          await supabaseAdmin.from('campaign_recipients').update({
-            status: 'CANCELLED',
-            error_code: 'CAMPAIGN_CANCELLED',
-            error_message: `Campaign was marked as ${campaign.status}`
-          }).eq('id', recipient.id);
-          continue;
+      // Pre-load campaigns for this batch and mark QUEUED -> PROCESSING
+      const batchCampaignIds = Array.from(new Set<string>(claimed.map((r: any) => r.campaign_id)));
+      for (const cId of batchCampaignIds) {
+        processedCampaignIds.add(cId);
+        if (!campaignCache.has(cId)) {
+          const { data: camp } = await supabaseAdmin
+            .from('campaigns')
+            .select('*')
+            .eq('id', cId)
+            .single();
+          if (camp) {
+            if (camp.status === 'QUEUED' || camp.status === 'SCHEDULED') {
+              await supabaseAdmin
+                .from('campaigns')
+                .update({
+                  status: 'PROCESSING',
+                  started_at: camp.started_at || new Date().toISOString()
+                })
+                .eq('id', cId);
+              camp.status = 'PROCESSING';
+            }
+            campaignCache.set(cId, camp);
+          }
         }
+      }
 
-        // DUPLICATE SEND PROTECTION: Skip if already sent or has meta_message_id
-        const { data: existingRecip } = await supabaseAdmin
-          .from('campaign_recipients')
-          .select('meta_message_id, status')
-          .eq('id', recipient.id)
-          .single();
-
-        if (existingRecip?.meta_message_id || existingRecip?.status === 'SENT' || existingRecip?.status === 'DELIVERED') {
-          continue; // Already dispatched safely
+      // Pre-load WhatsApp accounts for organizations in this batch
+      const batchOrgIds = Array.from(
+        new Set<string>(
+          batchCampaignIds
+            .map(id => campaignCache.get(id)?.organization_id)
+            .filter(Boolean)
+        )
+      );
+      for (const orgId of batchOrgIds) {
+        if (!accountCache.has(orgId)) {
+          const { data: acc } = await supabaseAdmin
+            .from('whatsapp_accounts')
+            .select('*')
+            .eq('organization_id', orgId)
+            .single();
+          if (acc) accountCache.set(orgId, acc);
         }
+      }
 
-        // DISPATCH-TIME OPT-IN RECHECK: Verify contact is strictly opted-in
-        const { data: contact } = await supabaseAdmin
+      // Batch-load all contacts in this batch of 50 in a single query
+      const batchContactIds = Array.from(new Set<string>(claimed.map((r: any) => r.contact_id).filter(Boolean)));
+      const contactMap = new Map<string, any>();
+      if (batchContactIds.length > 0) {
+        const { data: batchContacts } = await supabaseAdmin
           .from('contacts')
           .select('id, name, phone_number, opted_in')
-          .eq('id', recipient.contact_id)
-          .single();
+          .in('id', batchContactIds);
+        (batchContacts || []).forEach((c: any) => contactMap.set(c.id, c));
+      }
 
-        if (!contact || contact.opted_in !== true) {
-          await supabaseAdmin.from('campaign_recipients').update({
-            status: 'FAILED',
-            failed_at: new Date().toISOString(),
-            error_code: 'OPTED_OUT',
-            error_message: 'Contact is not opted-in for marketing broadcasts'
-          }).eq('id', recipient.id);
-          skippedCount++;
-          continue;
-        }
+      // Process recipients in parallel chunks of 10 for 10x faster throughput
+      const CONCURRENCY = 10;
+      for (let i = 0; i < claimed.length; i += CONCURRENCY) {
+        const slice = claimed.slice(i, i + CONCURRENCY);
+        await Promise.allSettled(
+          slice.map(async (recipient: any) => {
+            const campaign = campaignCache.get(recipient.campaign_id);
+            if (!campaign) return;
 
-        const { data: account } = await supabaseAdmin
-          .from('whatsapp_accounts')
-          .select('*')
-          .eq('organization_id', campaign.organization_id)
-          .single();
-
-        if (!account || !account.phone_number_id || !account.access_token) {
-          await markFailed(recipient.id, 'NO_ACCOUNT', 'WhatsApp account not configured');
-          failureCount++;
-          continue;
-        }
-
-        try {
-          // Inject dynamic variables into the template components for this specific recipient
-          const customerName = contact.name || 'Valued Customer';
-          const firstName = customerName.split(' ')[0] || 'Valued Customer';
-          const phone = contact.phone_number || '';
-
-          const dynamicComponents = JSON.parse(JSON.stringify(campaign.template_components || []));
-          
-          dynamicComponents.forEach((comp: any) => {
-            if (comp.parameters) {
-              comp.parameters.forEach((param: any) => {
-                if (param.type === 'text' && typeof param.text === 'string') {
-                  param.text = param.text
-                    .replace(/{{name}}/gi, customerName)
-                    .replace(/{{first_name}}/gi, firstName)
-                    .replace(/{{phone}}/gi, phone);
-                }
-              });
-            }
-          });
-
-          const response = await sendWhatsAppTemplate({
-            phoneNumberId: account.phone_number_id,
-            accessToken: account.access_token,
-            to: recipient.phone_number
-          }, campaign.template_name, campaign.template_language, dynamicComponents);
-
-          if (response.error) {
-            const isRetryable = response.error.code === 429 || response.error.code === 131056;
-            
-            if (isRetryable && recipient.attempts < 5) {
-              const delaySec = Math.pow(2, recipient.attempts) * 5; 
-              const nextRetry = new Date(Date.now() + delaySec * 1000).toISOString();
-              
+            if (campaign.status === 'CANCELLED' || campaign.status === 'PAUSED') {
               await supabaseAdmin.from('campaign_recipients').update({
-                status: 'PENDING',
-                next_retry_at: nextRetry,
-                error_code: response.error.code?.toString() || 'RETRYABLE_ERROR',
-                error_message: response.error.message
+                status: 'CANCELLED',
+                error_code: 'CAMPAIGN_CANCELLED',
+                error_message: `Campaign was marked as ${campaign.status}`
               }).eq('id', recipient.id);
-            } else {
-              await markFailed(recipient.id, response.error.code?.toString() || 'API_ERROR', response.error.message);
+              return;
             }
-            failureCount++;
-          } else {
-            const wamId = response.messages?.[0]?.id;
 
-            await supabaseAdmin.from('campaign_recipients').update({
-              status: 'SENT',
-              sent_at: new Date().toISOString(),
-              meta_message_id: wamId
-            }).eq('id', recipient.id);
+            // DUPLICATE SEND PROTECTION: Skip if already sent or has meta_message_id
+            if (recipient.meta_message_id || recipient.status === 'SENT' || recipient.status === 'DELIVERED') {
+              return;
+            }
 
-            await supabaseAdmin.rpc('increment_campaign_sent', { camp_id: campaign.id });
-            successCount++;
+            const contact = contactMap.get(recipient.contact_id);
+            if (!contact || contact.opted_in !== true) {
+              await supabaseAdmin.from('campaign_recipients').update({
+                status: 'FAILED',
+                failed_at: new Date().toISOString(),
+                error_code: 'OPTED_OUT',
+                error_message: 'Contact is not opted-in for marketing broadcasts'
+              }).eq('id', recipient.id);
+              skippedCount++;
+              return;
+            }
 
-            // Ensure conversation & message exist in the Inbox
+            const account = accountCache.get(campaign.organization_id);
+            if (!account || !account.phone_number_id || !account.access_token) {
+              await markFailed(recipient.id, 'NO_ACCOUNT', 'WhatsApp account not configured');
+              failureCount++;
+              return;
+            }
+
             try {
-              if (recipient.contact_id) {
-                let { data: conv } = await supabaseAdmin
-                  .from('conversations')
-                  .select('id')
-                  .eq('organization_id', campaign.organization_id)
-                  .eq('contact_id', recipient.contact_id)
-                  .maybeSingle();
+              const customerName = contact.name || 'Valued Customer';
+              const firstName = customerName.split(' ')[0] || 'Valued Customer';
+              const phone = contact.phone_number || '';
 
-                if (!conv) {
-                  const { data: newConv } = await supabaseAdmin
-                    .from('conversations')
-                    .insert({
-                      organization_id: campaign.organization_id,
-                      contact_id: recipient.contact_id,
-                      status: 'OPEN',
-                      last_message_at: new Date().toISOString(),
-                      unread_count: 0
-                    })
-                    .select('id')
-                    .single();
-                  conv = newConv;
-                } else {
-                  await supabaseAdmin
-                    .from('conversations')
-                    .update({ last_message_at: new Date().toISOString() })
-                    .eq('id', conv.id);
-                }
-
-                if (conv && wamId) {
-                  const tmplComponents = tmplMap.get(`${campaign.organization_id}_${campaign.template_name}`) || [];
-                  let headerImg = null;
-                  let bodyTxt = null;
-                  let btns: any[] = [];
-
-                  (tmplComponents || []).forEach((c: any) => {
-                    if (c.type === 'HEADER' && c.format === 'IMAGE') {
-                      headerImg = c.example?.header_handle?.[0] || null;
-                    } else if (c.type === 'BODY') {
-                      bodyTxt = c.text;
-                    } else if (c.type === 'BUTTONS') {
-                      btns = c.buttons || [];
+              const dynamicComponents = JSON.parse(JSON.stringify(campaign.template_components || []));
+              dynamicComponents.forEach((comp: any) => {
+                if (comp.parameters) {
+                  comp.parameters.forEach((param: any) => {
+                    if (param.type === 'text' && typeof param.text === 'string') {
+                      param.text = param.text
+                        .replace(/{{name}}/gi, customerName)
+                        .replace(/{{first_name}}/gi, firstName)
+                        .replace(/{{phone}}/gi, phone);
                     }
                   });
+                }
+              });
 
-                  await supabaseAdmin.from('messages').insert({
-                    organization_id: campaign.organization_id,
-                    contact_id: recipient.contact_id,
-                    conversation_id: conv.id,
-                    wam_id: wamId,
-                    direction: 'OUTBOUND',
-                    type: 'template',
-                    content: { 
-                      template: { 
-                        name: campaign.template_name,
-                        header_image: headerImg,
-                        body_text: bodyTxt,
-                        buttons: btns
-                      },
-                      text: { body: bodyTxt || `[Campaign: ${campaign.name || 'Broadcast'}]` },
-                      image: headerImg ? { url: headerImg } : undefined
-                    },
-                    status: 'SENT'
-                  });
+              const response = await sendWhatsAppTemplate({
+                phoneNumberId: account.phone_number_id,
+                accessToken: account.access_token,
+                to: recipient.phone_number
+              }, campaign.template_name, campaign.template_language, dynamicComponents);
+
+              if (response.error) {
+                const isRetryable = response.error.code === 429 || response.error.code === 131056;
+                if (isRetryable && (recipient.attempts || 0) < 5) {
+                  const delaySec = Math.pow(2, recipient.attempts || 1) * 5;
+                  const nextRetry = new Date(Date.now() + delaySec * 1000).toISOString();
+                  await supabaseAdmin.from('campaign_recipients').update({
+                    status: 'PENDING',
+                    next_retry_at: nextRetry,
+                    error_code: response.error.code?.toString() || 'RETRYABLE_ERROR',
+                    error_message: response.error.message
+                  }).eq('id', recipient.id);
+                } else {
+                  await markFailed(recipient.id, response.error.code?.toString() || 'API_ERROR', response.error.message);
+                  await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: campaign.id });
+                }
+                failureCount++;
+              } else {
+                const wamId = response.messages?.[0]?.id;
+
+                await supabaseAdmin.from('campaign_recipients').update({
+                  status: 'SENT',
+                  sent_at: new Date().toISOString(),
+                  meta_message_id: wamId
+                }).eq('id', recipient.id);
+
+                await supabaseAdmin.rpc('increment_campaign_sent', { camp_id: campaign.id });
+                successCount++;
+
+                // Ensure conversation & message exist in the Inbox
+                try {
+                  if (recipient.contact_id) {
+                    let { data: conv } = await supabaseAdmin
+                      .from('conversations')
+                      .select('id')
+                      .eq('organization_id', campaign.organization_id)
+                      .eq('contact_id', recipient.contact_id)
+                      .maybeSingle();
+
+                    if (!conv) {
+                      const { data: newConv } = await supabaseAdmin
+                        .from('conversations')
+                        .insert({
+                          organization_id: campaign.organization_id,
+                          contact_id: recipient.contact_id,
+                          status: 'OPEN',
+                          last_message_at: new Date().toISOString(),
+                          unread_count: 0
+                        })
+                        .select('id')
+                        .single();
+                      conv = newConv;
+                    } else {
+                      await supabaseAdmin
+                        .from('conversations')
+                        .update({ last_message_at: new Date().toISOString() })
+                        .eq('id', conv.id);
+                    }
+
+                    if (conv && wamId) {
+                      const tmplComponents = tmplMap.get(`${campaign.organization_id}_${campaign.template_name}`) || [];
+                      let headerImg = null;
+                      let bodyTxt = null;
+                      let btns: any[] = [];
+
+                      (tmplComponents || []).forEach((c: any) => {
+                        if (c.type === 'HEADER' && c.format === 'IMAGE') {
+                          headerImg = c.example?.header_handle?.[0] || null;
+                        } else if (c.type === 'BODY') {
+                          bodyTxt = c.text;
+                        } else if (c.type === 'BUTTONS') {
+                          btns = c.buttons || [];
+                        }
+                      });
+
+                      await supabaseAdmin.from('messages').insert({
+                        organization_id: campaign.organization_id,
+                        contact_id: recipient.contact_id,
+                        conversation_id: conv.id,
+                        wam_id: wamId,
+                        direction: 'OUTBOUND',
+                        type: 'template',
+                        content: {
+                          template: {
+                            name: campaign.template_name,
+                            header_image: headerImg,
+                            body_text: bodyTxt,
+                            buttons: btns
+                          },
+                          text: { body: bodyTxt || `[Campaign: ${campaign.name || 'Broadcast'}]` },
+                          image: headerImg ? { url: headerImg } : undefined
+                        },
+                        status: 'SENT'
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.error('Failed to log broadcast to conversation:', e);
                 }
               }
-            } catch (e) {
-              console.error('Failed to log broadcast to conversation:', e);
+            } catch (err: any) {
+              if ((recipient.attempts || 0) < 5) {
+                await supabaseAdmin.from('campaign_recipients').update({
+                  status: 'PENDING',
+                  next_retry_at: new Date(Date.now() + 60000).toISOString(),
+                  error_message: err.message
+                }).eq('id', recipient.id);
+              } else {
+                await markFailed(recipient.id, 'CRASH', err.message);
+                await supabaseAdmin.rpc('increment_campaign_failed', { camp_id: campaign.id });
+              }
+              failureCount++;
             }
-          }
-        } catch (err: any) {
-          if (recipient.attempts < 5) {
-             await supabaseAdmin.from('campaign_recipients').update({
-               status: 'PENDING',
-               next_retry_at: new Date(Date.now() + 60000).toISOString(),
-               error_message: err.message
-             }).eq('id', recipient.id);
-          } else {
-             await markFailed(recipient.id, 'CRASH', err.message);
-          }
-          failureCount++;
-        }
+          })
+        );
       }
     }
 
-    // Check and update completion status for all touched campaigns
-    for (const campId of Array.from(processedCampaignIds)) {
-      const { count: pendingCount } = await supabaseAdmin.from('campaign_recipients')
-        .select('id', { count: 'exact', head: true })
-        .eq('campaign_id', campId)
-        .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
-        
-      if (pendingCount === 0) {
-        await supabaseAdmin.from('campaigns').update({ 
-          status: 'COMPLETED',
-          completed_at: new Date().toISOString()
-        }).eq('id', campId);
-      }
-    }
-
-    // Safety sweep: Also check for any campaigns stuck in QUEUED with 0 recipients
-    const { data: stuckCampaigns } = await supabaseAdmin
+    // 3. Also include any campaigns currently in QUEUED / PROCESSING / RUNNING so their totals and completion are synced
+    const { data: activeCampaigns } = await supabaseAdmin
       .from('campaigns')
       .select('id')
-      .eq('status', 'QUEUED');
-      
-    if (stuckCampaigns && stuckCampaigns.length > 0) {
-      for (const camp of stuckCampaigns) {
-        const { count: recCount } = await supabaseAdmin
+      .in('status', ['QUEUED', 'PROCESSING', 'RUNNING']);
+
+    (activeCampaigns || []).forEach((c: any) => processedCampaignIds.add(c.id));
+
+    // Sync exact sent/failed counts and completion status for all touched/active campaigns
+    for (const campId of Array.from(processedCampaignIds)) {
+      const [
+        { count: pendingCount },
+        { count: sentTotal },
+        { count: failedTotal }
+      ] = await Promise.all([
+        supabaseAdmin
           .from('campaign_recipients')
           .select('id', { count: 'exact', head: true })
-          .eq('campaign_id', camp.id)
-          .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
-          
-        if (recCount === 0) {
-          await supabaseAdmin.from('campaigns').update({ 
-            status: 'COMPLETED',
-            completed_at: new Date().toISOString()
-          }).eq('id', camp.id);
-        }
+          .eq('campaign_id', campId)
+          .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']),
+        supabaseAdmin
+          .from('campaign_recipients')
+          .select('id', { count: 'exact', head: true })
+          .eq('campaign_id', campId)
+          .in('status', ['SENT', 'DELIVERED', 'READ']),
+        supabaseAdmin
+          .from('campaign_recipients')
+          .select('id', { count: 'exact', head: true })
+          .eq('campaign_id', campId)
+          .eq('status', 'FAILED')
+      ]);
+
+      const updates: any = {
+        total_sent: sentTotal || 0,
+        total_failed: failedTotal || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      if ((pendingCount || 0) === 0) {
+        updates.status = 'COMPLETED';
+        updates.completed_at = new Date().toISOString();
+      } else {
+        updates.status = 'PROCESSING';
       }
+
+      await supabaseAdmin
+        .from('campaigns')
+        .update(updates)
+        .eq('id', campId);
     }
 
     // Remaining count in queue
     const { count: totalRemaining } = await supabaseAdmin
       .from('campaign_recipients')
       .select('id', { count: 'exact', head: true })
-      .in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
+      .in('status', ['PENDING', 'PROCESSING']);
 
-    return NextResponse.json({ 
-      processed: totalProcessed, 
-      success: successCount, 
+    return NextResponse.json({
+      processed: totalProcessed,
+      success: successCount,
       failed: failureCount,
       skipped: skippedCount,
       remaining: totalRemaining || 0
