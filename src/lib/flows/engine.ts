@@ -66,8 +66,11 @@ export class FlowExecutionEngine {
     }
 
     const engine = new FlowExecutionEngine(execution.id, orgId);
-    // Asynchronously continue processing so we don't block the webhook
-    engine.processNextNode().catch(e => console.error('Flow processing error:', e));
+    try {
+      await engine.processNextNode();
+    } catch (e) {
+      console.error('Flow processing error:', e);
+    }
 
     return execution.id;
   }
@@ -119,7 +122,11 @@ export class FlowExecutionEngine {
       }
     }
 
-    engine.processNextNode(overrideNodeId).catch(e => console.error('Flow processing error:', e));
+    try {
+      await engine.processNextNode(overrideNodeId);
+    } catch (e) {
+      console.error('Flow processing error:', e);
+    }
     return true;
   }
 

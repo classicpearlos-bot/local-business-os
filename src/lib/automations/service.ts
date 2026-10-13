@@ -34,65 +34,13 @@ export async function evaluateAutomations(
     return;
   }
 
-  // 2. Identify if this message is a Salon Inquiry or Direct Action
-  // If the message asks about services, pricing, bookings, discounts, or clicked an action button,
-  // it is an inquiry and MUST NOT be intercepted by generic greeting flows.
-  const INQUIRY_KEYWORDS = [
-    'spa', 'hair', 'cut', 'facial', 'wax', 'waxing', 'pedicure', 'manicure',
-    'massage', 'color', 'colour', 'shave', 'beard', 'cleanup', 'clean up',
-    'detan', 'de-tan', 'keratin', 'botox', 'nanoplastia', 'smoothen', 'straighten',
-    'price', 'pricing', 'cost', 'rate', 'how much', 'charge', 'charges', 'fee',
-    'discount', 'discounts', 'offer', 'offers', 'deal', 'deals', 'combo', 'combos', 'package', 'packages',
-    'book', 'booking', 'appointment', 'slot', 'timing', 'time', 'open', 'close', 'hours',
-    'location', 'where', 'address', 'reach', 'map', 'direction', 'directions',
-    'men', 'women', 'male', 'female', 'gents', 'ladies', 'guy', 'girl',
-    'free', 'available', 'who', 'name', 'shop', 'near', 'today', 'tomorrow', 'tmr', 'now', 'come', 'which', 'reach'
-  ];
-
-  const isInquiry = Boolean(
-    buttonId ||
-    INQUIRY_KEYWORDS.some(kw => {
-      const regex = new RegExp(`(^|\\b|\\s|[.,!?])${kw}(\\b|\\s|[.,!?]|$)`, 'i');
-      return regex.test(normalizedInput);
-    })
-  );
-
-  // 3. Evaluate Visual Flows First (ONLY for pure greetings like "hi", "hello" - never for inquiries)
-  if (!isInquiry && contactId) {
-    const { data: flows } = await supabaseAdmin
-      .from('flows')
-      .select('id, trigger_config')
-      .eq('organization_id', orgId)
-      .eq('status', 'PUBLISHED')
-      .eq('trigger_type', 'KEYWORD');
-
-    for (const flow of (flows || [])) {
-      const config = (flow.trigger_config as any) || {};
-      const keywords = config.keywords || [];
-      const matchAll = config.match_all === true;
-      
-      const isMatch = matchAll || keywords.some((k: string) => {
-        const kw = k.trim().toLowerCase();
-        if (!kw) return false;
-        // Whole word boundary match
-        const regex = new RegExp(`(^|\\b|\\s|[.,!?])${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|\\s|[.,!?]|$)`, 'i');
-        return regex.test(normalizedInput);
-      });
-
-      if (isMatch) {
-        // Trigger match! Start flow execution
-        const execId = await FlowExecutionEngine.start(orgId, flow.id, contactId, conversationId, messageId);
-        if (execId) return; // Flow handled it, exit.
-      }
-    }
-  }
-
-  // 4. Load active legacy automations for the organization, ordered by priority
+  // 2. Load active legacy automations for explicit keyword actions (if any)
   const { data: automations } = await supabaseAdmin
     .from('automations')
     .select('*')
     .eq('organization_id', orgId)
     .eq('active', true)
+    .in('action_type', ['TEXT', 'LOCATION', 'TEMPLATE'])
     .order('priority', { ascending: false });
 
   for (const automation of (automations || [])) {
@@ -135,14 +83,14 @@ export async function evaluateAutomations(
         }
       }
 
-      await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone);
+      await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone, contactId);
       return; 
     }
   }
 
-  // 5. Intelligent Salon AI Concierge
+  // 3. 24/7 Intelligent Salon AI Concierge (Primary Responder for all greetings, inquiries, and customer care)
   try {
-    // Fetch recent conversation history for context
+    // Fetch recent conversation history for rich multi-turn context
     const { data: recentMsgs } = await supabaseAdmin
       .from('messages')
       .select('direction, type, content')
@@ -181,14 +129,26 @@ export async function evaluateAutomations(
     });
 
     if (finalReply) {
-      // Fetch WhatsApp Account info
-      const { data: account } = await supabaseAdmin
+      // Fetch WhatsApp Account info (with automatic fallback to ensure 100% dispatch reliability)
+      let account = null;
+      const { data: orgAccount } = await supabaseAdmin
         .from('whatsapp_accounts')
         .select('phone_number_id, access_token')
         .eq('organization_id', orgId)
-        .single();
+        .maybeSingle();
 
-      if (account) {
+      if (orgAccount?.phone_number_id && orgAccount?.access_token) {
+        account = orgAccount;
+      } else {
+        const { data: fallbackAccount } = await supabaseAdmin
+          .from('whatsapp_accounts')
+          .select('phone_number_id, access_token')
+          .limit(1)
+          .maybeSingle();
+        account = fallbackAccount;
+      }
+
+      if (account?.phone_number_id && account?.access_token) {
         const waRes = await sendWhatsAppText({
           phoneNumberId: account.phone_number_id,
           accessToken: account.access_token,
@@ -199,6 +159,7 @@ export async function evaluateAutomations(
           await supabaseAdmin.from('messages').insert({
             organization_id: orgId,
             conversation_id: conversationId,
+            contact_id: contactId,
             wam_id: waRes.messages[0].id,
             direction: 'OUTBOUND',
             type: 'text',
@@ -209,15 +170,50 @@ export async function evaluateAutomations(
           await supabaseAdmin.from('conversations').update({ 
             last_message_at: new Date().toISOString() 
           }).eq('id', conversationId);
+
+          console.log(`[Salon AI Concierge] Successfully sent reply to ${contactPhone} (WAM ID: ${waRes.messages[0].id})`);
+        } else {
+          console.error('[Salon AI Concierge] Meta API error sending reply:', waRes);
         }
+      } else {
+        console.error('[Salon AI Concierge] No active WhatsApp account found for org', orgId);
       }
     }
   } catch (aiErr: any) {
     console.error('Salon AI Concierge Error:', aiErr);
+
+    // Bulletproof Fail-Safe: Always send verified salon greeting / contact message directly
+    try {
+      const emergencyReply = `✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nHow can we pamper you today? We specialize in luxury Hair Care, Hair Spa, Facials, Pedicure, Keratin & Grooming.\n\n📍 *Location:* https://share.google/jJemgk5XuiTanHc7P\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call / Booking:* +91 83107 30322\n\nPlease let us know what service you are looking for! 💛`;
+      const { data: acct } = await supabaseAdmin.from('whatsapp_accounts').select('phone_number_id, access_token').limit(1).maybeSingle();
+      if (acct?.phone_number_id && acct?.access_token) {
+        const waRes = await sendWhatsAppText({
+          phoneNumberId: acct.phone_number_id,
+          accessToken: acct.access_token,
+          to: contactPhone
+        }, emergencyReply);
+
+        if (waRes.messages?.[0]) {
+          await supabaseAdmin.from('messages').insert({
+            organization_id: orgId,
+            conversation_id: conversationId,
+            contact_id: contactId,
+            wam_id: waRes.messages[0].id,
+            direction: 'OUTBOUND',
+            type: 'text',
+            content: { text: { body: emergencyReply } },
+            status: 'SENT'
+          });
+          await supabaseAdmin.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversationId);
+        }
+      }
+    } catch (fallbackErr) {
+      console.error('Critical fallback error:', fallbackErr);
+    }
   }
 }
 
-async function executeAction(automation: any, orgId: string, convId: string, msgId: string, matchedKeyword: string, phone: string) {
+async function executeAction(automation: any, orgId: string, convId: string, msgId: string, matchedKeyword: string, phone: string, contactId?: string) {
   // 1. Log Execution
   await supabaseAdmin.from('automation_executions').insert({
     organization_id: orgId,
@@ -276,6 +272,7 @@ async function executeAction(automation: any, orgId: string, convId: string, msg
       await supabaseAdmin.from('messages').insert({
         organization_id: orgId,
         conversation_id: convId,
+        contact_id: contactId || null,
         wam_id: waRes.messages[0].id,
         direction: 'OUTBOUND',
         type: msgType,
