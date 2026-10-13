@@ -25,20 +25,25 @@ export const SALON_INFO = {
 };
 
 export function formatPriceList(title: string, items: ServiceItem[], note?: string): string {
-  let text = `✨ *${title}* ✨\n\n`;
-  for (const item of items) {
-    text += `• *${item.Service}*\n  Regular: ₹${item['Regular Price']} | Member: ₹${item['Member Price']}\n\n`;
+  const displayItems = items.slice(0, 5);
+  let text = `✨ *${title}* 🟢\n\n`;
+  for (const item of displayItems) {
+    text += `🟢 *${item.Service}:* ₹${item['Regular Price']} _(Member: ₹${item['Member Price']})_\n`;
+  }
+  if (items.length > 5) {
+    text += `_...and more options available at the salon!_\n`;
   }
   if (note) {
-    text += `${note}\n\n`;
+    text += `\n${note}\n`;
   }
-  text += `📍 *Classic Pearl Unisex Salon*\n🕒 Open 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call / Booking:* ${SALON_INFO.phone}\nWould you like to book an appointment or visit us today? 💛`;
+  text += `\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
   return text.trim();
 }
 
 /**
  * Deterministic Salon Knowledge Engine:
  * Handles direct, casual, and nuanced queries with high conversion accuracy.
+ * Kept short, crisp, and highlighted with green bullets.
  */
 export function getSalonDeterministicReply(
   inboundText: string,
@@ -50,16 +55,21 @@ export function getSalonDeterministicReply(
   const historyLower = (chatHistory || '').toLowerCase();
 
   // 1. Button Actions & Quick Replies
-  if (bid === 'btn_offers' || text.includes("today's offer") || text.includes('todays offer') || text.includes('today offer')) {
-    return `Special discounts and exclusive offers are always running at Classic Pearl Unisex Salon! 🎉\n\nThe exact discount details and personalized packages are provided when you visit the salon so our stylists can suggest the best offer for your chosen services. We warmly invite you to visit us!\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call Us:* ${SALON_INFO.phone}\n\nWould you like our location or to schedule a visit? 💛`;
+  if (
+    bid === 'btn_offers' || 
+    text.includes("today's offer") || text.includes('todays offer') || text.includes('today offer') ||
+    text.includes('discount') || text.includes('discounts') || text.includes('offer') || text.includes('offers') ||
+    text.includes('deal') || text.includes('deals') || text.includes('tmr is this offer') || text.includes('offer continue')
+  ) {
+    return `🎉 *Special Offers & Discounts Active!* 🟢\n\nWe have exciting in-salon offers running on *Hair Care*, *Facials* & *Grooming*! Personalized discounts are applied during your stylist consultation.\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call / Hold Slot:* ${SALON_INFO.phone}\n\nWould you like to visit us today? 💛`;
   }
 
   if (bid === 'btn_services' || text === 'view services' || text === 'services') {
-    return `✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nWe provide luxury grooming & transformation services for both Men and Women:\n\n💇 *Hair Care & Hair Spa* (Haircut, Spa, Keratin, Botox, Color)\n💆 *Relaxing Head Massage* (Almond, Olive, Coconut)\n🧖 *Luxury Facials & Cleanups* (O3+, Korean Glass, Hydra, Fruit)\n💅 *Manicure & Pedicure* (Classic, Crystal, Lotus, De-Tan)\n✨ *Waxing, Threading & Grooming* (Rica, Brazilian, Beard Styling)\n\nWhich service would you like to know more about? 😊`;
+    return `✨ *Classic Pearl Unisex Salon Menu* 🟢\n\n🟢 *Hair Care & Hair Spa* (Haircut, Spa, Keratin, Color)\n🟢 *Relaxing Head Massage* (Almond, Olive, Coconut)\n🟢 *Luxury Facials & Cleanups* (O3+, Korean Glass, Hydra)\n🟢 *Manicure & Pedicure* (Crystal, Lotus, De-Tan)\n🟢 *Waxing, Threading & Beard Styling*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details on? 😊`;
   }
 
   if (bid === 'btn_book' || text === 'book appointment') {
-    return `📅 *Book an Appointment at Classic Pearl!* ✨\n\nWe'd love to pamper you! Please share:\n1️⃣ Your preferred service (e.g. Hair Spa, Facial, Haircut)\n2️⃣ Preferred date & time\n3️⃣ Name & number of guests\n\nOur team will reserve your slot right away, or call us at *${SALON_INFO.phone}* for instant confirmation! 💛`;
+    return `📅 *Book Your Slot at Classic Pearl!* 🟢\n\nPlease share:\n1️⃣ *Preferred Service* (e.g. Hair Spa, Facial, Haircut)\n2️⃣ *Preferred Date & Time*\n3️⃣ *Name & Number of Guests*\n\nOr call us directly at 📞 *${SALON_INFO.phone}* for instant slot reservation! 💛`;
   }
 
   // 2. High-Intent Questions: "Is it free now?" / "Are you free right now?" / "Can I come now?"
@@ -75,7 +85,7 @@ export function getSalonDeterministicReply(
     text.includes('slot free') ||
     (text.includes('free') && (text.includes('today') || text.includes('now')))
   ) {
-    return `To check real-time chair availability or immediately hold your slot without waiting, please call our salon desk directly at *${SALON_INFO.phone}*! 📞\n\nOur team will hold a stylist for you right away so you can walk in smoothly. We look forward to pampering you! 💛`;
+    return `🟢 *Yes, walk-ins are warmly welcome!* 🕒\n\nTo hold your stylist with *zero waiting time*, please call our desk right now at 📞 *${SALON_INFO.phone}*. We'll keep a chair ready for you! 💛`;
   }
 
   // 3. Salon Name / Identity: "What is your salon name?" / "Who is this?" / "May I know you?"
@@ -88,7 +98,7 @@ export function getSalonDeterministicReply(
     text.includes('may i know you') ||
     text.includes('which salon')
   ) {
-    return `✨ Our salon name is *Classic Pearl Unisex Salon*! ✨\n\nWe are a premier unisex destination specializing in luxury hair transformations, hair spa, skin treatments, hydra facials, pedicures, and grooming.\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Contact:* ${SALON_INFO.phone}\n\nHow can we pamper you today? 💛`;
+    return `✨ *Classic Pearl Unisex Salon* 🟢\n\nWe are a premium salon specializing in luxury *Hair Care*, *Skin Aesthetics*, *Pedicure* & *Grooming*.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call:* ${SALON_INFO.phone}\nHow can we pamper you today? 💛`;
   }
 
   // 4. Location & Directions: "Where is your salon?" / "Where are you located?" / "Location?" / "Where to come?" / "Address?"
@@ -103,7 +113,7 @@ export function getSalonDeterministicReply(
     text.includes('which place') ||
     text.includes('where located')
   ) {
-    return `📍 *Classic Pearl Unisex Salon Location:*\n${SALON_INFO.mapsUrl}\n\n🕒 *Working Hours:* ${SALON_INFO.hours}\n📞 *Contact / Guidance:* ${SALON_INFO.phone}\n\nWe warmly invite you to visit us! Would you like to reserve a time or need help navigating? 💛`;
+    return `📍 *Classic Pearl Unisex Salon Location:* 🟢\n${SALON_INFO.mapsUrl}\n\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call for Route Guidance:* ${SALON_INFO.phone}\n\nWould you like us to reserve a slot for your visit? 💛`;
   }
 
   // 5. How to reach / route guidance: "How can I reach?" / "Can someone guide me?" / "How do I get there?"
@@ -116,7 +126,7 @@ export function getSalonDeterministicReply(
     text.includes('route') || 
     text.includes('landmark')
   ) {
-    return `You can easily reach us via Google Maps:\n📍 ${SALON_INFO.mapsUrl}\n\nIf you need any guidance on the route or nearby landmarks, please call our front desk directly at *${SALON_INFO.phone}* and our expert will guide you step-by-step! 💛`;
+    return `📍 *Navigate via Google Maps:* 🟢\n${SALON_INFO.mapsUrl}\n\nFor live landmark guidance, call our front desk directly at 📞 *${SALON_INFO.phone}* and our team will guide you step-by-step! 💛`;
   }
 
   // 6. Timing & When to come: "When can I come?" / "Closing time?" / "What time open?" / "Can I come today?"
@@ -131,29 +141,15 @@ export function getSalonDeterministicReply(
     text.includes('timings') ||
     text.includes('timing')
   ) {
-    return `You can visit us anytime between *10:00 AM to 9:00 PM*, open all 7 days of the week (Monday to Sunday)! 🕒\n\nBoth appointments and walk-ins are warmly welcomed.\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Direct Call:* ${SALON_INFO.phone}\n\nWhat time would you prefer to visit today? 💛`;
+    return `🕒 *We are open 10:00 AM to 9:00 PM every day (Monday to Sunday)!* 🟢\n\nWalk-ins and appointments are warmly welcome.\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}\nWhat time would you prefer to visit today? 💛`;
   }
 
-  // 7. Discounts & Offers: "Is there any offer going on?" / "Tomorrow offer continue?" / "Discounts?"
-  if (
-    text.includes('discount') || 
-    text.includes('discounts') || 
-    text.includes('offer') || 
-    text.includes('offers') || 
-    text.includes('deal') || 
-    text.includes('deals') ||
-    text.includes('tmr is this offer') ||
-    text.includes('offer continue')
-  ) {
-    return `Special discounts and exclusive offers are always running at Classic Pearl Unisex Salon! 🎉\n\nThe exact discount details and personalized packages are provided when you visit the salon so our stylists can suggest the best offer for your chosen services. We warmly invite you to visit us!\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Contact:* ${SALON_INFO.phone}\n\nWould you like our location or to schedule a visit? 💛`;
-  }
-
-  // 8. Combos Inquiry (Strict rule: Ask what services they want to combine)
+  // 7. Combos Inquiry (Strict rule: Ask what services they want to combine)
   if (text.includes('combo') || text.includes('combos') || text.includes('package')) {
     return `Yes! We offer customized combo packages tailored to your needs. ✨\n\nCould you please let us know which specific services you are looking to combine so we can offer you the best possible tailored package?`;
   }
 
-  // 9. STRICT DOMAIN BOUNDARY: BODY SPA / BODY MASSAGE REJECTION & REDIRECTION
+  // 8. STRICT DOMAIN BOUNDARY: BODY SPA / BODY MASSAGE REJECTION & REDIRECTION
   // Classic Pearl is a unisex salon, NOT a body spa/massage parlor.
   // We NEVER offer body massage, body spa, full body massage, back massage, or hand massage.
   // We ONLY offer relaxing HEAD Massages and therapeutic HAIR Spa treatments.
@@ -178,7 +174,7 @@ export function getSalonDeterministicReply(
     (text.includes('spa') && !text.includes('hair') && (text.includes('body') || text.includes('full')));
 
   if (isExplicitBodyMassageOrBodySpa) {
-    return `✨ *Classic Pearl Unisex Salon* is a premier salon destination specializing in luxury hair styling, hair restorative treatments, skin therapies, and grooming.\n\nPlease note that we are a unisex salon and do *not* offer body spa, body massage, or full body services.\n\n💆 *However, for deep relaxation and stress relief, we offer rejuvenating Head Massages:*\n• *Men Head Massage* (Almond, Olive, Navarathna, Coconut) – from ₹349\n• *Women Head Massage* (Almond, Olive, Navarathna, Coconut) – from ₹399\n\n🌸 *We also offer therapeutic Hair Spa therapies:*\n• *Deep Nourishing Hair Spa* (from ₹579)\n• *Damage Repair Hair Spa* (from ₹779)\n• *Anti-Dandruff & Hair Fall Spa* (from ₹999)\n• *Deluxe Rejuvenating Hair Spa* (from ₹949)\n\nPlus relaxing Facials, Clean Ups, and Crystal Pedicures! ✨\n\nWould you like to explore our relaxing Head Massage or Hair Spa treatments? We would love to pamper you! 💛\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call / Booking:* ${SALON_INFO.phone}`;
+    return `✨ *Classic Pearl Unisex Salon* 🟢\n\nPlease note: We are a unisex salon focused on hair and skin aesthetics — we *do not offer body massages* or body spa.\n\n💆 *For deep relaxation, we recommend:*\n🟢 *Relaxing Head Massage* (Almond/Olive) – from *₹349*\n🟢 *Therapeutic Hair Spa* (Nourishing/Repair) – from *₹579*\n🟢 *Chocolate Crystal Pedicure* – *₹1,099*\n\n📞 *Call / Booking:* ${SALON_INFO.phone}\nWould you like to try our relaxing Head Massage or Hair Spa? 💛`;
   }
 
   // Detect explicit gender keywords in user query
@@ -397,7 +393,7 @@ export function getSalonDeterministicReply(
       const womenSpa = salonCatalog.women.filter(s => s.Category === 'Women - Hair Spa');
       return formatPriceList('Women Hair Spa Services', womenSpa);
     }
-    return `We offer wonderful hair spa and hair rejuvenation treatments for both men and women! ✨\n\nWould you like to know the options and prices for *Men* or *Women*?`;
+    return `✨ *Hair Spa at Classic Pearl* 🟢\n\nWe offer therapeutic hair spa treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? 😊`;
   }
 
   // B. Haircut / Hair Trim
@@ -407,14 +403,14 @@ export function getSalonDeterministicReply(
       return formatPriceList(
         'Men Haircut Services',
         menCuts,
-        '💡 *Popular Upgrade:* Upgrade to *Men Hair Cut with Wash & Blast Dry (₹349)* for a fresh scalp cleanse and styling!'
+        '💡 *Popular Upgrade:* Upgrade to *Men Hair Cut with Wash & Blast Dry (₹349)* for fresh styling!'
       );
     }
     if (isWomenExplicit && !isMenExplicit) {
       const womenCuts = salonCatalog.women.filter(s => s.Category === 'Women - Haircut');
       return formatPriceList('Women Haircut Services', womenCuts);
     }
-    return `We offer professional haircut and styling services for both men and women! 💇\n\nWould you like to see our haircut options for *Men* or *Women*?`;
+    return `✨ *Haircut & Styling at Classic Pearl* 🟢\n\nWe offer professional haircut and styling for both men and women!\n\nWould you like to see options for *Men* or *Women*? 💇`;
   }
 
   // C. Head Massage
@@ -427,7 +423,7 @@ export function getSalonDeterministicReply(
       const womenMassage = salonCatalog.women.filter(s => s.Category === 'Women - Head Massage');
       return formatPriceList('Women Head Massage Services', womenMassage);
     }
-    return `We offer relaxing head massages for both men and women! 💆\n\nWould you like to see our head massage options for *Men* or *Women*?`;
+    return `✨ *Relaxing Head Massage* 🟢\n\nWe offer soothing head massages with nourishing oils for both men and women!\n\nWould you like options for *Men* or *Women*? 💆`;
   }
 
   // D. Hair Color
@@ -437,10 +433,10 @@ export function getSalonDeterministicReply(
       return formatPriceList('Men Hair Color Services', menColor);
     }
     if (isWomenExplicit && !isMenExplicit) {
-      const womenColor = salonCatalog.women.filter(s => s.Category === 'Women - Hair Color').slice(0, 8);
+      const womenColor = salonCatalog.women.filter(s => s.Category === 'Women - Hair Color').slice(0, 5);
       return formatPriceList('Women Hair Color & Highlights', womenColor);
     }
-    return `We offer premium hair coloring, highlights, and global colors for both men and women! 🎨\n\nWould you like to see the options and prices for *Men* or *Women*?`;
+    return `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium global color and highlights for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`;
   }
 
   // E. Chemical Treatments / Advanced Hair Treatments (Botox, Keratin, Nanoplastia)
@@ -453,8 +449,8 @@ export function getSalonDeterministicReply(
     return formatPriceList('Advanced Hair Treatments (Botox / Keratin / Nanoplastia)', womenAdv);
   }
 
-  // Generic greeting or default fallback
-  return `✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nHow can we pamper you today? We specialize in:\n• Hair Spa, Haircuts & Hair Color\n• Keratin, Botox & Protein Treatments\n• Luxury Facials & Cleanups\n• Pedicure & Manicure\n• Waxing & Head Massage\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call Us:* ${SALON_INFO.phone}\n\nPlease let us know what service you are looking for, or if you'd like to book an appointment! 💛`;
+  // Generic greeting or default fallback (Short & Crisp)
+  return `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`;
 }
 
 /**
@@ -572,12 +568,13 @@ RULE 8: ACCURATE PRICING & SINGLE SERVICES ONLY (STRICT NO COMBOS):
 - Do NOT list combo packages automatically. If explicitly asked "Do you have combos?", reply:
   "Yes! We offer customized combo packages tailored to your needs. What specific services are you looking to combine so we can offer you the best tailored package?"
 
-RULE 9: WHATSAPP FORMATTING & TONE:
-- Format text cleanly for WhatsApp:
-  • Use *bold* for service names and prices (single asterisks: *text*).
-  • Use bullets • for lists.
+RULE 9: SHORT, CRISP & GREEN-HIGHLIGHTED FORMATTING:
+- Format text cleanly and compactly for WhatsApp:
+  • STRICT BREVITY: Keep every response SHORT, CRISP, AND COMPACT (maximum 5 to 7 lines total). Never write long essays or 2-page text. People lose focus if messages are too long.
+  • HIGHLIGHTED SERVICES IN BOLD WITH GREEN ACCENTS: Every service pushed or mentioned MUST be formatted in *bold* with a 🟢 green accent bullet (e.g. 🟢 *Men Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_).
+  • Do NOT dump more than 4-5 service items at once.
   • Do NOT use markdown headers (#, ##, ###).
-  • Keep responses concise, clean, beautiful to read on mobile.
+  • Always finish with 1 brief, warm line and salon helpline: 📞 *+91 83107 30322*.
 - Tone: Warm, welcoming, respectful, professional, always striving to convert them to visit the salon.
 
 --- RECENT CONVERSATION HISTORY ---

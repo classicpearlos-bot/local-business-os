@@ -1039,6 +1039,29 @@ export default function Inbox() {
                         }));
                         const displayButtons = isTemplate ? templateButtons : (msg.type === 'interactive' ? interactiveButtons : []);
 
+                        const renderFormattedWhatsAppText = (text: string, isIncoming: boolean) => {
+                          if (!text) return null;
+                          const parts = text.split(/(\*[^*]+\*)/g);
+                          return parts.map((part, idx) => {
+                            if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+                              const inner = part.slice(1, -1);
+                              return (
+                                <strong
+                                  key={idx}
+                                  className={
+                                    isIncoming
+                                      ? "font-extrabold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded"
+                                      : "font-extrabold text-white bg-black/15 px-1 py-0.5 rounded"
+                                  }
+                                >
+                                  {inner}
+                                </strong>
+                              );
+                            }
+                            return <span key={idx}>{part}</span>;
+                          });
+                        };
+
                         return (
                           <div
                             key={msg.id}
@@ -1094,7 +1117,7 @@ export default function Inbox() {
 
                               {messageText && (
                                 <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                                  {messageText}
+                                  {renderFormattedWhatsAppText(messageText, isInbound)}
                                 </p>
                               )}
 
