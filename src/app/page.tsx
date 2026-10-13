@@ -112,28 +112,32 @@ export default function Dashboard() {
 
         <main className="p-8 md:p-12 space-y-12 max-w-[1600px] w-full mx-auto">
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-[#E5E7EB] pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-slate-200/80 pb-6">
             <div>
-              <p className="text-xs font-light tracking-[0.2em] text-[#71717A] uppercase mb-2">
-                {todayFormatted || 'Loading Date...'}
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-serif font-medium text-[#111111] tracking-wide">
-                Welcome back, Jessica
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                  {todayFormatted || 'Classic Pearl Operations Live'}
+                </p>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Welcome back, Classic Pearl
               </h1>
+              <p className="text-xs text-slate-500 mt-1">Real-time WhatsApp marketing, client engagement & booking analytics.</p>
             </div>
 
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => fetchLiveStats()}
                 disabled={loading}
-                className="h-10 px-5 rounded-md bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] text-[13px] font-medium flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                className="h-9 px-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
               >
-                <RefreshCw className={`w-4 h-4 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
                 <span>Sync Data</span>
               </button>
               <Link href="/campaigns">
-                <button className="h-10 px-6 rounded-md bg-[#111111] text-white text-[13px] font-medium flex items-center gap-2 transition-colors hover:bg-[#D4AF37]">
-                  <Plus className="w-4 h-4" />
+                <button className="h-9 px-5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm hover:-translate-y-0.5 active:translate-y-0">
+                  <Plus className="w-3.5 h-3.5 text-amber-400" />
                   <span>New Broadcast</span>
                 </button>
               </Link>
@@ -141,41 +145,53 @@ export default function Dashboard() {
           </div>
 
           {/* Primary Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Stat: Audience */}
-            <div className="p-6 bg-white border border-[#E5E7EB] rounded-lg relative overflow-hidden group hover:border-[#D1D5DB] transition-colors">
-              <div className="flex justify-between items-start mb-6">
-                <p className="text-[11px] font-medium tracking-widest text-[#71717A] uppercase">Total Contacts</p>
-                <Users className="w-4 h-4 text-[#A1A1AA]" />
+            <div className="p-5 bg-white border border-slate-200/90 rounded-2xl relative overflow-hidden group hover:border-slate-300 hover:shadow-md transition-all duration-200">
+              <div className="flex justify-between items-start mb-4">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Total Contacts</p>
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
+                </div>
               </div>
-              <h3 className="text-4xl font-serif font-medium text-[#111111]">{stats.totalContacts.toLocaleString()}</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.totalContacts.toLocaleString()}</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Verified audience members</p>
             </div>
 
             {/* Stat: Engagement */}
-            <div className="p-6 bg-white border border-[#E5E7EB] rounded-lg relative overflow-hidden group hover:border-[#D1D5DB] transition-colors">
-              <div className="flex justify-between items-start mb-6">
-                <p className="text-[11px] font-medium tracking-widest text-[#71717A] uppercase">Active Threads</p>
-                <Layers className="w-4 h-4 text-[#A1A1AA]" />
+            <div className="p-5 bg-white border border-slate-200/90 rounded-2xl relative overflow-hidden group hover:border-slate-300 hover:shadow-md transition-all duration-200">
+              <div className="flex justify-between items-start mb-4">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Active Threads</p>
+                <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                  <Layers className="w-4 h-4" />
+                </div>
               </div>
-              <h3 className="text-4xl font-serif font-medium text-[#111111]">{stats.totalConversations.toLocaleString()}</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.totalConversations.toLocaleString()}</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Active customer chats</p>
             </div>
 
             {/* Stat: Delivery */}
-            <div className="p-6 bg-white border border-[#E5E7EB] rounded-lg relative overflow-hidden group hover:border-[#D1D5DB] transition-colors">
-              <div className="flex justify-between items-start mb-6">
-                <p className="text-[11px] font-medium tracking-widest text-[#71717A] uppercase">Messages Sent</p>
-                <ArrowRight className="w-4 h-4 text-[#A1A1AA]" />
+            <div className="p-5 bg-white border border-slate-200/90 rounded-2xl relative overflow-hidden group hover:border-slate-300 hover:shadow-md transition-all duration-200">
+              <div className="flex justify-between items-start mb-4">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Messages Dispatched</p>
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </div>
-              <h3 className="text-4xl font-serif font-medium text-[#111111]">{stats.campaigns.sent.toLocaleString()}</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.campaigns.sent.toLocaleString()}</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Delivered to network</p>
             </div>
 
             {/* Stat: Open Rate */}
-            <div className="p-6 bg-[#111111] border border-[#111111] rounded-lg relative overflow-hidden">
-              <div className="flex justify-between items-start mb-6">
-                <p className="text-[11px] font-medium tracking-widest text-[#A1A1AA] uppercase">Read Rate</p>
-                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+            <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl relative overflow-hidden shadow-sm group hover:shadow-md transition-all duration-200 text-white">
+              <div className="flex justify-between items-start mb-4">
+                <p className="text-[11px] font-bold tracking-wider text-slate-300 uppercase">Read Rate</p>
+                <div className="w-8 h-8 rounded-lg bg-white/10 text-amber-400 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4" />
+                </div>
               </div>
-              <h3 className="text-4xl font-serif font-medium text-white">{stats.campaigns.successRate}%</h3>
+              <h3 className="text-3xl font-black text-white tracking-tight">{stats.campaigns.successRate}%</h3>
+              <p className="text-xs text-slate-300 font-medium mt-1">Seen & read by clients</p>
             </div>
           </div>
 

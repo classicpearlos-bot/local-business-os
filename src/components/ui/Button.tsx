@@ -22,14 +22,14 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'gold-button text-white shadow-md shadow-[#C59E3F]/25 border border-[#DFB755] active:scale-95',
-  secondary: 'bg-[#F2ECE0] text-[#3E2D12] hover:bg-[#EBE3D3] active:bg-[#E2D7C3] border border-[#DFBE7E]/60 shadow-xs active:scale-95',
-  outline: 'bg-white text-[#5D564E] hover:bg-[#FAF7F2] hover:text-[#1E1B18] active:bg-[#F2ECE0] border border-[#EFE3CF] hover:border-[#DFBE7E] shadow-xs active:scale-95',
-  ghost: 'bg-transparent text-[#7C756D] hover:text-[#1E1B18] hover:bg-[#F2ECE0]/70 border border-transparent',
-  danger: 'bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:from-rose-500 hover:to-rose-600 shadow-md shadow-rose-600/20 border border-rose-400/20 active:scale-95',
-  whatsapp: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-md shadow-emerald-600/20 border border-emerald-400/20 active:scale-95',
-  dark: 'bg-[#1E1B2E] text-white hover:bg-[#2A263D] active:bg-[#0D0A14] shadow-sm border border-[#DFBE7E]/30',
-  warning: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20 border border-amber-400/20 active:scale-95'
+  primary: 'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 shadow-sm shadow-slate-900/10 border border-slate-900/10 font-semibold',
+  secondary: 'bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 border border-slate-200 shadow-xs font-semibold',
+  outline: 'bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 border border-slate-300 shadow-xs font-semibold',
+  ghost: 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent font-medium',
+  danger: 'bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:from-rose-500 hover:to-rose-600 shadow-sm shadow-rose-600/20 border border-rose-500/30 font-semibold',
+  whatsapp: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-sm shadow-emerald-600/20 border border-emerald-500/30 font-semibold',
+  dark: 'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 shadow-sm border border-slate-800',
+  warning: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-sm shadow-amber-500/20 border border-amber-400/30 font-semibold'
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

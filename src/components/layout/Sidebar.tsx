@@ -66,25 +66,27 @@ export function Sidebar({ className = '' }: SidebarProps) {
   return (
     <>
       <CommandPalette />
-      <aside className={`w-64 bg-white text-[#111111] flex flex-col justify-between shrink-0 border-r border-[#E5E7EB] select-none z-20 ${className}`}>
+      <aside className={`w-64 bg-white text-slate-900 flex flex-col justify-between shrink-0 border-r border-slate-200/80 select-none z-20 ${className}`}>
         {/* Brand Header */}
         <div>
-          <div className="pt-10 pb-8 px-8 flex flex-col items-center justify-center">
-            <Link href="/" className="flex flex-col items-center text-center group">
-              <div className="w-12 h-12 flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-105">
-                <span className="font-serif font-medium text-4xl tracking-tighter text-[#111111]">Cp</span>
+          <div className="pt-8 pb-6 px-6">
+            <Link href="/" className="flex items-center gap-3.5 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white flex items-center justify-center font-serif font-black text-lg shadow-sm shadow-amber-500/20 transition-transform duration-300 group-hover:scale-105">
+                CP
               </div>
-              <h1 className="font-serif text-xl text-[#111111] tracking-[0.15em] font-medium">
-                NEXCHAT
-              </h1>
-              <p className="text-[10px] font-light tracking-[0.2em] text-[#71717A] uppercase mt-1">
-                Classic Pearl
-              </p>
+              <div className="min-w-0">
+                <h1 className="font-bold text-sm text-slate-900 tracking-tight leading-none group-hover:text-amber-600 transition-colors">
+                  Classic Pearl
+                </h1>
+                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase mt-1">
+                  Salon & Spa OS
+                </p>
+              </div>
             </Link>
           </div>
 
           {/* Navigation Links */}
-          <nav className="px-4 space-y-0.5 overflow-y-auto max-h-[calc(100vh-270px)]">
+          <nav className="px-3 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -93,27 +95,24 @@ export function Sidebar({ className = '' }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-4 py-3 rounded-md text-[13px] transition-all duration-300 group relative ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group relative ${
                     isActive
-                      ? 'text-[#111111] font-medium bg-[#FAFAFA]'
-                      : 'text-[#71717A] font-light hover:text-[#111111] hover:bg-[#FAFAFA]/50'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                   }`}
                 >
-                  {/* Minimalist Active Indicator Line */}
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-1/2 bg-[#D4AF37] rounded-r-full" />
-                  )}
-
-                  <div className="flex items-center gap-4">
-                    <Icon className={`w-[18px] h-[18px] stroke-[1.5] transition-colors ${
-                      isActive ? 'text-[#D4AF37]' : 'text-[#A1A1AA] group-hover:text-[#111111]'
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 transition-colors ${
+                      isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-slate-700'
                     }`} />
-                    <span className="tracking-wide">{item.label}</span>
+                    <span>{item.label}</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-sm bg-[#111111] text-white">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isActive ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 text-slate-700'
+                      }`}>
                         {item.badge}
                       </span>
                     )}
@@ -125,21 +124,22 @@ export function Sidebar({ className = '' }: SidebarProps) {
         </div>
 
         {/* Bottom Profile Area */}
-        <div className="p-6 mt-auto">
-          <div className="flex items-center justify-between pt-6 border-t border-[#E5E7EB]">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
-                <span className="font-serif text-white font-medium text-sm">J</span>
+        <div className="p-4 border-t border-slate-100 mt-auto">
+          <Link href="/whatsapp" className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                CP
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-[#111111] truncate">Jessica</p>
-                <p className="text-[10px] font-light tracking-wide text-[#71717A] uppercase truncate mt-0.5">Owner</p>
+                <p className="text-xs font-bold text-slate-900 truncate">Classic Pearl</p>
+                <p className="text-[10px] font-medium text-emerald-600 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                  Meta Connected
+                </p>
               </div>
             </div>
-            <button className="text-[#A1A1AA] hover:text-[#111111] transition-colors">
-              <MoreVertical className="w-4 h-4 stroke-[1.5]" />
-            </button>
-          </div>
+            <Settings className="w-4 h-4 text-slate-400 hover:text-slate-700 transition-colors" />
+          </Link>
         </div>
       </aside>
     </>

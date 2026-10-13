@@ -24,44 +24,44 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const variantStyles: Record<BadgeVariant, { container: string; dot: string }> = {
   default: {
-    container: 'bg-[#F2ECE0] text-[#3E2D12] border-[#DFBE7E]/60 shadow-xs',
-    dot: 'bg-[#C59E3F]'
+    container: 'bg-slate-100 text-slate-700 border-slate-200/80 shadow-xs',
+    dot: 'bg-slate-500'
   },
   primary: {
-    container: 'bg-[#FDF4E2] text-[#8C6514] border-[#EBD4A4] shadow-xs',
-    dot: 'bg-[#D4AF37]'
+    container: 'bg-amber-50 text-amber-900 border-amber-200/80 shadow-xs font-semibold',
+    dot: 'bg-amber-500'
   },
   gold: {
-    container: 'bg-gradient-to-r from-[#FDF6E2] to-[#F5E5C9] text-[#7A5714] border-[#DFBE7E] shadow-xs',
-    dot: 'bg-[#C59E3F]'
+    container: 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-900 border-amber-200 shadow-xs font-semibold',
+    dot: 'bg-amber-500'
   },
   purple: {
-    container: 'bg-[#F3E8FF] text-[#6B21A8] border-[#D8B4FE] shadow-xs',
-    dot: 'bg-[#9333EA]'
+    container: 'bg-purple-50 text-purple-700 border-purple-200 shadow-xs',
+    dot: 'bg-purple-500'
   },
   success: {
-    container: 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0] shadow-xs',
-    dot: 'bg-[#10B981]'
+    container: 'bg-emerald-50 text-emerald-800 border-emerald-200/90 shadow-xs font-semibold',
+    dot: 'bg-emerald-500'
   },
   warning: {
-    container: 'bg-[#FFFBEB] text-[#92400E] border-[#FDE68A] shadow-xs',
-    dot: 'bg-[#F59E0B]'
+    container: 'bg-amber-50 text-amber-800 border-amber-200 shadow-xs font-semibold',
+    dot: 'bg-amber-500'
   },
   danger: {
-    container: 'bg-[#FEF2F2] text-[#991B1B] border-[#FECACA] shadow-xs',
-    dot: 'bg-[#EF4444]'
+    container: 'bg-rose-50 text-rose-800 border-rose-200 shadow-xs font-semibold',
+    dot: 'bg-rose-500'
   },
   info: {
-    container: 'bg-[#F0F9FF] text-[#075985] border-[#BAE6FD] shadow-xs',
-    dot: 'bg-[#0EA5E9]'
+    container: 'bg-sky-50 text-sky-800 border-sky-200 shadow-xs font-semibold',
+    dot: 'bg-sky-500'
   },
   neutral: {
-    container: 'bg-[#FAF7F2] text-[#5D564E] border-[#EFE3CF]',
-    dot: 'bg-[#7C756D]'
+    container: 'bg-slate-50 text-slate-600 border-slate-200',
+    dot: 'bg-slate-400'
   },
   outline: {
-    container: 'bg-transparent text-[#7C756D] border-[#EFE3CF]',
-    dot: 'bg-[#C59E3F]'
+    container: 'bg-transparent text-slate-600 border-slate-300',
+    dot: 'bg-slate-400'
   }
 };
 

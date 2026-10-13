@@ -195,7 +195,7 @@ export default function ContactsPage() {
   });
 
   return (
-    <div className="flex h-screen bg-[#F7F3EA]">
+    <div className="flex h-screen bg-[#F8FAFC]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -233,15 +233,15 @@ export default function ContactsPage() {
               className={`p-5 rounded-2xl border transition-all cursor-pointer ${
                 statusFilter === 'all'
                   ? 'bg-[#0F172A] border-indigo-500/80 shadow-lg shadow-indigo-500/10'
-                  : 'bg-[#FAF7F2] border-[#EFE3CF] hover:border-[#DFBE7E]/60'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#D4AF37]/60'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black uppercase tracking-wider text-[#7C756D]">Total Audience</span>
+                <span className="text-xs font-black uppercase tracking-wider text-[#64748B]">Total Audience</span>
                 <Users className="w-4 h-4 text-indigo-400" />
               </div>
               <p className="text-2xl font-black text-white">{total}</p>
-              <p className="text-[11px] font-medium text-[#7C756D] mt-1">
+              <p className="text-[11px] font-medium text-[#64748B] mt-1">
                 Complete WhatsApp customer directory
               </p>
             </div>
@@ -252,7 +252,7 @@ export default function ContactsPage() {
               className={`p-5 rounded-2xl border transition-all cursor-pointer ${
                 statusFilter === 'opted_in'
                   ? 'bg-emerald-950/40 border-emerald-500/80 shadow-lg shadow-emerald-500/10'
-                  : 'bg-[#FAF7F2] border-[#EFE3CF] hover:border-[#DFBE7E]/60'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#D4AF37]/60'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -265,7 +265,7 @@ export default function ContactsPage() {
                 </span>
               </div>
               <p className="text-2xl font-black text-emerald-400">{optedInCount}</p>
-              <p className="text-[11px] font-medium text-[#7C756D] mt-1">
+              <p className="text-[11px] font-medium text-[#64748B] mt-1">
                 Eligible for marketing broadcasts • 100% Meta compliant
               </p>
             </div>
@@ -276,7 +276,7 @@ export default function ContactsPage() {
               className={`p-5 rounded-2xl border transition-all cursor-pointer ${
                 statusFilter === 'opted_out'
                   ? 'bg-rose-950/40 border-rose-500/80 shadow-lg shadow-rose-500/10'
-                  : 'bg-[#FAF7F2] border-[#EFE3CF] hover:border-[#DFBE7E]/60'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#D4AF37]/60'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -289,7 +289,7 @@ export default function ContactsPage() {
                 </span>
               </div>
               <p className="text-2xl font-black text-rose-400">{optedOutCount}</p>
-              <p className="text-[11px] font-medium text-[#7C756D] mt-1">
+              <p className="text-[11px] font-medium text-[#64748B] mt-1">
                 Excluded from broadcasts to protect Meta quality & prevent spam blocks
               </p>
             </div>
@@ -298,19 +298,19 @@ export default function ContactsPage() {
 
           <Card className="overflow-hidden">
             {/* Toolbar */}
-            <div className="p-5 border-b border-[#EFE3CF] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+            <div className="p-5 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
               <div className="flex items-center gap-3 flex-1 max-w-md">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7C756D]" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#64748B]" />
                   <input
                     type="text"
                     placeholder="Search by name or WhatsApp number..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-white placeholder:text-[#9E968D]"
+                    className="w-full pl-9 pr-8 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-white placeholder:text-[#9E968D]"
                   />
                   {search && (
-                    <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-[#7C756D] hover:text-[#2C2723] cursor-pointer">
+                    <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-[#64748B] hover:text-[#2C2723] cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -319,11 +319,11 @@ export default function ContactsPage() {
 
               {/* Status Filter Pills */}
               <div className="flex items-center gap-2">
-                <div className="flex bg-[#F7F3EA] p-1 rounded-xl border border-[#EFE3CF]">
+                <div className="flex bg-[#F8FAFC] p-1 rounded-xl border border-[#E2E8F0]">
                   <button
                     onClick={() => setStatusFilter('all')}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'all' ? 'bg-slate-800 text-white shadow-xs border border-[#DFBE7E]/60' : 'text-[#7C756D] hover:text-[#2C2723]'
+                      statusFilter === 'all' ? 'bg-slate-800 text-white shadow-xs border border-[#D4AF37]/60' : 'text-[#64748B] hover:text-[#2C2723]'
                     }`}
                   >
                     All ({total})
@@ -331,7 +331,7 @@ export default function ContactsPage() {
                   <button
                     onClick={() => setStatusFilter('opted_in')}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'opted_in' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700 shadow-xs' : 'text-[#7C756D] hover:text-[#2C2723]'
+                      statusFilter === 'opted_in' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700 shadow-xs' : 'text-[#64748B] hover:text-[#2C2723]'
                     }`}
                   >
                     Opted In ({optedInCount})
@@ -339,7 +339,7 @@ export default function ContactsPage() {
                   <button
                     onClick={() => setStatusFilter('opted_out')}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === 'opted_out' ? 'bg-rose-950 text-rose-300 border border-rose-700 shadow-xs' : 'text-[#7C756D] hover:text-[#2C2723]'
+                      statusFilter === 'opted_out' ? 'bg-rose-950 text-rose-300 border border-rose-700 shadow-xs' : 'text-[#64748B] hover:text-[#2C2723]'
                     }`}
                   >
                     Opted Out ({optedOutCount})
@@ -355,7 +355,7 @@ export default function ContactsPage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#FAF7F2]/70 border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#F8FAFC]/70 border-b border-[#E2E8F0] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Customer</th>
                     <th className="px-6 py-4">WhatsApp Number</th>
@@ -366,7 +366,7 @@ export default function ContactsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium text-slate-600">
                   {filteredContacts.map((contact) => (
-                    <tr key={contact.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
+                    <tr key={contact.id} className="hover:bg-[#F8FAFC]/80 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar name={contact.name} size="sm" />
@@ -389,7 +389,7 @@ export default function ContactsPage() {
                           )}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-xs text-[#7C756D]">
+                      <td className="px-6 py-4 text-xs text-[#64748B]">
                         {new Date(contact.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -473,7 +473,7 @@ export default function ContactsPage() {
             />
           )}
 
-          <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#EFE3CF] flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-slate-800">Marketing Broadcast Opt-In</p>
               <p className="text-[11px] text-[#9E968D] font-medium">Opted-out contacts will never receive campaign blasts.</p>
@@ -489,7 +489,7 @@ export default function ContactsPage() {
             </button>
           </div>
 
-          <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#EFE3CF]">
+          <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#E2E8F0]">
             <Button variant="outline" size="sm" type="button" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
@@ -522,7 +522,7 @@ export default function ContactsPage() {
             onClear={() => setParsedExcel(null)}
           />
 
-          <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#EFE3CF]">
+          <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#E2E8F0]">
             <Button variant="outline" size="sm" onClick={() => setShowImportModal(false)}>
               Cancel
             </Button>

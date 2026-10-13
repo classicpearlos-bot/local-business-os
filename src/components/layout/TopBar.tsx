@@ -31,19 +31,19 @@ export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
   }, []);
 
   return (
-    <header className="px-8 border-b border-[#E5E7EB] bg-white sticky top-0 z-20">
+    <header className="px-6 lg:px-8 border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-30 transition-all">
       {/* Row 1: page title + page-level action buttons */}
       {(title || actions) && (
-        <div className="flex items-center justify-between py-5 border-b border-[#E5E7EB]/50">
+        <div className="flex items-center justify-between py-4 border-b border-slate-100">
           <div className="min-w-0 flex items-center gap-4">
             {title && (
               <div className="min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-xl font-serif font-medium text-[#111111] tracking-wide truncate">{title}</h1>
+                  <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">{title}</h1>
                   {badge}
                 </div>
                 {subtitle && (
-                  <p className="text-[11px] text-[#71717A] tracking-wider uppercase mt-1 truncate hidden sm:block">{subtitle}</p>
+                  <p className="text-xs text-slate-500 font-normal mt-0.5 truncate hidden sm:block">{subtitle}</p>
                 )}
               </div>
             )}
@@ -55,49 +55,53 @@ export function TopBar({ title, subtitle, badge, actions }: TopBarProps) {
       )}
 
       {/* Row 2: global search + global controls */}
-      <div className="flex items-center justify-between py-4 gap-4">
+      <div className="flex items-center justify-between py-3 gap-4">
         <div className="flex items-center gap-3 flex-1 max-w-md">
           <button
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
               window.dispatchEvent(event);
             }}
-            className="w-full h-10 px-4 rounded-md bg-[#FAFAFA] border border-[#E5E7EB] text-[#A1A1AA] hover:border-[#D1D5DB] hover:bg-white transition-all flex items-center justify-between text-sm font-light cursor-text"
+            className="w-full h-9 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-white transition-all flex items-center justify-between text-xs font-medium cursor-text shadow-xs"
           >
-            <div className="flex items-center gap-3">
-              <Search className="w-4 h-4 text-[#71717A] stroke-[1.5]" />
-              <span className="tracking-wide">Search anything...</span>
+            <div className="flex items-center gap-2.5">
+              <Search className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-500">Search campaigns, contacts, templates...</span>
             </div>
-            <kbd className="px-2 py-0.5 text-[10px] font-mono text-[#A1A1AA] bg-white rounded border border-[#E5E7EB]">⌘ K</kbd>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white rounded border border-slate-200 shadow-2xs">⌘ K</kbd>
           </button>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Link href="/inbox">
-            <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#71717A] hover:text-[#111111] hover:bg-[#FAFAFA] transition-colors">
-              <Bell className="w-[18px] h-[18px] stroke-[1.5]" />
+            <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#111111]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
               )}
             </button>
           </Link>
           <Link href="/campaigns">
-            <button className="w-10 h-10 rounded-full flex items-center justify-center text-[#71717A] hover:text-[#111111] hover:bg-[#FAFAFA] transition-colors">
-              <Gift className="w-[18px] h-[18px] stroke-[1.5]" />
+            <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+              <Gift className="w-4 h-4" />
             </button>
           </Link>
-          <div className="h-4 w-px bg-[#E5E7EB] mx-1" />
-          <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-[#FAFAFA] transition-colors cursor-pointer">
-            <div className="w-6 h-6 flex items-center justify-center">
-              <span className="font-serif font-medium text-[11px] text-[#111111]">Cp</span>
-            </div>
-            <div className="hidden md:block text-left">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-[#111111] tracking-wide">Classic Pearl</span>
-                <ChevronDown className="w-3 h-3 text-[#A1A1AA] stroke-[1.5]" />
+          <div className="h-4 w-px bg-slate-200 mx-1" />
+          <Link href="/whatsapp">
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                CP
               </div>
+              <div className="hidden md:block text-left">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-900">Classic Pearl</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100" title="Meta Connected" />
+                </div>
+                <p className="text-[10px] text-slate-400 font-medium">Unisex Salon</p>
+              </div>
+              <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5 hidden md:block" />
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </header>

@@ -66,7 +66,7 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
   return (
     <div className="space-y-2">
       {value && (
-        <div className="relative rounded-xl overflow-hidden border border-[#E5DED2]" style={{ height: 100 }}>
+        <div className="relative rounded-xl overflow-hidden border border-[#E2E8F0]" style={{ height: 100 }}>
           <img src={value} alt="header" className="w-full h-full object-cover" />
           <button onClick={() => onChange('', undefined)}
             className="absolute top-1 right-1 p-0.5 bg-black/50 rounded-full text-white">
@@ -84,7 +84,7 @@ function ImageUploader({ value, onChange }: { value: string; onChange: (url: str
       </button>
       <input type="text" value={value} onChange={e => { setError(''); onChange(e.target.value); }}
         placeholder="or paste an image URL…"
-        className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
+        className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
       {error && <p className="text-[11px] text-red-500">{error}</p>}
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
         onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
@@ -105,7 +105,7 @@ function LivePreview({ headerType, headerText, headerImageUrl, bodyText, buttons
   return (
     <div className="flex flex-col items-center justify-start pt-4">
       <p className="text-[10px] font-black uppercase tracking-widest text-[#9E968D] mb-3">Live Preview</p>
-      <div className="w-full max-w-[260px] rounded-2xl overflow-hidden shadow-lg border border-[#E5DED2] bg-white">
+      <div className="w-full max-w-[260px] rounded-2xl overflow-hidden shadow-lg border border-[#E2E8F0] bg-white">
         {/* WhatsApp header bar */}
         <div className="bg-[#075E54] px-3 py-2 flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-[#25D366] flex items-center justify-center text-white text-[9px] font-black">CP</div>
@@ -140,11 +140,11 @@ function LivePreview({ headerType, headerText, headerImageUrl, bodyText, buttons
               <div className="p-3 space-y-2">
                 {/* Text header */}
                 {headerType === 'TEXT' && headerText && (
-                  <p className="text-[11px] font-black text-[#1E1B18]">{headerText}</p>
+                  <p className="text-[11px] font-black text-[#0F172A]">{headerText}</p>
                 )}
                 {/* Body */}
                 {bodyText && (
-                  <p className="text-[11px] text-[#1E1B18] leading-relaxed whitespace-pre-wrap">{bodyText}</p>
+                  <p className="text-[11px] text-[#0F172A] leading-relaxed whitespace-pre-wrap">{bodyText}</p>
                 )}
                 <div className="flex justify-end">
                   <span className="text-[8px] text-[#9E968D]">13:17 ✓✓</span>
@@ -152,10 +152,10 @@ function LivePreview({ headerType, headerText, headerImageUrl, bodyText, buttons
               </div>
               {/* Buttons */}
               {buttons.length > 0 && (
-                <div className="border-t border-[#E5DED2]">
+                <div className="border-t border-[#E2E8F0]">
                   {buttons.map((btn, i) => (
                     <div key={i} className={`flex items-center justify-center gap-1.5 py-2 text-[#0a85c2] text-[11px] font-bold ${
-                      i < buttons.length - 1 ? 'border-b border-[#E5DED2]' : ''
+                      i < buttons.length - 1 ? 'border-b border-[#E2E8F0]' : ''
                     }`}>
                       {btn.type === 'PHONE_NUMBER' && <Phone className="w-3 h-3" />}
                       {btn.type === 'URL' && <Globe className="w-3 h-3" />}
@@ -203,14 +203,14 @@ function ButtonEditor({ buttons, onChange }: { buttons: TemplateButton[]; onChan
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-[#3E2D12]">Buttons <span className="font-normal text-[#9E968D]">(max 3)</span></label>
+        <label className="text-xs font-bold text-[#0F172A]">Buttons <span className="font-normal text-[#9E968D]">(max 3)</span></label>
         <span className="text-[10px] text-[#9E968D]">{buttons.length}/3 added</span>
       </div>
 
       {buttons.map((btn, i) => (
-        <div key={i} className="p-3 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl space-y-2">
+        <div key={i} className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-[#706B61] uppercase tracking-wider">{typeLabel[btn.type]}</span>
+            <span className="text-[10px] font-black text-[#64748B] uppercase tracking-wider">{typeLabel[btn.type]}</span>
             <button onClick={() => remove(i)} className="p-1 hover:bg-red-50 text-[#9E968D] hover:text-red-500 rounded-lg">
               <X className="w-3.5 h-3.5" />
             </button>
@@ -219,19 +219,19 @@ function ButtonEditor({ buttons, onChange }: { buttons: TemplateButton[]; onChan
             type="text" value={btn.text}
             onChange={e => update(i, 'text', e.target.value)}
             placeholder="Button label shown to customer"
-            className="w-full px-3 py-2 bg-white border border-[#E5DED2] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]"
+            className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]"
           />
           {btn.type === 'PHONE_NUMBER' && (
             <input type="text" value={btn.phone_number || ''}
               onChange={e => update(i, 'phone_number', e.target.value)}
               placeholder="+91 98765 43210 (with country code)"
-              className="w-full px-3 py-2 bg-white border border-[#E5DED2] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
+              className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
           )}
           {btn.type === 'URL' && (
             <input type="text" value={btn.url || ''}
               onChange={e => update(i, 'url', e.target.value)}
               placeholder="https://maps.google.com/... or https://youwebsite.com"
-              className="w-full px-3 py-2 bg-white border border-[#E5DED2] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
+              className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
           )}
         </div>
       ))}
@@ -239,15 +239,15 @@ function ButtonEditor({ buttons, onChange }: { buttons: TemplateButton[]; onChan
       {buttons.length < 3 && (
         <div className="flex flex-wrap gap-2">
           <button onClick={() => add('PHONE_NUMBER')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5DED2] bg-white hover:border-[#B08D57] hover:bg-[#FAF7F2] text-[11px] font-bold text-[#706B61] hover:text-[#292722] transition-all">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E2E8F0] bg-white hover:border-[#B08D57] hover:bg-[#F8FAFC] text-[11px] font-bold text-[#64748B] hover:text-[#292722] transition-all">
             <Phone className="w-3 h-3" /> Call Button
           </button>
           <button onClick={() => add('URL')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5DED2] bg-white hover:border-[#B08D57] hover:bg-[#FAF7F2] text-[11px] font-bold text-[#706B61] hover:text-[#292722] transition-all">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E2E8F0] bg-white hover:border-[#B08D57] hover:bg-[#F8FAFC] text-[11px] font-bold text-[#64748B] hover:text-[#292722] transition-all">
             <Globe className="w-3 h-3" /> URL / Directions
           </button>
           <button onClick={() => add('QUICK_REPLY')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5DED2] bg-white hover:border-[#B08D57] hover:bg-[#FAF7F2] text-[11px] font-bold text-[#706B61] hover:text-[#292722] transition-all">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E2E8F0] bg-white hover:border-[#B08D57] hover:bg-[#F8FAFC] text-[11px] font-bold text-[#64748B] hover:text-[#292722] transition-all">
             <MessageSquare className="w-3 h-3" /> Quick Reply
           </button>
         </div>
@@ -399,7 +399,7 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F7F3EA]">
+    <div className="flex h-screen bg-[#F8FAFC]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
@@ -429,12 +429,12 @@ export default function TemplatesPage() {
 
         <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
           <Card className="overflow-hidden">
-            <div className="p-5 border-b border-[#EFE3CF] flex items-center justify-between gap-4 bg-white">
+            <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between gap-4 bg-white">
               <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7C756D]" />
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#64748B]" />
                 <input type="text" placeholder="Search templates…" value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#FAF7F2] border border-[#EFE3CF] rounded-xl text-xs font-medium outline-none" />
+                  className="w-full pl-9 pr-4 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs font-medium outline-none" />
               </div>
               <Button variant="outline" size="sm" onClick={fetchTemplates}
                 leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />}>
@@ -444,7 +444,7 @@ export default function TemplatesPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#FAF7F2]/70 border-b border-[#EFE3CF] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#F8FAFC]/70 border-b border-[#E2E8F0] text-[#9E968D] font-bold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-6 py-4">Template Name</th>
                     <th className="px-6 py-4">Category</th>
@@ -454,13 +454,13 @@ export default function TemplatesPage() {
                     <th className="px-6 py-4 text-right">Preview</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EFE3CF] font-medium text-[#3E2D12]">
+                <tbody className="divide-y divide-[#E2E8F0] font-medium text-[#0F172A]">
                   {loading && (
                     <tr><td colSpan={6} className="text-center py-10 text-sm text-[#9E968D]">Loading templates…</td></tr>
                   )}
                   {!loading && filtered.map((t) => (
-                    <tr key={t.id} className="hover:bg-[#FAF7F2]/80 transition-colors">
-                      <td className="px-6 py-4 font-mono font-bold text-[#1E1B18] text-xs">{t.name}</td>
+                    <tr key={t.id} className="hover:bg-[#F8FAFC]/80 transition-colors">
+                      <td className="px-6 py-4 font-mono font-bold text-[#0F172A] text-xs">{t.name}</td>
                       <td className="px-6 py-4 text-xs font-bold uppercase text-[#9E968D]">{t.category}</td>
                       <td className="px-6 py-4 text-xs">
                         <span className={`px-2 py-0.5 rounded-md font-bold ${
@@ -515,7 +515,7 @@ export default function TemplatesPage() {
               buttons={getButtons(previewTemplate)}
             />
             {getBodyText(previewTemplate) !== '—' && (
-              <div className="p-3 bg-[#FAF7F2] rounded-xl border border-[#E5DED2]">
+              <div className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
                 <p className="text-[10px] font-black text-[#9E968D] uppercase tracking-wider mb-1">Body Text</p>
                 <p className="text-xs text-[#292722] whitespace-pre-wrap">{getBodyText(previewTemplate)}</p>
               </div>
@@ -543,18 +543,18 @@ export default function TemplatesPage() {
             {/* Name + Category */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-[#3E2D12] mb-1.5">Template Name *</label>
+                <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Template Name *</label>
                 <input type="text"
                   value={name}
                   onChange={e => setName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
                   placeholder="e.g. weekday_offer"
-                  className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#292722] outline-none focus:border-[#B08D57]" />
+                  className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs font-mono text-[#292722] outline-none focus:border-[#B08D57]" />
                 <p className="text-[9px] text-[#9E968D] mt-1">Lowercase, numbers, underscores only</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-[#3E2D12] mb-1.5">Category</label>
+                <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Category</label>
                 <select value={category} onChange={e => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none">
+                  className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#292722] outline-none">
                   <option value="MARKETING">Marketing</option>
                   <option value="UTILITY">Utility</option>
                 </select>
@@ -563,14 +563,14 @@ export default function TemplatesPage() {
 
             {/* Header */}
             <div>
-              <label className="block text-xs font-bold text-[#3E2D12] mb-1.5">Header (optional)</label>
+              <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Header (optional)</label>
               <div className="flex gap-2 mb-3">
                 {(['NONE','TEXT','IMAGE'] as HeaderType[]).map(t => (
                   <button key={t} onClick={() => setHeaderType(t)}
                     className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all ${
                       headerType === t
                         ? 'bg-[#B08D57] text-white border-[#B08D57]'
-                        : 'bg-white text-[#706B61] border-[#E5DED2] hover:border-[#B08D57]'
+                        : 'bg-white text-[#64748B] border-[#E2E8F0] hover:border-[#B08D57]'
                     }`}>
                     {t === 'NONE' ? 'No Header' : t === 'TEXT' ? 'Text Header' : '📷 Image Header'}
                   </button>
@@ -579,7 +579,7 @@ export default function TemplatesPage() {
               {headerType === 'TEXT' && (
                 <input type="text" value={headerText} onChange={e => setHeaderText(e.target.value)}
                   placeholder="Header title (max 60 chars)" maxLength={60}
-                  className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
+                  className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57]" />
               )}
               {headerType === 'IMAGE' && (
                 <ImageUploader
@@ -594,10 +594,10 @@ export default function TemplatesPage() {
 
             {/* Body Text */}
             <div>
-              <label className="block text-xs font-bold text-[#3E2D12] mb-1.5">Message Body *</label>
+              <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Message Body *</label>
               <textarea rows={5} value={bodyText} onChange={e => setBodyText(e.target.value)}
                 placeholder={`Hi, check out our exclusive weekday offers at Classic Pearl Salon!\n\nPremium hair, skin & grooming at special prices.\nCall: +91 83103 30322`}
-                className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E5DED2] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57] resize-none" />
+                className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#292722] outline-none focus:border-[#B08D57] resize-none" />
               <div className="flex justify-between mt-1">
                 <p className="text-[9px] text-amber-600 font-semibold">⚠️ Plain text only — no **bold** or *italic* (Meta rejects it)</p>
                 <p className="text-[9px] text-[#9E968D]">{bodyText.length} chars</p>
@@ -608,7 +608,7 @@ export default function TemplatesPage() {
             <ButtonEditor buttons={buttons} onChange={setButtons} />
 
             {/* Submit */}
-            <div className="pt-2 border-t border-[#E5DED2] flex justify-end gap-2">
+            <div className="pt-2 border-t border-[#E2E8F0] flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsCreateOpen(false)} disabled={creating}>Cancel</Button>
               <Button variant="primary" onClick={handleSubmit} isLoading={creating}>
                 Submit to Meta for Approval
@@ -617,7 +617,7 @@ export default function TemplatesPage() {
           </div>
 
           {/* RIGHT: Live Preview */}
-          <div className="hidden lg:block border-l border-[#E5DED2] pl-6">
+          <div className="hidden lg:block border-l border-[#E2E8F0] pl-6">
             <LivePreview
               headerType={headerType}
               headerText={headerText}
