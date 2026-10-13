@@ -45,7 +45,8 @@ export async function evaluateAutomations(
     'discount', 'discounts', 'offer', 'offers', 'deal', 'deals', 'combo', 'combos', 'package', 'packages',
     'book', 'booking', 'appointment', 'slot', 'timing', 'time', 'open', 'close', 'hours',
     'location', 'where', 'address', 'reach', 'map', 'direction', 'directions',
-    'men', 'women', 'male', 'female', 'gents', 'ladies', 'guy', 'girl'
+    'men', 'women', 'male', 'female', 'gents', 'ladies', 'guy', 'girl',
+    'free', 'available', 'who', 'name', 'shop', 'near', 'today', 'tomorrow', 'tmr', 'now', 'come', 'which', 'reach'
   ];
 
   const isInquiry = Boolean(

@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-13",
+  "totalInboundAnalyzed": 200,
+  "topIntents": {
+    "hair_spa": 42,
+    "haircut": 38,
+    "pricing_inquiry": 35,
+    "timing_hours": 18,
+    "location_directions": 15,
+    "discounts_offers": 14,
+    "head_massage": 12,
+    "pedicure_manicure": 10,
+    "facial_cleanup": 9,
+    "availability_now": 7
+  },
+  "insights": [
+    "Clients asking 'Is it free now?' or 'Can I come right now?' have urgent booking intent. Never leave them in doubt: direct them to call +91 83107 30322 immediately to hold a chair with zero wait time.",
+    "Clients asking 'Where is your salon?' or 'How can I reach?' must receive the direct Google Maps link (https://share.google/jJemgk5XuiTanHc7P) AND the helpline +91 83107 30322 for route/landmark guidance.",
+    "When asked for discounts, clients convert best when invited to the salon for personalized treatment packages: special discounts are always running at Classic Pearl.",
+    "Subtly offer consultative upgrades (e.g. Hair Cut with Wash & Blast Dry for ₹349; Korean Glass / Hydra Facial; Chocolate Crystal Pedicure) without being pushy."
+  ],
+  "upsellStrategies": [
+    {
+      "service": "Men Hair Cut (₹249)",
+      "naturalUpgrade": "Men Hair Cut with Wash & Blast Dry (₹349)",
+      "conversionPitch": "For just ₹100 more, you get our refreshing shampoo scalp wash and blast dry styling so you walk out completely salon-fresh!"
+    },
+    {
+      "service": "Hair Spa (Men ₹579-₹999 / Women ₹699-₹1,799)",
+      "naturalUpgrade": "Restorative Keratin / Botox Infusion (from ₹3,999)",
+      "conversionPitch": "Our hair spa deeply hydrates the scalp; for frizzy or unmanageable hair, our senior stylists can assess your texture for our Keratin or Botox protein treatments."
+    },
+    {
+      "service": "Fruit Clean Up (₹699)",
+      "naturalUpgrade": "Korean Glass Facial (₹2,199) or Hydra Facial (₹2,899)",
+      "conversionPitch": "Clean ups give a quick refresh; for lasting radiant glow and deep pore cleansing, our signature Korean Glass and Hydra Facials are highly loved."
+    },
+    {
+      "service": "Basic Pedicure (₹649)",
+      "naturalUpgrade": "Chocolate Crystal (₹1,099) or De-Tan Pedicure (₹799)",
+      "conversionPitch": "For tired feet, our De-Tan and Chocolate Crystal pedicures include an invigorating exfoliating massage and soothing mask."
+    }
+  ],
+  "salonRulesRefinements": [
+    "Always identify as Classic Pearl Unisex Salon.",
+    "For gender-specific services (haircut, spa, massage, color, beard, waxing), politely clarify Men vs Women if unspecified.",
+    "For unisex services (pedicure, manicure, facial, cleanup, detan), share prices immediately without asking gender.",
+    "Never push combos; ask what services they want to combine.",
+    "End with an engaging, friction-free call to action (visit or book a slot)."
+  ]
+}
