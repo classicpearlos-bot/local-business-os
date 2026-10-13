@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { fetchWhatsAppTemplates } from '@/lib/meta/whatsapp';
+import { getWhatsAppTemplates } from '@/lib/meta/templates';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -45,7 +45,7 @@ export async function GET() {
           .maybeSingle();
 
         if (account?.waba_id && account?.access_token) {
-          const metaRes = await fetchWhatsAppTemplates({
+          const metaRes = await getWhatsAppTemplates({
             wabaId: account.waba_id,
             accessToken: account.access_token
           });

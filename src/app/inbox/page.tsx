@@ -23,6 +23,7 @@ import {
   Plus,
   Bell, 
   Trash2,
+  User,
   UserCheck,
   AlertCircle,
   Clock,
