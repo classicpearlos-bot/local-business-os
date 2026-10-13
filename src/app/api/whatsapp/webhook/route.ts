@@ -414,10 +414,10 @@ export async function POST(request: Request) {
               const currentRank = STATUS_RANK[recip.status] || 0;
               const newRank = STATUS_RANK[newStatus] || 0;
 
-              if (newRank > currentRank || newStatus === 'FAILED') {
+              if (newRank >= currentRank || newStatus === 'FAILED') {
                 const updates: any = {
                   status: newStatus,
-                  meta_message_id: recip.meta_message_id || wamId
+                  meta_message_id: wamId || recip.meta_message_id
                 };
                 
                 if (newStatus === 'SENT') {

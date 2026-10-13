@@ -420,23 +420,9 @@ export default function CampaignsPage() {
     }
   };
 
-  // Open Full Campaign Report & Diagnostics Studio
-  const openReport = async (campaign: any) => {
-    setReportCampaign(campaign);
-    setReportTab('overview');
-    setReportLoading(true);
-    setRecipientSearch('');
-    setRecipientFilter('ALL');
-
-    try {
-      const res = await fetch(`/api/whatsapp/campaigns/${campaign.id}/recipients`);
-      if (res.ok) {
-        const data = await res.json();
-        setReportRecipients(data.recipients || []);
-      }
-    } finally {
-      setReportLoading(false);
-    }
+  // Open Full Campaign Report & Diagnostics Studio on dedicated page
+  const openReport = (campaign: any) => {
+    window.location.href = `/campaigns/${campaign.id}`;
   };
 
   // Export Failed Recipients to CSV
@@ -632,16 +618,27 @@ export default function CampaignsPage() {
                           {new Date(campaign.scheduled_at || campaign.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-28 bg-slate-100 rounded-full h-2 overflow-hidden">
-                              <div 
-                                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${percent}%` }}
-                              />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                              <div className="w-28 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div 
+                                  className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-semibold text-[#1E1B18]">
+                                {campaign.total_sent || 0}/{campaign.total_recipients || 0} sent ({percent}%)
+                              </span>
                             </div>
-                            <span className="text-xs font-semibold text-[#9E968D]">
-                              {percent === 100 ? '100% completed' : `${campaign.total_sent || 0} sent`}
-                            </span>
+                            <div className="flex items-center gap-2.5 text-[10px] font-semibold">
+                              <span className="text-emerald-700">{campaign.total_delivered || 0} reached</span>
+                              <span className="text-slate-300">•</span>
+                              <span className="text-sky-700">{campaign.total_read || 0} read</span>
+                              <span className="text-slate-300">•</span>
+                              <span className={(campaign.total_failed || 0) > 0 ? 'text-rose-600 font-bold' : 'text-[#9E968D]'}>
+                                {campaign.total_failed || 0} failed
+                              </span>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
