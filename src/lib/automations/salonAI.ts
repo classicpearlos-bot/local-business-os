@@ -554,29 +554,56 @@ export function getSalonDeterministicReply(
   }
 
   // 13. CONTEXTUAL REPLIES (Single-word answer "men" or "women" following a question)
+  const hasServiceKeyword = 
+    text.includes('haircut') || 
+    text.includes('hair cut') || 
+    text.includes('hair trim') || 
+    /\bcut\b/.test(text) ||
+    text.includes('spa') || 
+    text.includes('massage') || 
+    text.includes('color') || 
+    text.includes('colour') || 
+    text.includes('wash') || 
+    text.includes('dry') || 
+    text.includes('keratin') || 
+    text.includes('botox') || 
+    text.includes('nanoplastia') || 
+    text.includes('beard') || 
+    text.includes('shave') || 
+    text.includes('wax') || 
+    text.includes('facial') || 
+    text.includes('clean') || 
+    text.includes('pedicure') || 
+    text.includes('manicure') ||
+    text.includes('champ');
+
   const isShortMenReply = 
-    text === 'men' || 
-    text === 'for men' || 
-    text === 'gents' || 
-    text === 'for gents' || 
-    text === 'man' || 
-    text === 'male' || 
-    text === 'for male' || 
-    text === 'boy' || 
-    text === 'boys' || 
-    (isMenExplicit && !isWomenExplicit && text.length <= 15);
+    !hasServiceKeyword && (
+      text === 'men' || 
+      text === 'for men' || 
+      text === 'gents' || 
+      text === 'for gents' || 
+      text === 'man' || 
+      text === 'male' || 
+      text === 'for male' || 
+      text === 'boy' || 
+      text === 'boys' || 
+      (isMenExplicit && !isWomenExplicit && text.length <= 15)
+    );
 
   const isShortWomenReply = 
-    text === 'women' || 
-    text === 'for women' || 
-    text === 'ladies' || 
-    text === 'for ladies' || 
-    text === 'woman' || 
-    text === 'female' || 
-    text === 'for female' || 
-    text === 'girl' || 
-    text === 'girls' || 
-    (isWomenExplicit && !isMenExplicit && text.length <= 15);
+    !hasServiceKeyword && (
+      text === 'women' || 
+      text === 'for women' || 
+      text === 'ladies' || 
+      text === 'for ladies' || 
+      text === 'woman' || 
+      text === 'female' || 
+      text === 'for female' || 
+      text === 'girl' || 
+      text === 'girls' || 
+      (isWomenExplicit && !isMenExplicit && text.length <= 15)
+    );
 
   if (isShortMenReply) {
     const lastContext = getLastInquiryContext(chatHistory);
