@@ -11,11 +11,18 @@
     "head_massage": 12,
     "pedicure_manicure": 10,
     "facial_cleanup": 9,
-    "availability_now": 7
+    "availability_now": 7,
+    "body_massage_boundary": 6,
+    "beard_grooming_men": 5,
+    "waxing_threading_women": 5
   },
   "insights": [
     "Clients asking 'Is it free now?' or 'Can I come right now?' have urgent booking intent. Never leave them in doubt: direct them to call +91 83107 30322 immediately to hold a chair with zero wait time.",
     "Clients asking 'Where is your salon?' or 'How can I reach?' must receive the direct Google Maps link (https://share.google/jJemgk5XuiTanHc7P) AND the helpline +91 83107 30322 for route/landmark guidance.",
+    "Strict domain boundary: Classic Pearl is a unisex salon and does NOT offer body spa or body massages. If asked about body massage or body spa, politely clarify and pivot to relaxing Head Massages (Almond, Olive, Coconut from ₹349/₹399) and therapeutic Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)!",
+    "Strict gender exclusivity: Beard trimming/shaving/styling and Head Shave are exclusively for Men (never ask 'Men or Women?'). Waxing, Threading, and Hair Styling are exclusively for Women (never ask 'Men or Women?').",
+    "Unisex services (Pedicure, Manicure, Facial, Clean Up, De-Tan) must be shared directly with Regular and Member pricing without asking gender.",
+    "Only ask 'Men or Women?' for true dual services (Haircut, Hair Spa, Head Massage, Hair Color) when gender was not specified.",
     "When asked for discounts, clients convert best when invited to the salon for personalized treatment packages: special discounts are always running at Classic Pearl.",
     "Subtly offer consultative upgrades (e.g. Hair Cut with Wash & Blast Dry for ₹349; Korean Glass / Hydra Facial; Chocolate Crystal Pedicure) without being pushy."
   ],
@@ -43,9 +50,12 @@
   ],
   "salonRulesRefinements": [
     "Always identify as Classic Pearl Unisex Salon.",
-    "For gender-specific services (haircut, spa, massage, color, beard, waxing), politely clarify Men vs Women if unspecified.",
-    "For unisex services (pedicure, manicure, facial, cleanup, detan), share prices immediately without asking gender.",
+    "Strict domain boundary: We are a unisex salon, NOT a body massage parlor. We do NOT provide body spa or body massages. Only Head Massages and Hair Spa.",
+    "Men-exclusive services (beard trim, beard shave, beard styling, head shave) must directly provide Men prices. Never ask 'Men or Women?'.",
+    "Women-exclusive services (waxing, threading, perming/tongs/styling) must directly provide Women prices. Never ask 'Men or Women?'.",
+    "Unisex services (pedicure, manicure, facial, cleanup, detan) must directly provide prices without asking gender.",
+    "Only ask 'Men or Women?' for true dual-gender services (Haircut, Hair Spa, Head Massage, Hair Color) when gender was not specified.",
     "Never push combos; ask what services they want to combine.",
-    "End with an engaging, friction-free call to action (visit or book a slot)."
+    "End with an engaging, friction-free call to action (visit or book a slot via +91 83107 30322)."
   ]
 }

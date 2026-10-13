@@ -74,6 +74,9 @@ export async function runDailySalonLearning(orgId: string = 'f77576e5-ba1d-477e-
     hair_spa: 0,
     haircut: 0,
     head_massage: 0,
+    body_massage_boundary: 0,
+    beard_grooming_men: 0,
+    waxing_threading_women: 0,
     facial_cleanup: 0,
     pedicure_manicure: 0,
     location_directions: 0,
@@ -99,19 +102,54 @@ export async function runDailySalonLearning(orgId: string = 'f77576e5-ba1d-477e-
     const lower = body.toLowerCase();
     extractedQuestions.push(body);
 
-    if (lower.includes('spa')) intentCounts.hair_spa++;
-    else if (lower.includes('cut') || lower.includes('trim')) intentCounts.haircut++;
-    else if (lower.includes('massage')) intentCounts.head_massage++;
-    else if (lower.includes('facial') || lower.includes('cleanup') || lower.includes('clean up')) intentCounts.facial_cleanup++;
-    else if (lower.includes('pedicure') || lower.includes('manicure') || lower.includes('pedi') || lower.includes('mani')) intentCounts.pedicure_manicure++;
-    else if (lower.includes('where') || lower.includes('location') || lower.includes('address') || lower.includes('reach')) intentCounts.location_directions++;
-    else if (lower.includes('who') || lower.includes('name') || lower.includes('may i know u') || lower.includes('salon name')) intentCounts.salon_name_identity++;
-    else if (lower.includes('free now') || lower.includes('free') || lower.includes('available now') || lower.includes('right now') || lower.includes('come now')) intentCounts.availability_now++;
-    else if (lower.includes('time') || lower.includes('closing') || lower.includes('open') || lower.includes('hours') || lower.includes('when can i come')) intentCounts.timing_hours++;
-    else if (lower.includes('offer') || lower.includes('discount') || lower.includes('deal') || lower.includes('btn_offers')) intentCounts.discounts_offers++;
-    else if (lower.includes('price') || lower.includes('cost') || lower.includes('rate') || lower.includes('how much')) intentCounts.pricing_inquiry++;
-    else if (/^(hi|hello|hey|hii|helo)$/i.test(lower.trim())) intentCounts.greeting_casual++;
-    else intentCounts.other++;
+    if (
+      lower.includes('body spa') || 
+      lower.includes('body massage') || 
+      lower.includes('full body') || 
+      (lower.includes('massage') && !lower.includes('head'))
+    ) {
+      intentCounts.body_massage_boundary++;
+    } else if (
+      lower.includes('beard') || 
+      lower.includes('shave') || 
+      lower.includes('head shave') || 
+      lower.includes('mustache')
+    ) {
+      intentCounts.beard_grooming_men++;
+    } else if (
+      lower.includes('wax') || 
+      lower.includes('waxing') || 
+      lower.includes('threading') || 
+      lower.includes('eyebrow')
+    ) {
+      intentCounts.waxing_threading_women++;
+    } else if (lower.includes('hair spa') || lower.includes('spa')) {
+      intentCounts.hair_spa++;
+    } else if (lower.includes('cut') || lower.includes('trim')) {
+      intentCounts.haircut++;
+    } else if (lower.includes('head massage')) {
+      intentCounts.head_massage++;
+    } else if (lower.includes('facial') || lower.includes('cleanup') || lower.includes('clean up')) {
+      intentCounts.facial_cleanup++;
+    } else if (lower.includes('pedicure') || lower.includes('manicure') || lower.includes('pedi') || lower.includes('mani')) {
+      intentCounts.pedicure_manicure++;
+    } else if (lower.includes('where') || lower.includes('location') || lower.includes('address') || lower.includes('reach')) {
+      intentCounts.location_directions++;
+    } else if (lower.includes('who') || lower.includes('name') || lower.includes('may i know u') || lower.includes('salon name')) {
+      intentCounts.salon_name_identity++;
+    } else if (lower.includes('free now') || lower.includes('free') || lower.includes('available now') || lower.includes('right now') || lower.includes('come now')) {
+      intentCounts.availability_now++;
+    } else if (lower.includes('time') || lower.includes('closing') || lower.includes('open') || lower.includes('hours') || lower.includes('when can i come')) {
+      intentCounts.timing_hours++;
+    } else if (lower.includes('offer') || lower.includes('discount') || lower.includes('deal') || lower.includes('btn_offers')) {
+      intentCounts.discounts_offers++;
+    } else if (lower.includes('price') || lower.includes('cost') || lower.includes('rate') || lower.includes('how much')) {
+      intentCounts.pricing_inquiry++;
+    } else if (/^(hi|hello|hey|hii|helo)$/i.test(lower.trim())) {
+      intentCounts.greeting_casual++;
+    } else {
+      intentCounts.other++;
+    }
   }
 
   // 2. Synthesize Actionable Insights
@@ -119,6 +157,9 @@ export async function runDailySalonLearning(orgId: string = 'f77576e5-ba1d-477e-
     `Analyzed ${inboundMsgs.length} inbound client interactions. Top inquiries revolve around Hair Spa, Haircut, Pricing, Timing, and Offers.`,
     `Clients asking "Is it free now?" or "Can I come now?" are immediate high-intent footfall opportunities. Immediately direct them to call ${SALON_INDUSTRY_KNOWLEDGE.primaryHelpline} to hold their chair with zero wait time.`,
     `Clients asking "Where is your salon?" or "How can I reach?" must receive both the direct Google Maps link (${SALON_INDUSTRY_KNOWLEDGE.mapsUrl}) and the phone helpline for step-by-step guidance.`,
+    `Strict boundary: Classic Pearl is a unisex salon, not a body massage spa. Never accept body massage requests; pivot them to relaxing Head Massages (from ₹349) and therapeutic Hair Spa (from ₹579).`,
+    `Strict gender exclusivity: Beard/Shave/Head Shave are strictly Men services; Waxing/Threading/Styling are strictly Women services. Never ask 'Men or Women?' for them.`,
+    `Unisex services (Pedicure, Manicure, Facial, Clean Up, De-Tan) are for both; list prices immediately without asking gender.`,
     `When clients inquire about low-cost services (e.g. Haircut ₹249 or Clean Up ₹699), subtly present the value-rich upgrade (Wash & Blast Dry ₹349, Korean Glass Facial) without sounding pushy.`,
     `For all discounts and offer questions, maintain the salon visit incentive: special packages are always running and personalized upon visiting the salon.`
   ];
@@ -135,10 +176,13 @@ export async function runDailySalonLearning(orgId: string = 'f77576e5-ba1d-477e-
     })),
     salonRulesRefinements: [
       'Always greet warmly with "Classic Pearl Unisex Salon".',
-      'For gender-specific services (haircut, spa, massage, color, beard, waxing), always clarify Men vs Women if unspecified.',
+      'Strict domain boundary: We are a unisex salon, not a body massage parlor. No body spa or body massage; offer Head Massages and Hair Spa.',
+      'Men-exclusive services (beard trim, beard shave, beard styling, head shave) must directly provide Men prices. Never ask "Men or Women?".',
+      'Women-exclusive services (waxing, threading, styling) must directly provide Women prices. Never ask "Men or Women?".',
       'For unisex services (pedicure, manicure, facial, cleanup, detan), share prices immediately without asking gender.',
+      'Only ask "Men or Women?" for true dual-gender services (Haircut, Hair Spa, Head Massage, Hair Color) when gender is not specified.',
       'Never list combos automatically; ask what services they want to combine.',
-      'End with an engaging, friction-free call to action (visit or book a slot).'
+      'End with an engaging, friction-free call to action (visit or book a slot via +91 83107 30322).'
     ]
   };
 
@@ -213,9 +257,12 @@ export function getActiveLearnedPlaybook(): DailyLearnedInsight | null {
     })),
     salonRulesRefinements: [
       'Always greet warmly with "Classic Pearl Unisex Salon".',
-      'For gender-specific services, clarify Men vs Women if unspecified.',
-      'For unisex services, share prices immediately.',
-      'For discount questions, invite to salon for personalized packages.'
+      'Strict domain boundary: We are a unisex salon, not a body massage parlor. No body spa or body massage; offer Head Massages and Hair Spa.',
+      'Men-exclusive services (beard trim, beard shave, beard styling, head shave) must directly provide Men prices. Never ask "Men or Women?".',
+      'Women-exclusive services (waxing, threading, styling) must directly provide Women prices. Never ask "Men or Women?".',
+      'For unisex services, share prices immediately without asking gender.',
+      'Only ask "Men or Women?" for true dual-gender services (Haircut, Hair Spa, Head Massage, Hair Color) when gender is not specified.',
+      'For discount questions, invite to salon for personalized packages via +91 83107 30322.'
     ]
   };
 }

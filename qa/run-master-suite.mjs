@@ -15,6 +15,7 @@ import { runFrontendPagesIntegrityTests } from './tests/08_frontend_pages_api_in
 import { runSecurityAttackTests } from './tests/09_security_attack_tests.test.mjs';
 import { runMediaCampaignsTests } from './tests/10_media_campaigns_test_send.test.mjs';
 import { runExcelAndDiagnosticsTests } from './tests/11_excel_import_and_diagnostics.test.mjs';
+import { runSalonAiExclusivityTests } from './tests/12_salon_ai_boundaries_and_exclusivity.test.mjs';
 
 async function runMasterQaMission() {
   console.log('================================================================');
@@ -35,7 +36,8 @@ async function runMasterQaMission() {
     { name: 'Suite 8: Frontend Pages & Routing Integrity', runner: runFrontendPagesIntegrityTests },
     { name: 'Suite 9: Security Attack, IDOR & Adversarial Tests', runner: runSecurityAttackTests },
     { name: 'Suite 10: Media Campaigns, Validation & Test Send', runner: runMediaCampaignsTests },
-    { name: 'Suite 11: Excel Import, Audience & Meta Error Diagnostics', runner: runExcelAndDiagnosticsTests }
+    { name: 'Suite 11: Excel Import, Audience & Meta Error Diagnostics', runner: runExcelAndDiagnosticsTests },
+    { name: 'Suite 12: Salon AI Domain Boundaries & Gender Exclusivity', runner: runSalonAiExclusivityTests }
   ];
 
   let totalTests = 0;
