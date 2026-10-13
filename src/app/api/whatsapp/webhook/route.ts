@@ -308,8 +308,8 @@ export async function POST(request: Request) {
                       .maybeSingle();
 
                     if (waitingExec) {
-                      await FlowExecutionEngine.resume(waitingExec.id, accountOrgId, buttonId);
-                      handledByFlow = true;
+                      const resumed = await FlowExecutionEngine.resume(waitingExec.id, accountOrgId, buttonId);
+                      handledByFlow = Boolean(resumed);
                     }
                   }
 

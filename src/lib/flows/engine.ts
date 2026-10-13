@@ -75,7 +75,7 @@ export class FlowExecutionEngine {
   /**
    * Resumes a WAITING flow execution (e.g., from a scheduler or interaction).
    */
-  static async resume(executionId: string, orgId: string, edgeHandle?: string) {
+  static async resume(executionId: string, orgId: string, edgeHandle?: string): Promise<boolean> {
     const { data: exec } = await supabaseAdmin
       .from('flow_executions')
       .update({ status: 'RUNNING', resume_at: null })
@@ -85,31 +85,42 @@ export class FlowExecutionEngine {
       .select('id, current_node_id, flow_id')
       .single();
 
-    if (!exec) return; // Not waiting or doesn't exist
+    if (!exec) return false; // Not waiting or doesn't exist
 
     const engine = new FlowExecutionEngine(executionId, orgId);
     
     let overrideNodeId = undefined;
     if (edgeHandle) {
       const { data: flow } = await supabaseAdmin.from('flows').select('definition').eq('id', exec.flow_id).single();
-      if (flow) {
+      if (flow && flow.definition) {
         overrideNodeId = engine.getNextNodeId(exec.current_node_id, flow.definition.edges, edgeHandle);
         if (overrideNodeId) {
+          const targetNode = flow.definition.nodes?.find((n: any) => n.id === overrideNodeId);
+          if (!targetNode || targetNode.data?.node_type === 'end' || targetNode.type === 'end') {
+            await engine.completeExecution();
+            return false;
+          }
           await engine.updateExecutionCurrentNode(overrideNodeId);
         } else {
           // Handle edge case where button branch has no target node
           overrideNodeId = engine.getNextNodeId(exec.current_node_id, flow.definition.edges, null);
           if (overrideNodeId) {
-             await engine.updateExecutionCurrentNode(overrideNodeId);
+            const targetNode = flow.definition.nodes?.find((n: any) => n.id === overrideNodeId);
+            if (!targetNode || targetNode.data?.node_type === 'end' || targetNode.type === 'end') {
+              await engine.completeExecution();
+              return false;
+            }
+            await engine.updateExecutionCurrentNode(overrideNodeId);
           } else {
-             await engine.completeExecution();
-             return;
+            await engine.completeExecution();
+            return false;
           }
         }
       }
     }
 
     engine.processNextNode(overrideNodeId).catch(e => console.error('Flow processing error:', e));
+    return true;
   }
 
   /**
