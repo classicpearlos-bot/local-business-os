@@ -1,10 +1,10 @@
 # Master QA, Verification & Validation Report
 
-**Timestamp**: 2026-08-31T06:52:02.417Z  
-**Duration**: 16.24s  
-**Total Tests Executed**: 60  
-**Passed**: 20 (✅ 33.3%)  
-**Failed**: 40  
+**Timestamp**: 2026-10-13T10:29:50.177Z  
+**Duration**: 17.05s  
+**Total Tests Executed**: 81  
+**Passed**: 36 (✅ 44.4%)  
+**Failed**: 45  
 
 ## Test Suite Breakdown
 
@@ -93,11 +93,63 @@
   * ❌ FAIL: Message Debugger API: Granular recipient traces protected by authentication (401) (*fetch failed*)
 
 ### Suite 11: Excel Import, Audience & Meta Error Diagnostics
-* **Results**: 5/6 Passed
-  * ✅ PASS: Diagnostic Engine: Identifies "Not on WhatsApp" error (#131026)
-  * ✅ PASS: Diagnostic Engine: Identifies 24-Hour customer service window expired (#131047)
-  * ✅ PASS: Diagnostic Engine: Identifies Meta API rate limit (#131056)
-  * ✅ PASS: Diagnostic Engine: Identifies Meta billing restriction (#131042)
-  * ✅ PASS: Diagnostic Engine: Identifies template variable/parameter mismatch (#132000)
+* **Results**: 0/6 Passed
+  * ❌ FAIL: Diagnostic Engine: Identifies "Not on WhatsApp" error (#131026) (*Expected values to be strictly equal:
++ actual - expected
+
++ 'Not on WhatsApp / Undeliverable'
+- 'Not on WhatsApp'
+                  ^
+*)
+  * ❌ FAIL: Diagnostic Engine: Identifies 24-Hour customer service window expired (#131047) (*Expected values to be strictly equal:
++ actual - expected
+
++ '24hr Window Expired (131047)'
+- '24hr Window Expired'
+                      ^
+*)
+  * ❌ FAIL: Diagnostic Engine: Identifies Meta API rate limit (#131056) (*Expected values to be strictly equal:
++ actual - expected
+
++ 'Throughput Rate Limit'
+- 'Rate Limited'
+*)
+  * ❌ FAIL: Diagnostic Engine: Identifies Meta billing restriction (#131042) (*Expected values to be strictly equal:
++ actual - expected
+
++ 'Meta Billing Issue (131042)'
+- 'Billing Restriction'
+*)
+  * ❌ FAIL: Diagnostic Engine: Identifies template variable/parameter mismatch (#132000) (*Expected values to be strictly equal:
++ actual - expected
+
++ 'Template / Media Mismatch'
+- 'Template Mismatch'
+            ^
+*)
   * ❌ FAIL: Bulk Contact Import API: Unauthenticated requests protected (401) (*fetch failed*)
+
+### Suite 12: Salon AI Domain Boundaries & Gender Exclusivity
+* **Results**: 21/21 Passed
+  * ✅ PASS: 1. Beard Trim query directly returns Men Beard pricing and NEVER asks gender
+  * ✅ PASS: 2. Beard Shave query directly returns Men Beard pricing and NEVER asks gender
+  * ✅ PASS: 3. Head Shave query directly returns Men Head Shave and NEVER asks gender
+  * ✅ PASS: 4. Beard Styling query directly returns Men Beard pricing and NEVER asks gender
+  * ✅ PASS: 5. Hair Spa query without gender specified MUST ask Men or Women
+  * ✅ PASS: 6. Explicit Men Hair Spa query returns Men Hair Spa without asking gender
+  * ✅ PASS: 7. Reply "men" after hair spa inquiry returns Men Hair Spa
+  * ✅ PASS: 8. Reply "women" after hair spa inquiry returns Women Hair Spa
+  * ✅ PASS: 9. Pedicure query directly returns Pedicure pricing for both without asking gender
+  * ✅ PASS: 10. Facial query directly returns Facial pricing for both without asking gender
+  * ✅ PASS: 11. Clean Up query directly returns Clean Up pricing for both without asking gender
+  * ✅ PASS: 12. Waxing query directly returns Women Waxing without asking gender
+  * ✅ PASS: 13. Threading query directly returns Women Threading without asking gender
+  * ✅ PASS: 14. Eyebrow query directly returns Women Threading without asking gender
+  * ✅ PASS: 15. Body Massage query politely clarifies salon boundary and pivots to Head Massage & Hair Spa
+  * ✅ PASS: 16. Body Spa query politely clarifies salon boundary and pivots to Head Massage & Hair Spa
+  * ✅ PASS: 17. General "massage" query clarifies salon boundary and pivots to Head Massage
+  * ✅ PASS: 18. Explicit Head Massage query asks Men or Women
+  * ✅ PASS: 19. "Where is your salon located" shares Google Maps link, hours, and helpline
+  * ✅ PASS: 20. "Is it free now" provides immediate front desk helpline to hold chair
+  * ✅ PASS: 21. "What is your salon name" identifies as Classic Pearl Unisex Salon
 

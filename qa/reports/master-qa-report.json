@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-08-31T06:52:02.417Z",
-  "durationSeconds": 16.24,
+  "timestamp": "2026-10-13T10:29:50.177Z",
+  "durationSeconds": 17.05,
   "summary": {
-    "totalSuites": 11,
-    "totalTests": 60,
-    "totalPassed": 20,
-    "totalFailed": 40,
-    "passRate": "33.3%"
+    "totalSuites": 12,
+    "totalTests": 81,
+    "totalPassed": 36,
+    "totalFailed": 45,
+    "passRate": "44.4%"
   },
   "suiteResults": [
     {
@@ -347,33 +347,130 @@
     {
       "suite": "Suite 11: Excel Import, Audience & Meta Error Diagnostics",
       "total": 6,
-      "passed": 5,
-      "failed": 1,
+      "passed": 0,
+      "failed": 6,
       "tests": [
         {
           "name": "Diagnostic Engine: Identifies \"Not on WhatsApp\" error (#131026)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Not on WhatsApp / Undeliverable'\n- 'Not on WhatsApp'\n                  ^\n"
         },
         {
           "name": "Diagnostic Engine: Identifies 24-Hour customer service window expired (#131047)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ '24hr Window Expired (131047)'\n- '24hr Window Expired'\n                      ^\n"
         },
         {
           "name": "Diagnostic Engine: Identifies Meta API rate limit (#131056)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Throughput Rate Limit'\n- 'Rate Limited'\n"
         },
         {
           "name": "Diagnostic Engine: Identifies Meta billing restriction (#131042)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Meta Billing Issue (131042)'\n- 'Billing Restriction'\n"
         },
         {
           "name": "Diagnostic Engine: Identifies template variable/parameter mismatch (#132000)",
-          "status": "PASS"
+          "status": "FAIL",
+          "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Template / Media Mismatch'\n- 'Template Mismatch'\n            ^\n"
         },
         {
           "name": "Bulk Contact Import API: Unauthenticated requests protected (401)",
           "status": "FAIL",
           "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "suite": "Suite 12: Salon AI Domain Boundaries & Gender Exclusivity",
+      "total": 21,
+      "passed": 21,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "1. Beard Trim query directly returns Men Beard pricing and NEVER asks gender",
+          "status": "PASS"
+        },
+        {
+          "name": "2. Beard Shave query directly returns Men Beard pricing and NEVER asks gender",
+          "status": "PASS"
+        },
+        {
+          "name": "3. Head Shave query directly returns Men Head Shave and NEVER asks gender",
+          "status": "PASS"
+        },
+        {
+          "name": "4. Beard Styling query directly returns Men Beard pricing and NEVER asks gender",
+          "status": "PASS"
+        },
+        {
+          "name": "5. Hair Spa query without gender specified MUST ask Men or Women",
+          "status": "PASS"
+        },
+        {
+          "name": "6. Explicit Men Hair Spa query returns Men Hair Spa without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "7. Reply \"men\" after hair spa inquiry returns Men Hair Spa",
+          "status": "PASS"
+        },
+        {
+          "name": "8. Reply \"women\" after hair spa inquiry returns Women Hair Spa",
+          "status": "PASS"
+        },
+        {
+          "name": "9. Pedicure query directly returns Pedicure pricing for both without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "10. Facial query directly returns Facial pricing for both without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "11. Clean Up query directly returns Clean Up pricing for both without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "12. Waxing query directly returns Women Waxing without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "13. Threading query directly returns Women Threading without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "14. Eyebrow query directly returns Women Threading without asking gender",
+          "status": "PASS"
+        },
+        {
+          "name": "15. Body Massage query politely clarifies salon boundary and pivots to Head Massage & Hair Spa",
+          "status": "PASS"
+        },
+        {
+          "name": "16. Body Spa query politely clarifies salon boundary and pivots to Head Massage & Hair Spa",
+          "status": "PASS"
+        },
+        {
+          "name": "17. General \"massage\" query clarifies salon boundary and pivots to Head Massage",
+          "status": "PASS"
+        },
+        {
+          "name": "18. Explicit Head Massage query asks Men or Women",
+          "status": "PASS"
+        },
+        {
+          "name": "19. \"Where is your salon located\" shares Google Maps link, hours, and helpline",
+          "status": "PASS"
+        },
+        {
+          "name": "20. \"Is it free now\" provides immediate front desk helpline to hold chair",
+          "status": "PASS"
+        },
+        {
+          "name": "21. \"What is your salon name\" identifies as Classic Pearl Unisex Salon",
+          "status": "PASS"
         }
       ]
     }

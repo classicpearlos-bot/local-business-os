@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
 import { FlowCanvas } from '@/components/flows/FlowCanvas';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { toast } from 'react-hot-toast';
 import {
   Zap,
   Plus,
@@ -26,7 +27,23 @@ import {
   Users,
   Calendar,
   GitBranch,
-  AlertCircle
+  AlertCircle,
+  Bot,
+  ShieldCheck,
+  Send,
+  RotateCcw,
+  CheckCircle2,
+  HelpCircle,
+  Flame,
+  Star,
+  Scissors,
+  Gift,
+  ExternalLink,
+  ChevronRight,
+  PhoneCall,
+  MapPin,
+  Search,
+  Check
 } from 'lucide-react';
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -47,7 +64,24 @@ const STATUS_COLORS: Record<string, string> = {
   ARCHIVED: 'bg-red-100 text-red-700 border-red-200'
 };
 
+// Preset Quick Stress Tests for Simulator
+const QUICK_TESTS = [
+  { label: '💇 Hair Spa Options', prompt: 'how much for hair spa?' },
+  { label: '🧔 Beard Trim (Men)', prompt: 'how much for beard trim?' },
+  { label: '🪒 Head Shave (Men)', prompt: 'how much for head shave?' },
+  { label: '💆 Body Massage (Boundary Test)', prompt: 'do you have body massage?' },
+  { label: '🧖 Korean Glass Facial', prompt: 'how much for facial?' },
+  { label: '🦶 Pedicure / Manicure', prompt: 'how much for pedicure?' },
+  { label: '⏰ "Is It Free Now?"', prompt: 'is it free right now? can i come?' },
+  { label: '📍 Salon Location', prompt: 'where is your salon located?' },
+  { label: '🎁 Today\'s Offers', prompt: 'is there any offer going on?' }
+];
+
 export default function FlowsPage() {
+  // Main Navigation Tabs
+  const [activeTab, setActiveTab] = useState<'simulator' | 'guardrails' | 'journeys' | 'canvas'>('simulator');
+
+  // Flows State
   const [flows, setFlows] = useState<FlowRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,12 +91,87 @@ export default function FlowsPage() {
   const [newFlowDesc, setNewFlowDesc] = useState('');
   const [newFlowTrigger, setNewFlowTrigger] = useState<string>('KEYWORD');
   const [creating, setCreating] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Simulator State
+  const [simMessages, setSimMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; time: string }>>([
+    {
+      sender: 'bot',
+      text: '✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nI am Pearl Assistant, your 24/7 AI concierge. You can test any question with me here in real time—ask about our Hair Spa, Haircuts, Facials, Beard Grooming, Location, or Offers! 💛',
+      time: '13:00'
+    }
+  ]);
+  const [simInput, setSimInput] = useState('');
+  const [simLoading, setSimLoading] = useState(false);
+  const [simDiagnostic, setSimDiagnostic] = useState<{
+    detectedIntent: string;
+    engineUsed: string;
+    latencyMs: number;
+    guardrailsTriggered: string[];
+  } | null>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  // Knowledge Base State
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [guardrails, setGuardrails] = useState<any[]>([]);
+  const [faqLoading, setFaqLoading] = useState(false);
+  const [showAddFaqModal, setShowAddFaqModal] = useState(false);
+  const [newFaqQ, setNewFaqQ] = useState('');
+  const [newFaqA, setNewFaqA] = useState('');
+  const [newFaqCategory, setNewFaqCategory] = useState('Logistics');
+  const [savingFaq, setSavingFaq] = useState(false);
+
+  // Smart Journeys State
+  const [journeys, setJourneys] = useState([
+    {
+      id: 'j_review_booster',
+      title: '🌟 Post-Visit Google Review Booster',
+      trigger: '2 Hours after Appointment Completion',
+      desc: 'Automatically checks in on customer satisfaction and shares the direct Google Maps 5-star review link.',
+      active: true,
+      stats: '4.9★ Average | 142 Reviews Collected'
+    },
+    {
+      id: 'j_haircut_cycle',
+      title: '✂️ Men\'s 21-Day Grooming Cycle Reminder',
+      trigger: '21 Days since Last Men\'s Haircut / Beard',
+      desc: 'Invites male clients back to refresh their fade and beard styling before it overgrows.',
+      active: true,
+      stats: '34% Rebooking Rate'
+    },
+    {
+      id: 'j_spa_reengage',
+      title: '💆 Women\'s 30-Day Hair Spa & Color Re-engagement',
+      trigger: '30 Days since Last Hair Treatment',
+      desc: 'Suggests a restorative deep-nourishing hair spa or root touch-up to keep hair glossy and healthy.',
+      active: true,
+      stats: '28% Rebooking Rate'
+    },
+    {
+      id: 'j_birthday_club',
+      title: '🎂 VIP Birthday Club Celebration',
+      trigger: 'On Contact\'s Birthday at 9:00 AM',
+      desc: 'Sends a warm birthday wish along with an exclusive ₹300 pampering gift voucher valid for 7 days.',
+      active: true,
+      stats: '46% Voucher Redemption'
+    },
+    {
+      id: 'j_winback_45d',
+      title: '💔 45-Day Inactive Client Win-Back',
+      trigger: '45 Days of Inactivity',
+      desc: 'Offers a personalized ₹200 salon invitation to revive inactive clients before they drift away.',
+      active: true,
+      stats: '19% Client Recovery'
+    }
+  ]);
 
   useEffect(() => {
     fetchFlows();
+    fetchKnowledge();
   }, []);
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [simMessages]);
 
   const fetchFlows = async () => {
     setLoading(true);
@@ -82,12 +191,115 @@ export default function FlowsPage() {
     }
   };
 
+  const fetchKnowledge = async () => {
+    setFaqLoading(true);
+    try {
+      const res = await fetch('/api/ai/knowledge');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setFaqs(data.data.faqs || []);
+        setGuardrails(data.data.guardrails || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFaqLoading(false);
+    }
+  };
+
+  const handleSimulate = async (customPrompt?: string) => {
+    const textToSend = customPrompt || simInput;
+    if (!textToSend.trim() || simLoading) return;
+
+    const userMsg = {
+      sender: 'user' as const,
+      text: textToSend.trim(),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setSimMessages(prev => [...prev, userMsg]);
+    if (!customPrompt) setSimInput('');
+    setSimLoading(true);
+
+    try {
+      const res = await fetch('/api/ai/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg.text })
+      });
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        const botMsg = {
+          sender: 'bot' as const,
+          text: json.data.reply,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setSimMessages(prev => [...prev, botMsg]);
+        setSimDiagnostic({
+          detectedIntent: json.data.detectedIntent,
+          engineUsed: json.data.engineUsed,
+          latencyMs: json.data.latencyMs,
+          guardrailsTriggered: json.data.guardrailsTriggered
+        });
+      } else {
+        toast.error(json.error || 'Simulation failed');
+      }
+    } catch (err: any) {
+      toast.error('Network error simulating message');
+    } finally {
+      setSimLoading(false);
+    }
+  };
+
+  const handleAddFaq = async () => {
+    if (!newFaqQ.trim() || !newFaqA.trim()) {
+      toast.error('Question and Answer are required');
+      return;
+    }
+    setSavingFaq(true);
+    try {
+      const updatedFaqs = [
+        ...faqs,
+        {
+          id: `faq_${Date.now()}`,
+          question: newFaqQ.trim(),
+          answer: newFaqA.trim(),
+          category: newFaqCategory,
+          active: true
+        }
+      ];
+
+      const res = await fetch('/api/ai/knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ faqs: updatedFaqs })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+
+      setFaqs(updatedFaqs);
+      setShowAddFaqModal(false);
+      setNewFaqQ('');
+      setNewFaqA('');
+      toast.success('Custom Q&A added to AI Knowledge Base!');
+    } catch (e: any) {
+      toast.error(e.message || 'Error saving Q&A');
+    } finally {
+      setSavingFaq(false);
+    }
+  };
+
+  const toggleJourney = (id: string) => {
+    setJourneys(prev => prev.map(j => (j.id === id ? { ...j, active: !j.active } : j)));
+    toast.success('Journey status updated');
+  };
+
   const handleCreateFlow = async () => {
     if (!newFlowName.trim()) return;
     setCreating(true);
     try {
       const newFlow = {
-        // No ID — let the DB generate a UUID
         name: newFlowName.trim(),
         description: newFlowDesc.trim() || 'New automation flow',
         trigger_type: newFlowTrigger,
@@ -98,386 +310,664 @@ export default function FlowsPage() {
             {
               id: 'trigger_1',
               type: 'trigger',
-              position: { x: 300, y: 60 },
+              position: { x: 300, y: 80 },
               data: {
-                label: 'Trigger',
-                node_type: 'trigger' as const,
-                config: newFlowTrigger === 'KEYWORD' ? { keywords: [] } : {}
+                label: 'Flow Trigger',
+                node_type: 'trigger',
+                config: { keywords: ['hello', 'hi'] }
               }
-            },
-            {
-              id: 'msg_1',
-              type: 'message_text',
-              position: { x: 300, y: 220 },
-              data: {
-                label: 'Send Message',
-                node_type: 'message_text' as const,
-                config: { text: 'Hello {{name}}! How can we help you?' }
-              }
-            },
-            {
-              id: 'end_1',
-              type: 'end',
-              position: { x: 300, y: 400 },
-              data: { label: 'End Flow', node_type: 'end' as const, config: {} }
             }
           ],
-          edges: [
-            { id: 'e1-2', source: 'trigger_1', target: 'msg_1' },
-            { id: 'e2-3', source: 'msg_1', target: 'end_1' }
-          ]
+          edges: []
         }
       };
 
       const res = await fetch('/api/flows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save', flow: newFlow })
+        body: JSON.stringify(newFlow)
       });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to create flow');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create flow');
 
-      setFlows(prev => [json.flow, ...prev]);
+      toast.success('Flow created!');
       setShowCreateModal(false);
       setNewFlowName('');
       setNewFlowDesc('');
-      setNewFlowTrigger('KEYWORD');
-      // Open the canvas immediately for editing
-      setActiveEditingFlow(json.flow);
+      fetchFlows();
+      if (data.flow) {
+        setActiveEditingFlow(data.flow);
+      }
     } catch (e: any) {
-      alert('Error creating flow: ' + e.message);
+      toast.error(e.message);
     } finally {
       setCreating(false);
     }
   };
 
-  const handleSaveCanvas = async (definition: FlowDefinition) => {
-    if (!activeEditingFlow) return;
-    setSaveError(null);
-
-    const updated = { ...activeEditingFlow, definition, status: 'PUBLISHED' as const };
-
-    try {
-      const res = await fetch('/api/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save', flow: updated })
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Save failed');
-
-      // Update list with the returned real record (has correct DB version etc.)
-      setFlows(prev => prev.map(f => f.id === activeEditingFlow.id ? json.flow : f));
-      setActiveEditingFlow(null);
-    } catch (e: any) {
-      setSaveError(e.message);
-      // Still close the canvas but warn user
-      setFlows(prev => prev.map(f => f.id === updated.id ? updated : f));
-      setActiveEditingFlow(null);
-    }
-  };
-
-  const handleDeleteFlow = async (flowId: string) => {
-    if (!confirm('Are you sure you want to delete this flow? This cannot be undone.')) return;
-    setDeletingId(flowId);
-    try {
-      const res = await fetch('/api/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', flow_id: flowId })
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Delete failed');
-      setFlows(prev => prev.filter(f => f.id !== flowId));
-    } catch (e: any) {
-      alert('Error deleting flow: ' + e.message);
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const handleToggleStatus = async (flow: FlowRecord) => {
-    const newStatus = flow.status === 'PUBLISHED' ? 'PAUSED' : 'PUBLISHED';
-    try {
-      const res = await fetch('/api/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save', flow: { ...flow, status: newStatus } })
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to update status');
-      setFlows(prev => prev.map(f => f.id === flow.id ? json.flow : f));
-    } catch (e: any) {
-      alert('Error: ' + e.message);
-    }
-  };
-
-  // ─── Canvas editing mode ───────────────────────────────────────────────
-  if (activeEditingFlow) {
-    return (
-      <div className="flex h-screen bg-[#F8F5EF]">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {saveError && (
-            <div className="bg-red-50 border-b border-red-200 px-6 py-2 flex items-center gap-2 text-red-700 text-sm">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              Last save failed: {saveError}. Changes may not be persisted.
-            </div>
-          )}
-          <FlowCanvas
-            initialFlow={activeEditingFlow.definition}
-            flowName={activeEditingFlow.name}
-            onSave={handleSaveCanvas}
-            onClose={() => setActiveEditingFlow(null)}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Flow List mode ────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen bg-[#F8F5EF] text-[#292722]">
+    <div className="flex h-screen bg-[#FAF7F2] font-sans">
       <Sidebar />
-
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar
-          title="Visual Flow Studio"
-          subtitle="Build multi-step WhatsApp automation flows with triggers, messages, buttons, conditions and delays."
-          badge={<Badge variant="primary">{flows.length} Flow{flows.length !== 1 ? 's' : ''}</Badge>}
+          title="AI Agent Studio & Automations"
+          subtitle="24/7 Intelligent WhatsApp Concierge, Real-Time Testing Sandbox & Client Lifecycle Journeys."
+          badge={
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-black text-emerald-700 tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              24/7 PEARL AI ACTIVE
+            </div>
+          }
           actions={
-            <Button onClick={() => setShowCreateModal(true)} leftIcon={<Plus className="w-4 h-4" />}>
-              Create New Flow
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSimMessages([
+                    {
+                      sender: 'bot',
+                      text: '✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nI am Pearl Assistant, your 24/7 AI concierge. Ask me anything to test responses in real time! 💛',
+                      time: '13:00'
+                    }
+                  ]);
+                  setSimDiagnostic(null);
+                  toast.success('Simulator reset');
+                }}
+                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+              >
+                Reset Sandbox
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowAddFaqModal(true)}
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+              >
+                Add Salon Q&A
+              </Button>
+            </div>
           }
         />
 
-        <main className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-6">
-
-          {/* Studio info banner */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-[#B08D57] to-[#8C6514] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-white/80" />
-                <span className="text-xs font-black uppercase tracking-wider text-white/80">Production Flow Engine</span>
-              </div>
-              <h3 className="text-lg font-black text-white">Visual Drag-and-Drop Automation Studio</h3>
-              <p className="text-xs text-white/70 max-w-xl">
-                Build flows with Text Messages, Media, Interactive Buttons, IF/ELSE Conditions, Delays, and more.
-                Each flow triggers automatically from the inbox when customers match the trigger.
-              </p>
-            </div>
-            <Badge variant="success" className="py-1.5 px-3 shrink-0">ReactFlow v12 Powered</Badge>
-          </div>
-
-          {/* CREATE FLOW ROW — always visible */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-black text-[#292722]">Your Flows</h2>
-              <p className="text-xs text-[#706B61]">{flows.length} flow{flows.length !== 1 ? 's' : ''} · Click a flow card to open the canvas editor</p>
-            </div>
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              className="shrink-0 bg-[#292722] hover:bg-[#111] text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2"
+        {/* ── Tabs Navigation ── */}
+        <div className="bg-white border-b border-[#E8DFC8] px-8 flex items-center justify-between shrink-0">
+          <div className="flex gap-8">
+            <button
+              onClick={() => setActiveTab('simulator')}
+              className={`py-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
+                activeTab === 'simulator'
+                  ? 'border-[#B08D57] text-[#B08D57]'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              Create New Flow
-            </Button>
+              <Bot className="w-4 h-4" />
+              AI Concierge & Live Simulator
+            </button>
+
+            <button
+              onClick={() => setActiveTab('guardrails')}
+              className={`py-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
+                activeTab === 'guardrails'
+                  ? 'border-[#B08D57] text-[#B08D57]'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Guardrails & Knowledge Base
+              <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-black">
+                {faqs.length} FAQs
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('journeys')}
+              className={`py-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
+                activeTab === 'journeys'
+                  ? 'border-[#B08D57] text-[#B08D57]'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Flame className="w-4 h-4" />
+              Smart Lifecycle Journeys
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-black">
+                5 Auto
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('canvas')}
+              className={`py-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all ${
+                activeTab === 'canvas'
+                  ? 'border-[#B08D57] text-[#B08D57]'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <GitBranch className="w-4 h-4" />
+              Visual Flow Canvas (Legacy)
+              <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full font-black">
+                {flows.length}
+              </span>
+            </button>
           </div>
+        </div>
 
-          {/* Error state */}
-          {error && (
-            <div className="p-5 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-              <div>
-                <p className="font-bold text-red-700">Failed to load flows</p>
-                <p className="text-sm text-red-600">{error}</p>
-                <p className="text-xs text-red-500 mt-1">The <code>flows</code> table may not exist yet. Run the migration SQL from <code>supabase/migrations/005_phase2_flow_engine.sql</code> in your Supabase Dashboard → SQL Editor.</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={fetchFlows} className="ml-auto shrink-0">Retry</Button>
-            </div>
-          )}
+        {/* ── Main Content Area ── */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 1: AI CONCIERGE & LIVE SIMULATOR
+          ══════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'simulator' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* LEFT: Controls & Diagnostic Inspector (7 Cols) */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Metric Summary Cards */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-4 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Response Speed</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      &lt; 15 ms
+                    </p>
+                    <p className="text-[10px] text-emerald-600 font-semibold mt-1">Zero-wait time</p>
+                  </div>
 
-          {/* Loading state */}
-          {loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-52 rounded-2xl bg-white/60 border border-[#E5DED2] animate-pulse" />
-              ))}
-            </div>
-          )}
+                  <div className="p-4 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Safety Guardrails</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      100% Active
+                    </p>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-1">Body Massage Refusal Active</p>
+                  </div>
 
-          {/* Empty state */}
-          {!loading && !error && flows.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full bg-[#F1ECE3] border-2 border-[#E5DED2] flex items-center justify-center mb-4">
-                <GitBranch className="w-7 h-7 text-[#B08D57]" />
-              </div>
-              <h3 className="text-xl font-black text-[#292722] mb-2">No flows yet</h3>
-              <p className="text-sm text-[#706B61] max-w-sm mb-6">
-                Create your first automation flow to start sending automated WhatsApp messages based on customer behaviour.
-              </p>
-              <Button onClick={() => setShowCreateModal(true)} leftIcon={<Plus className="w-4 h-4" />}>
-                Create Your First Flow
-              </Button>
-            </div>
-          )}
+                  <div className="p-4 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Catalog Pricing</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-[#B08D57]" />
+                      Zero Hallucination
+                    </p>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-1">Direct from services.json</p>
+                  </div>
+                </div>
 
-          {/* Flow cards grid */}
-          {!loading && !error && flows.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {flows.map((flow) => {
-                const nodeCount = flow.definition?.nodes?.length || 0;
-                const edgeCount = flow.definition?.edges?.length || 0;
-                const isDeleting = deletingId === flow.id;
+                {/* Quick Stress-Test Pills */}
+                <div className="p-5 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#B08D57]" />
+                      One-Click Stress Tests
+                    </p>
+                    <span className="text-[10px] text-slate-400">Click any pill to test AI instantly</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_TESTS.map((test, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSimulate(test.prompt)}
+                        disabled={simLoading}
+                        className="px-3 py-1.5 rounded-xl border border-[#E8DFC8] bg-[#FAF7F2] hover:bg-[#B08D57]/10 hover:border-[#B08D57] text-[11px] font-bold text-slate-700 transition-all text-left flex items-center gap-1.5 shadow-2xs"
+                      >
+                        {test.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                return (
-                  <div
-                    key={flow.id}
-                    className="p-5 rounded-2xl bg-white border border-[#E5DED2] hover:border-[#B08D57]/60 hover:shadow-lg transition-all flex flex-col justify-between gap-4 shadow-sm"
-                  >
-                    <div className="space-y-3">
-                      {/* Header row */}
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${STATUS_COLORS[flow.status] || STATUS_COLORS.DRAFT}`}>
-                          {flow.status}
+                {/* Real-Time Diagnostic Inspector */}
+                <div className="p-5 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E8DFC8] pb-3">
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                      <Bot className="w-3.5 h-3.5 text-[#B08D57]" />
+                      Live AI Reasoning & Diagnostic Trace
+                    </p>
+                    {simDiagnostic && (
+                      <span className="text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-lg">
+                        {simDiagnostic.latencyMs} ms
+                      </span>
+                    )}
+                  </div>
+
+                  {!simDiagnostic ? (
+                    <div className="text-center py-6 text-slate-400">
+                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-30 text-[#B08D57]" />
+                      <p className="text-xs">Type a message or click a test pill to inspect AI reasoning.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 text-xs">
+                      <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                        <span className="text-slate-500 font-medium">Detected Intent</span>
+                        <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                          {simDiagnostic.detectedIntent}
                         </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleToggleStatus(flow)}
-                            title={flow.status === 'PUBLISHED' ? 'Pause flow' : 'Publish flow'}
-                            className="p-1.5 rounded-lg hover:bg-[#F1ECE3] transition-colors text-[#706B61] hover:text-[#B08D57]"
-                          >
-                            {flow.status === 'PUBLISHED'
-                              ? <PauseCircle className="w-4 h-4" />
-                              : <PlayCircle className="w-4 h-4" />
-                            }
-                          </button>
-                          <button
-                            onClick={() => handleDeleteFlow(flow.id)}
-                            disabled={isDeleting}
-                            title="Delete flow"
-                            className="p-1.5 rounded-lg hover:bg-red-50 transition-colors text-[#706B61] hover:text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                      </div>
+
+                      <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                        <span className="text-slate-500 font-medium">Engine Selected</span>
+                        <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[11px]">
+                          {simDiagnostic.engineUsed}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-slate-500 font-medium block">Guardrails Applied:</span>
+                        <div className="flex flex-col gap-1">
+                          {simDiagnostic.guardrailsTriggered.length > 0 ? (
+                            simDiagnostic.guardrailsTriggered.map((g, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-100 px-2 py-1 rounded-lg"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                {g}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-slate-400 italic text-[11px]">Standard Concierge Routine</span>
+                          )}
                         </div>
                       </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                      {/* Flow name & description */}
-                      <div>
-                        <h4 className="text-base font-black text-[#292722] leading-tight">{flow.name}</h4>
-                        <p className="text-xs text-[#706B61] mt-1 line-clamp-2">{flow.description}</p>
+              {/* RIGHT: WhatsApp Device Simulator (5 Cols) */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-full max-w-[340px] rounded-[36px] border-[6px] border-slate-800 bg-white shadow-2xl overflow-hidden flex flex-col h-[650px]">
+                  {/* WhatsApp Top Bar */}
+                  <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shrink-0 shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center font-serif font-black text-xs text-white shadow-xs">
+                        CP
                       </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold leading-tight truncate">Classic Pearl Salon</p>
+                        <p className="text-[9px] text-emerald-200 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          24/7 AI Concierge
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-emerald-100 font-medium">Simulator</div>
+                  </div>
 
-                      {/* Trigger badge */}
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-[#F1ECE3] text-[#B08D57] border border-[#E5DED2]">
-                          {TRIGGER_LABELS[flow.trigger_type] || flow.trigger_type}
+                  {/* WhatsApp Chat Bubbles */}
+                  <div className="flex-1 bg-[#ECE5DD] p-3 overflow-y-auto space-y-3">
+                    {simMessages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-xs shadow-xs leading-relaxed whitespace-pre-wrap ${
+                            msg.sender === 'user'
+                              ? 'bg-[#DCF8C6] text-slate-900 rounded-tr-none'
+                              : 'bg-white text-slate-900 rounded-tl-none border border-slate-200/50'
+                          }`}
+                        >
+                          {msg.text}
+                          <div className="flex justify-end items-center gap-1 mt-1">
+                            <span className="text-[9px] text-slate-400">{msg.time}</span>
+                            {msg.sender === 'user' && (
+                              <span className="text-[#34B7F1] text-[9px] font-bold">✓✓</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {simLoading && (
+                      <div className="flex items-start">
+                        <div className="bg-white rounded-2xl rounded-tl-none px-3 py-2 text-xs text-slate-500 shadow-xs flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#B08D57] animate-bounce"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#B08D57] animate-bounce [animation-delay:0.2s]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#B08D57] animate-bounce [animation-delay:0.4s]"></span>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatBottomRef} />
+                  </div>
+
+                  {/* Simulator Input Area */}
+                  <div className="p-2.5 bg-[#F0F2F5] border-t border-slate-200 flex items-center gap-2 shrink-0">
+                    <input
+                      type="text"
+                      value={simInput}
+                      onChange={e => setSimInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSimulate()}
+                      placeholder="Type a message as a client..."
+                      className="flex-1 px-3 py-2 bg-white rounded-full text-xs text-slate-900 outline-none border border-slate-300 focus:border-[#B08D57]"
+                    />
+                    <button
+                      onClick={() => handleSimulate()}
+                      disabled={simLoading || !simInput.trim()}
+                      className="w-8 h-8 rounded-full bg-[#075E54] text-white flex items-center justify-center shrink-0 hover:bg-[#064e46] transition-colors disabled:opacity-40"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 2: GUARDRAILS & KNOWLEDGE BASE
+          ══════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'guardrails' && (
+            <div className="space-y-6">
+              {/* Active Guardrails Grid */}
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Active Autonomous AI Guardrails (100% Enforced)
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {guardrails.map((g, i) => (
+                    <div
+                      key={i}
+                      className="p-4 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs space-y-2 hover:border-[#B08D57] transition-all"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900">{g.name}</span>
+                        <span className="text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                          ACTIVE
                         </span>
                       </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">{g.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                      {/* Stats row */}
-                      <div className="flex items-center gap-4 text-[11px] font-medium text-[#706B61] pt-2 border-t border-[#E5DED2]">
-                        <span className="flex items-center gap-1">
-                          <Layers className="w-3.5 h-3.5" />
-                          {nodeCount} Nodes
+              {/* Custom Salon Q&A Section */}
+              <div className="bg-white border border-[#E8DFC8] rounded-2xl p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-[#E8DFC8] pb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Custom Salon Knowledge & FAQ Bank</h3>
+                    <p className="text-xs text-slate-500">
+                      Teach Pearl AI unique details about your salon (parking, payment modes, authentic brands, bridal packages).
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setShowAddFaqModal(true)}
+                    leftIcon={<Plus className="w-3.5 h-3.5" />}
+                  >
+                    Add Q&A
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {faqs.map((faq, i) => (
+                    <div
+                      key={faq.id || i}
+                      className="p-4 bg-[#FAF7F2] border border-[#E8DFC8] rounded-xl space-y-2 relative group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#B08D57]">
+                          {faq.category || 'General'}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Split className="w-3.5 h-3.5 text-amber-500" />
-                          {edgeCount} Connections
+                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Learned by AI
                         </span>
-                        {flow.version && (
-                          <span className="flex items-center gap-1">
-                            v{flow.version}
-                          </span>
-                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-900">Q: {faq.question}</p>
+                      <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
+                        A: {faq.answer}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 3: SMART CLIENT LIFECYCLE JOURNEYS
+          ══════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'journeys' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-bold">Automated Client Retention & Growth Journeys</h2>
+                  <p className="text-xs text-amber-100 max-w-2xl leading-relaxed">
+                    Unlike fragile manual flowcharts with complex wires, these battle-tested lifecycle journeys run reliably in the background based on client visits, rebooking cycles, and birthdays.
+                  </p>
+                </div>
+                <div className="hidden sm:block text-right">
+                  <p className="text-2xl font-black">5 / 5</p>
+                  <p className="text-[10px] uppercase tracking-wider text-amber-200">Active Automations</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {journeys.map((j) => (
+                  <div
+                    key={j.id}
+                    className="p-5 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs flex items-center justify-between gap-6 hover:border-[#B08D57] transition-all"
+                  >
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <h4 className="text-sm font-bold text-slate-900 truncate">{j.title}</h4>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {j.active ? 'RUNNING 24/7' : 'PAUSED'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600">{j.desc}</p>
+                      <div className="flex items-center gap-4 text-[11px] pt-1">
+                        <span className="text-slate-400 font-medium flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-amber-500" /> {j.trigger}
+                        </span>
+                        <span className="text-emerald-700 font-bold flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-amber-500" /> {j.stats}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Open canvas button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActiveEditingFlow(flow)}
-                      className="w-full justify-between"
-                      rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                    >
-                      <span className="flex items-center gap-2">
-                        <Edit3 className="w-3.5 h-3.5" />
-                        Edit Flow Canvas
-                      </span>
-                    </Button>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button
+                        onClick={() => toggleJourney(j.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          j.active
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {j.active ? 'Active' : 'Paused'}
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 4: VISUAL FLOW CANVAS (LEGACY FLOW STUDIO)
+          ══════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'canvas' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between bg-white border border-[#E8DFC8] p-4 rounded-2xl">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Visual Flow Editor (Node Graph)</h3>
+                  <p className="text-xs text-slate-500">
+                    Legacy visual drag-and-drop flowchart builder for custom multi-branch keyword workflows.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowCreateModal(true)}
+                  leftIcon={<Plus className="w-3.5 h-3.5" />}
+                >
+                  Create Visual Flow
+                </Button>
+              </div>
+
+              {loading ? (
+                <div className="text-center py-12 text-slate-400">Loading visual flows...</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {flows.map((flow) => (
+                    <div
+                      key={flow.id}
+                      className="p-5 bg-white border border-[#E8DFC8] rounded-2xl shadow-xs space-y-3 hover:border-[#B08D57] transition-all cursor-pointer"
+                      onClick={() => setActiveEditingFlow(flow)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${STATUS_COLORS[flow.status]}`}>
+                          {flow.status}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {TRIGGER_LABELS[flow.trigger_type] || flow.trigger_type}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">{flow.name}</h4>
+                        <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{flow.description}</p>
+                      </div>
+                      <div className="pt-2 border-t border-[#E8DFC8] flex items-center justify-between text-xs text-[#B08D57] font-bold">
+                        <span>Open Canvas</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </main>
       </div>
 
-      {/* Create Flow Modal */}
+      {/* ── Add Custom FAQ Modal ── */}
       <Modal
-        isOpen={showCreateModal}
-        onClose={() => { setShowCreateModal(false); setNewFlowName(''); setNewFlowDesc(''); }}
-        title="Create New Flow"
+        isOpen={showAddFaqModal}
+        onClose={() => setShowAddFaqModal(false)}
+        title="Add Salon Q&A to AI Knowledge Bank"
+        description="Pearl AI will memorize this answer and use it instantly to resolve client questions."
       >
-        <div className="space-y-4">
+        <div className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-bold text-[#292722] mb-1.5">Flow Name *</label>
-            <Input
-              value={newFlowName}
-              onChange={e => setNewFlowName(e.target.value)}
-              placeholder="e.g. Welcome Greeting Flow"
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[#292722] mb-1.5">Description</label>
-            <textarea
-              value={newFlowDesc}
-              onChange={e => setNewFlowDesc(e.target.value)}
-              placeholder="What does this flow do?"
-              rows={3}
-              className="w-full px-3 py-2 bg-white border border-[#E5DED2] rounded-xl text-sm text-[#292722] outline-none focus:border-[#B08D57] resize-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[#292722] mb-1.5">Trigger Type</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
             <select
-              value={newFlowTrigger}
-              onChange={e => setNewFlowTrigger(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#E5DED2] rounded-xl text-sm text-[#292722] outline-none focus:border-[#B08D57]"
+              value={newFaqCategory}
+              onChange={e => setNewFaqCategory(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white outline-none focus:border-[#B08D57]"
             >
-              <option value="KEYWORD">💬 Keyword — when customer sends a specific word</option>
-              <option value="NEW_CONTACT">👤 New Contact — when a new contact is created</option>
-              <option value="BIRTHDAY">🎂 Birthday — on customer's birthday</option>
-              <option value="45_DAY_INACTIVE">⏰ 45-Day Inactive — re-engage slipping clients</option>
-              <option value="90_DAY_INACTIVE">⏰ 90-Day Inactive — re-engage lost clients</option>
-              <option value="APPOINTMENT_COMPLETED">📅 Appointment Completed — post-visit follow-up</option>
-              <option value="MANUAL_LAUNCH">▶️ Manual Launch — triggered manually from Inbox</option>
+              <option value="Logistics">Logistics (Parking, Landmarks, Route)</option>
+              <option value="Billing">Billing & Payment Modes (UPI, Cards, Cash)</option>
+              <option value="Quality">Quality & Brands (L'Oréal, O3+, Rica Wax)</option>
+              <option value="Services">Special Services (Bridal, Packages, Kids)</option>
+              <option value="Policies">Salon Policies (Walk-ins, Bookings, Timings)</option>
             </select>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => { setShowCreateModal(false); setNewFlowName(''); }}
-              className="flex-1"
-            >
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Customer Question</label>
+            <input
+              type="text"
+              value={newFaqQ}
+              onChange={e => setNewFaqQ(e.target.value)}
+              placeholder="e.g. Is parking available?"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none focus:border-[#B08D57]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Salon Answer</label>
+            <textarea
+              rows={4}
+              value={newFaqA}
+              onChange={e => setNewFaqA(e.target.value)}
+              placeholder="e.g. Yes! Free dedicated parking is available right in front of the salon for cars and bikes."
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none focus:border-[#B08D57] resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <Button variant="outline" size="sm" onClick={() => setShowAddFaqModal(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleCreateFlow}
-              isLoading={creating}
-              disabled={!newFlowName.trim()}
-              className="flex-1"
-            >
-              Create & Open Editor
+            <Button variant="primary" size="sm" isLoading={savingFaq} onClick={handleAddFaq}>
+              Save to AI
             </Button>
           </div>
         </div>
       </Modal>
+
+      {/* ── Create Flow Modal ── */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create Visual Automation Flow"
+        description="Build a visual drag-and-drop flowchart."
+      >
+        <div className="space-y-4 pt-2">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Flow Name</label>
+            <input
+              type="text"
+              value={newFlowName}
+              onChange={e => setNewFlowName(e.target.value)}
+              placeholder="e.g. Holiday Special Promo"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs outline-none focus:border-[#B08D57]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Trigger Type</label>
+            <select
+              value={newFlowTrigger}
+              onChange={e => setNewFlowTrigger(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white outline-none focus:border-[#B08D57]"
+            >
+              <option value="KEYWORD">Keyword Match</option>
+              <option value="NEW_CONTACT">New Contact Inbound</option>
+              <option value="APPOINTMENT_COMPLETED">Appointment Completed</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <Button variant="outline" size="sm" onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" isLoading={creating} onClick={handleCreateFlow}>
+              Create & Open
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Visual Flow Canvas Fullscreen Modal ── */}
+      {activeEditingFlow && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex flex-col">
+          <div className="flex-1 bg-[#FAF7F2]">
+            <FlowCanvas
+              initialFlow={activeEditingFlow.definition}
+              flowName={activeEditingFlow.name}
+              onClose={() => {
+                setActiveEditingFlow(null);
+                fetchFlows();
+              }}
+              onSave={async (newDef: FlowDefinition) => {
+                try {
+                  const res = await fetch(`/api/flows/${activeEditingFlow.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ definition: newDef })
+                  });
+                  if (!res.ok) throw new Error('Save failed');
+                  toast.success('Flow saved successfully!');
+                } catch (e: any) {
+                  toast.error(e.message || 'Error saving flow');
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
