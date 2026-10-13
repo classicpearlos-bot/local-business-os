@@ -277,6 +277,108 @@ export function formatHairWashOverview(): string {
 Would you like to see options for *Men* or *Women*? 💇`;
 }
 
+export function formatRicaWaxing(): string {
+  return `✨ *Italian RICA Waxing Services* 🟢
+
+🟢 *Full Arms RICA:* ₹549 _(Member: ₹529)_
+🟢 *Half Arms RICA:* ₹319 _(Member: ₹299)_
+🟢 *Full Legs RICA:* ₹699 _(Member: ₹679)_
+🟢 *Half Legs RICA:* ₹549 _(Member: ₹529)_
+🟢 *Underarms RICA:* ₹229 _(Member: ₹209)_
+🟢 *Bikini RICA:* ₹2,699 _(Member: ₹2,510)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatBrazilianWaxing(): string {
+  return `✨ *Brazilian Waxing Services* 🟢
+
+🟢 *Underarms Brazilian:* ₹349 _(Member: ₹329)_
+🟢 *Full Arms Brazilian:* ₹799 _(Member: ₹745)_
+🟢 *Half Arms Brazilian:* ₹499 _(Member: ₹475)_
+🟢 *Full Legs Brazilian:* ₹1,199 _(Member: ₹1,115)_
+🟢 *Half Legs Brazilian:* ₹799 _(Member: ₹745)_
+🟢 *Bikini Brazilian:* ₹2,999 _(Member: ₹2,799)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWaxingOverview(): string {
+  return `✨ *Waxing Services at Classic Pearl* 🟢
+
+We offer premium Italian RICA Waxing and Brazilian Waxing for silky smooth skin!
+
+Would you like to see options for *RICA Wax* or *Brazilian Wax*? ✨`;
+}
+
+export function formatFaceWaxing(): string {
+  return `✨ *Women Face Waxing Services* 🟢
+
+🟢 *Full Face Waxing:* ₹449 _(Member: ₹399)_
+🟢 *Upper Lip Waxing:* ₹99 _(Member: ₹79)_
+🟢 *Chin Waxing:* ₹109 _(Member: ₹99)_
+🟢 *Side Locks Waxing:* ₹149 _(Member: ₹139)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatThreading(): string {
+  return `✨ *Women Threading Services* 🟢
+
+🟢 *Eyebrow Threading:* ₹55 _(Member: ₹49)_
+🟢 *Full Face Threading:* ₹399 _(Member: ₹369)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatArmsWaxing(): string {
+  return `✨ *Arms Waxing Options* 🟢
+
+🟢 *Full Arms RICA:* ₹549 _(Member: ₹529)_
+🟢 *Half Arms RICA:* ₹319 _(Member: ₹299)_
+🟢 *Full Arms Brazilian:* ₹799 _(Member: ₹745)_
+🟢 *Half Arms Brazilian:* ₹499 _(Member: ₹475)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatLegsWaxing(): string {
+  return `✨ *Legs Waxing Options* 🟢
+
+🟢 *Full Legs RICA:* ₹699 _(Member: ₹679)_
+🟢 *Half Legs RICA:* ₹549 _(Member: ₹529)_
+🟢 *Full Legs Brazilian:* ₹1,199 _(Member: ₹1,115)_
+🟢 *Half Legs Brazilian:* ₹799 _(Member: ₹745)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatUnderarmsWaxing(): string {
+  return `✨ *Underarms Waxing Options* 🟢
+
+🟢 *Underarms Italian RICA:* ₹229 _(Member: ₹209)_
+🟢 *Underarms Brazilian:* ₹349 _(Member: ₹329)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatBikiniWaxing(): string {
+  return `✨ *Bikini Waxing Options* 🟢
+
+🟢 *Bikini RICA Waxing:* ₹2,699 _(Member: ₹2,510)_
+🟢 *Bikini Brazilian Waxing:* ₹2,999 _(Member: ₹2,799)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
 
 /**
  * Deterministic Salon Knowledge Engine:
@@ -456,25 +558,25 @@ export function getSalonDeterministicReply(
   }
 
   // 11. STRICT WOMEN-EXCLUSIVE SERVICES (NEVER ask Men or Women)
-  // A. Waxing (Italian Rica Waxing, Brazilian Waxing, Face Waxing)
+  // A. Specific Face Waxing (Full Face, Chin, Upper Lip, Sidelocks, Forehead)
   if (
-    text.includes('wax') || 
-    text.includes('waxing') || 
-    text.includes('rica') || 
-    text.includes('brazilian') ||
-    text.includes('bikini wax') ||
-    text.includes('underarms wax')
+    text.includes('face wax') || 
+    text.includes('face waxing') || 
+    text.includes('chin wax') || 
+    text.includes('chin waxing') || 
+    text.includes('upper lip wax') || 
+    text.includes('upper lip waxing') || 
+    text.includes('upperlip wax') || 
+    text.includes('upperlip waxing') || 
+    text.includes('lip wax') || 
+    text.includes('lip waxing') || 
+    text.includes('side lock') || 
+    text.includes('side locks') ||
+    text.includes('forehead wax') ||
+    text.includes('facial wax') ||
+    text.includes('full face wax')
   ) {
-    const womenWax = salonCatalog.women.filter(s => 
-      s.Category === 'Women - Rica Waxing' || 
-      s.Category === 'Women - Brazilian Waxing' || 
-      s.Category === 'Women - Face Waxing'
-    ).slice(0, 10);
-    return formatPriceList(
-      'Women Waxing Services (Italian Rica & Brazilian)',
-      womenWax,
-      '💡 *Gentle & Smooth:* We use premium Italian Rica wax for ultra-smooth skin with zero irritation. Threading and face waxing also available!'
-    );
+    return formatFaceWaxing();
   }
 
   // B. Threading (Eyebrows, Upper Lip, Chin, Full Face)
@@ -482,17 +584,56 @@ export function getSalonDeterministicReply(
     text.includes('threading') || 
     text.includes('eyebrow') || 
     text.includes('eyebrows') || 
-    text.includes('upper lip') || 
-    text.includes('upperlip') || 
     text.includes('chin threading') || 
-    text.includes('forehead threading')
+    text.includes('forehead threading') ||
+    text.includes('face threading')
   ) {
-    const womenThreading = salonCatalog.women.filter(s => s.Category === 'Women - Threading');
-    return formatPriceList(
-      'Women Threading & Facial Hair Shaping',
-      womenThreading,
-      '💡 *Quick Glow:* Pair your threading with our quick *Fruit Clean Up (₹699)* or *De-Tan Pack (₹499)* for an instant radiant glow!'
-    );
+    return formatThreading();
+  }
+
+  // C. Specific Body Part Waxing (Underarms, Arms, Legs, Bikini)
+  if (text.includes('underarm') || text.includes('under arm') || text.includes('under-arm')) {
+    return formatUnderarmsWaxing();
+  }
+  if (text.includes('full arm') || text.includes('half arm') || (text.includes('arm') && text.includes('wax'))) {
+    return formatArmsWaxing();
+  }
+  if (text.includes('full leg') || text.includes('half leg') || (text.includes('leg') && text.includes('wax'))) {
+    return formatLegsWaxing();
+  }
+  if (text.includes('bikini')) {
+    return formatBikiniWaxing();
+  }
+
+  // D. RICA Waxing (Specific or Choice)
+  if (
+    text.includes('rica wax') || 
+    text.includes('rica waxing') || 
+    text.includes('italian rica') || 
+    text === 'rica' || 
+    text === 'rica wax'
+  ) {
+    return formatRicaWaxing();
+  }
+
+  // E. Brazilian Waxing (Specific or Choice)
+  if (
+    text.includes('brazilian wax') || 
+    text.includes('brazilian waxing') || 
+    text.includes('brazilian') || 
+    text === 'brazilian' || 
+    text === 'brazilian wax'
+  ) {
+    return formatBrazilianWaxing();
+  }
+
+  // F. General Waxing Inquiry -> Ask RICA or Brazilian
+  if (
+    text.includes('waxing') || 
+    text.includes('wax') ||
+    text.includes('body wax')
+  ) {
+    return formatWaxingOverview();
   }
 
   // C. Styling & Makeovers (Perming, Tongs, Ironing, Curls)
@@ -571,6 +712,10 @@ export function getSalonDeterministicReply(
     text.includes('beard') || 
     text.includes('shave') || 
     text.includes('wax') || 
+    text.includes('rica') || 
+    text.includes('brazilian') || 
+    text.includes('threading') || 
+    text.includes('eyebrow') || 
     text.includes('facial') || 
     text.includes('clean') || 
     text.includes('pedicure') || 
@@ -822,9 +967,12 @@ RULE 3: STRICT WOMEN-EXCLUSIVE SERVICES (NEVER ASK "MEN OR WOMEN?"):
   • Waxing (Italian Rica Waxing, Brazilian Waxing, Face Waxing)
   • Threading (Eyebrows, Upper Lip, Forehead, Chin, Full Face Threading)
   • Hair Styling & Makeovers (Perming, Tongs, Ironing, Crimping, Blow Dry with Setting)
-- When asked about waxing, threading, perming, tongs, or ironing:
-  DO NOT ask "Men or Women?".
-  Directly provide the Women service options and exact prices with Regular and Member pricing!
+- WAXING INTELLIGENCE:
+  • If asked generally about Waxing: Ask whether they want Italian RICA Waxing or Brazilian Waxing!
+  • If asked for RICA Wax (or customer replies RICA): Provide Italian RICA Waxing services (Full Arms: ₹549/₹529, Half Arms: ₹319/₹299, Full Legs: ₹699/₹679, Half Legs: ₹549/₹529, Underarms: ₹229/₹209, Bikini: ₹2699/₹2510) with exact prices!
+  • If asked for Brazilian Wax (or customer replies Brazilian): Provide Brazilian Waxing services (Underarms: ₹349/₹329, Full Arms: ₹799/₹745, Half Arms: ₹499/₹475, Full Legs: ₹1199/₹1115, Half Legs: ₹799/₹745, Bikini: ₹2999/₹2799) with exact prices!
+  • If asked for Face Waxing (Full Face, Chin, Upper Lip, Side Locks): Provide Face Waxing services (Full Face: ₹449/₹399, Upper Lip: ₹99/₹79, Chin: ₹109/₹99, Side Locks: ₹149/₹139)!
+  • If asked for Threading (Eyebrows, Upper Lip, Full Face): Provide Threading services (Eyebrows: ₹55/₹49, Full Face: ₹399/₹369)!
 
 RULE 4: BOTH / UNISEX SERVICES (NEVER ASK "MEN OR WOMEN?"):
 - The following services are for BOTH Men and Women:
