@@ -66,6 +66,11 @@ export const SALON_BUTTONS = {
     { id: 'btn_offers', title: '🎉 Today\'s Offers' },
     { id: 'btn_book', title: '📅 Book Slot' },
   ],
+  FOLLOWUP: [
+    { id: 'btn_followup_coming', title: '🚗 Planning to Come' },
+    { id: 'btn_followup_visited', title: '✅ Already Visited' },
+    { id: 'btn_followup_later', title: '📅 Another Time' },
+  ],
 };
 
 /**
@@ -91,6 +96,35 @@ export function normalizeSalonText(input: string): string {
   s = s.replace(/\b(botoc|botoxx|botx)\b/g, 'botox');
   s = s.replace(/\b(nanoplasta|nanoplasia|nanoplastica|nano\s*plastia)\b/g, 'nanoplastia');
   return s;
+}
+
+/**
+ * Extracts tentative arrival / visit time mentioned by customer
+ * e.g. "I'll be coming around 9:30", "coming at 5 pm", "reaching by 7", "visit at 6:30"
+ */
+export function extractArrivalTime(input: string): string | null {
+  if (!input) return null;
+  const text = input.trim();
+
+  // Check for intent to arrive / visit / come
+  const hasArrivalIntent = /\b(coming|come|visit|reach|reaching|arrive|arriving|dropping by|be there|will be there)\b/i.test(text) ||
+    /\b(around|at|by)\s+\d{1,2}(?::\d{2})?\s*(am|pm|o'?clock)?\b/i.test(text);
+
+  if (!hasArrivalIntent) return null;
+
+  // Pattern 1: e.g. "coming around 9:30", "visit at 5 pm", "reach by 7:30", "be there at 6"
+  const m1 = text.match(/(?:coming|come|visit|reach|reaching|arrive|arriving|be there)\s+(?:around|at|by|approx)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  if (m1 && m1[1]) return m1[1].trim();
+
+  // Pattern 2: e.g. "around 9:30", "at 5 pm", "by 7:30 pm"
+  const m2 = text.match(/(?:around|at|by)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  if (m2 && m2[1]) return m2[1].trim();
+
+  // Pattern 3: explicit time with colon e.g. "9:30 am", "9:30pm", "11:00 am"
+  const m3 = text.match(/\b(\d{1,2}:\d{2}\s*(?:am|pm)?)\b/i);
+  if (m3 && m3[1]) return m3[1].trim();
+
+  return null;
 }
 
 export function formatPriceList(title: string, items: ServiceItem[], note?: string, maxItems: number = 6): string {
@@ -623,6 +657,37 @@ export function getSalonDeterministicResponse(
   const isWomenExplicit = /\b(women|female|ladies|woman|girl|for women|for female|girls)\b/i.test(text);
 
   // 0. DIRECT BUTTON DISPATCH & SPECIFIC ROUTING
+  // Follow-Up Interactive Buttons & Text Responses
+  if (bid === 'btn_followup_coming' || text === 'planning to come' || text === 'will come' || text === 'on my way' || text === 'on the way') {
+    return {
+      reply: `🟢 *Wonderful! We're expecting you!* ✨\n\nOur stylists have kept everything ready so you won't have to wait. See you shortly! 😊\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`,
+      buttons: [
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' }
+      ]
+    };
+  }
+
+  if (bid === 'btn_followup_visited' || text === 'already visited' || text === 'visited' || text === 'already done') {
+    return {
+      reply: `🟢 *Thank you so much for visiting Classic Pearl!* ✨\n\nWe hope you had an amazing experience with our team. We look forward to pampering you again soon! 💛\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}`,
+      buttons: [
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' }
+      ]
+    };
+  }
+
+  if (bid === 'btn_followup_later' || text === 'another time' || text === 'not now' || text === 'next time' || text === 'later' || text === 'some other time') {
+    return {
+      reply: `🟢 *No problem at all!* ✨\n\nWe completely understand. Whenever you're ready for some self-care, we're right here for you. Have a wonderful day ahead! 💛\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}`,
+      buttons: [
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' }
+      ]
+    };
+  }
+
   if (bid === 'btn_men') {
     if (lastContext === 'haircut') return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
     if (lastContext === 'hair_spa') return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
@@ -753,6 +818,18 @@ export function getSalonDeterministicResponse(
     if (isWomenExplicit && !isMenExplicit) {
       return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
     }
+  }
+
+  // 1.8 Tentative Arrival Time Intent: "I'll be coming around 9:30", "coming at 5 pm", "reaching by 7", etc.
+  const arrivalTime = extractArrivalTime(inboundText);
+  if (arrivalTime && (text.includes('coming') || text.includes('reach') || text.includes('visit') || text.includes('be there') || text.startsWith('around') || text.startsWith('at ') || text.startsWith('by '))) {
+    return {
+      reply: `🟢 *Wonderful! We've noted your arrival for around ${arrivalTime} today!* 🕒\n\nOur team will have a styling chair ready for you. If your schedule changes or you need directions on your way, just let us know here or call 📞 *${SALON_INFO.phone}*!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\nSee you soon! 💛`,
+      buttons: [
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' }
+      ]
+    };
   }
 
   // 2. High-Intent Questions: "Is it free now?" / "Are you free right now?" / "Can I come now?"

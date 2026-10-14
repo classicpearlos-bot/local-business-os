@@ -89,6 +89,23 @@ export async function POST(req: NextRequest) {
     ) {
       detectedIntent = 'DISCOUNTS_AND_OFFERS';
       guardrailsTriggered.push('Salon Visit Incentive Policy Enforced');
+    } else if (
+      (buttonId && buttonId.includes('followup')) ||
+      text.includes('planning to come') ||
+      text.includes('already visited') ||
+      text.includes('another time')
+    ) {
+      detectedIntent = 'FOLLOWUP_ENGAGEMENT_RESPONSE';
+      guardrailsTriggered.push('Zero-Annoyance Follow-Up Button Handled (Anti-Spam Protected)');
+    } else if (
+      text.includes('coming around') ||
+      text.includes('coming at') ||
+      text.includes('reach by') ||
+      text.includes('be there at') ||
+      text.includes('coming today')
+    ) {
+      detectedIntent = 'TENTATIVE_ARRIVAL_TIME_ACKNOWLEDGED';
+      guardrailsTriggered.push('Tentative Arrival Captured and Chair Held (Follow-up Scheduled)');
     }
 
     // Call the production AI reply engine

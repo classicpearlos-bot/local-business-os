@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '../supabaseAdmin';
 import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation, sendWhatsAppInteractive } from '../meta/whatsapp';
 import { FlowExecutionEngine } from '../flows/engine';
-import { generateSalonResponse } from './salonAI';
+import { generateSalonResponse, extractArrivalTime } from './salonAI';
+import { scheduleInquiryFollowup, cancelPendingFollowup } from './followupService';
 
 export async function evaluateAutomations(
   orgId: string, 
@@ -28,6 +29,12 @@ export async function evaluateAutomations(
   const contactName = contact.name || 'Guest';
   const contactAttrs = contact.attributes || {};
   const botActive = contactAttrs.bot_active !== false; // defaults to true
+
+  // Zero-Annoyance Guardrail: Cancel any pending follow-up immediately
+  // because this customer is active in live conversation!
+  if (contactId) {
+    await cancelPendingFollowup(contactId);
+  }
 
   if (!botActive) {
     console.log(`Bot paused for conversation ${conversationId}. Human agent handling.`);
@@ -220,6 +227,48 @@ export async function evaluateAutomations(
           }).eq('id', conversationId);
 
           console.log(`[Salon AI Concierge] Successfully sent ${isInteractiveSent ? 'interactive' : 'text'} reply to ${contactPhone} (WAM ID: ${waRes.messages[0].id})`);
+
+          // Autonomous Smart Follow-up Scheduling:
+          // If high-intent inquiry or arrival time mentioned, schedule a single gentle check-in
+          // (strictly enforcing frequency cap of 1, quiet hours blackout, 24h Meta window, and atomic invalidation).
+          const isFollowupAction = ['btn_followup_later', 'btn_followup_visited', 'btn_followup_coming'].includes(buttonId || '');
+          if (contactId && !isFollowupAction && !normalizedInput.includes('stop') && !normalizedInput.includes('cancel') && !normalizedInput.includes('unsubscribe')) {
+            const arrivalTime = extractArrivalTime(rawInput);
+            const isServiceInquiry = 
+              normalizedInput.includes('haircut') || 
+              normalizedInput.includes('hair cut') || 
+              normalizedInput.includes('spa') || 
+              normalizedInput.includes('wax') || 
+              normalizedInput.includes('beard') || 
+              normalizedInput.includes('facial') || 
+              normalizedInput.includes('pedicure') || 
+              normalizedInput.includes('manicure') || 
+              normalizedInput.includes('keratin') || 
+              normalizedInput.includes('botox') || 
+              normalizedInput.includes('color') || 
+              normalizedInput.includes('combo') ||
+              !!arrivalTime;
+
+            if (isServiceInquiry) {
+              let detectedService = 'salon visit';
+              if (arrivalTime) detectedService = `visit around ${arrivalTime}`;
+              else if (normalizedInput.includes('haircut') || normalizedInput.includes('hair cut')) detectedService = 'haircut';
+              else if (normalizedInput.includes('spa')) detectedService = 'hair spa';
+              else if (normalizedInput.includes('wax')) detectedService = 'waxing';
+              else if (normalizedInput.includes('beard')) detectedService = 'beard & grooming';
+              else if (normalizedInput.includes('facial')) detectedService = 'facial';
+              else if (normalizedInput.includes('pedicure')) detectedService = 'pedicure';
+              else if (normalizedInput.includes('combo')) detectedService = 'value combo';
+
+              await scheduleInquiryFollowup({
+                contactId,
+                organizationId: orgId,
+                phone: contactPhone,
+                service: detectedService,
+                tentativeTime: arrivalTime
+              });
+            }
+          }
         } else {
           console.error('[Salon AI Concierge] Meta API error sending reply:', waRes);
         }
