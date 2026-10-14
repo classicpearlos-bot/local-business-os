@@ -46,17 +46,16 @@ export function formatPriceList(title: string, items: ServiceItem[], note?: stri
  */
 export function getLastInquiryContext(
   chatHistory: string
-): 'haircut' | 'hair_spa' | 'head_massage' | 'hair_color' | 'chemical' | 'hair_wash' | null {
+): 'haircut' | 'hair_spa' | 'head_massage' | 'hair_color' | 'chemical' | 'hair_wash' | 'bikini_wax' | 'waxing' | 'combo' | null {
   if (!chatHistory) return null;
 
-  const lines = chatHistory
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean)
-    .reverse();
+  // Split history into message turns or paragraphs so multi-line replies keep full context
+  const turns = chatHistory.includes('Customer:') || chatHistory.includes('Assistant:')
+    ? chatHistory.split(/(?=Customer:|Assistant:)/i).map(l => l.trim()).filter(Boolean).reverse()
+    : chatHistory.split(/\n\s*\n/).map(l => l.trim()).filter(Boolean).reverse();
 
-  for (const line of lines) {
-    const lower = line.toLowerCase();
+  for (const turn of turns) {
+    const lower = turn.toLowerCase();
 
     // Skip generic greetings/menus that mention multiple categories together
     if (
@@ -68,6 +67,11 @@ export function getLastInquiryContext(
       lower.includes('hair care & hair spa (haircut')
     ) {
       continue;
+    }
+
+    // 0. Bikini Waxing (Strict privacy: check before generic waxing!)
+    if (lower.includes('bikini')) {
+      return 'bikini_wax';
     }
 
     // 1. Haircut
@@ -125,6 +129,21 @@ export function getLastInquiryContext(
     ) {
       return 'hair_wash';
     }
+
+    // 7. General Waxing
+    if (
+      lower.includes('waxing') ||
+      lower.includes('wax') ||
+      lower.includes('rica') ||
+      lower.includes('brazilian')
+    ) {
+      return 'waxing';
+    }
+
+    // 8. Combos & Packages
+    if (lower.includes('combo') || lower.includes('package')) {
+      return 'combo';
+    }
   }
 
   return null;
@@ -157,12 +176,32 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenHairSpa(): string {
-  return `✨ *Women Hair Spa Services* 🟢
+  return `✨ *Women Hair Spa Services (By Length)* 🟢
 
-🟢 *Deep Nourishing Hair Spa:* ₹599 _(Member: ₹549)_
-🟢 *Damage Repair Hair Spa:* ₹699 _(Member: ₹649)_
-🟢 *Anti-Dandruff Hair Spa:* ₹699 _(Member: ₹649)_
-🟢 *Deluxe Hair Spa:* ₹799 _(Member: ₹749)_
+🟢 *Deep Nourishing Spa:* Small ₹699 | Med ₹849 | Long ₹999
+🟢 *Damage Repair Spa:* Small ₹899 | Med ₹1,199 | Long ₹1,399
+🟢 *Anti-Dandruff / Hair Fall:* Small ₹1,199 | Med ₹1,399 | Long ₹1,599
+🟢 *Deluxe Hair Spa:* Small ₹1,199 | Med ₹1,499 | Long ₹1,799
+_(Member discounts up to 10% applied at salon)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+What is your hair length (Small / Medium / Long)? 💛`;
+}
+
+export function formatWomenHairSpaByLength(length: 'small' | 'medium' | 'long'): string {
+  const lbl = length === 'small' ? 'Small Length' : length === 'medium' ? 'Medium Length' : 'Long Length';
+  const prices = {
+    small: { deep: '₹699 _(Mem: ₹665)_', damage: '₹899 _(Mem: ₹835)_', anti: '₹1,199 _(Mem: ₹1,115)_', deluxe: '₹1,199 _(Mem: ₹1,115)_' },
+    medium: { deep: '₹849 _(Mem: ₹790)_', damage: '₹1,199 _(Mem: ₹1,115)_', anti: '₹1,399 _(Mem: ₹1,300)_', deluxe: '₹1,499 _(Mem: ₹1,395)_' },
+    long: { deep: '₹999 _(Mem: ₹930)_', damage: '₹1,399 _(Mem: ₹1,300)_', anti: '₹1,599 _(Mem: ₹1,485)_', deluxe: '₹1,799 _(Mem: ₹1,675)_' }
+  }[length];
+
+  return `✨ *Women Hair Spa Services (${lbl})* 🟢
+
+🟢 *Deep Nourishing Spa:* ${prices.deep}
+🟢 *Damage Repair Spa:* ${prices.damage}
+🟢 *Anti-Dandruff / Hair Fall Spa:* ${prices.anti}
+🟢 *Deluxe Hair Spa:* ${prices.deluxe}
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -202,15 +241,16 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenHairColor(): string {
-  return `✨ *Women Hair Color & Highlights* 🟢
+  return `✨ *Women Hair Color & Highlights (By Length)* 🟢
 
-🟢 *Advanced Streaks (Per Streak):* ₹349 _(Member: ₹329)_
-🟢 *Root Touch Up (Majirel / Inoa):* from ₹1,099 _(Member: ₹999)_
-🟢 *Global Hair Color:* from ₹2,499 _(Member: ₹2,199)_
-🟢 *Balayage / Ombre:* from ₹5,999 _(Member: ₹5,499)_
+🟢 *Global Ammonia-Free:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
+🟢 *Global With Ammonia:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
+🟢 *Balayage / Ombre:* Small ₹5,999 | Med ₹6,999 | Long ₹7,999
+🟢 *Full Highlights (16 Streaks):* ₹3,999 _(Partial 8: ₹1,999)_
+🟢 *Root Touch-Up:* from ₹1,149 _(Member: ₹1,070)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
-Would you like to reserve a slot today? 💛`;
+What is your hair length (Small / Medium / Long)? 💛`;
 }
 
 export function formatMenHairColor(): string {
@@ -225,15 +265,38 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenChemical(): string {
-  return `✨ *Women Advanced Hair Treatments* 🟢
+  return `✨ *Women Advanced Treatments (By Length)* 🟢
 
-🟢 *Hair Smoothening / Straightening:* from ₹3,999
-🟢 *Keratin Protein Treatment:* from ₹4,499
-🟢 *Hair Botox Therapy:* from ₹4,499
-🟢 *Nanoplastia Mirror Finish:* from ₹5,999
+🟢 *Hair Botox Therapy:* Small ₹3,999 | Med ₹5,999 | Long ₹6,999
+🟢 *Keratin Protein:* Small ₹3,999 | Med ₹5,699 | Long ₹5,999
+🟢 *Nanoplastia Treatment:* Small ₹5,999 | Med ₹6,999 | Long ₹7,999
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
-Would you like to reserve a slot today? 💛`;
+What is your hair length (Small / Medium / Long)? 💛`;
+}
+
+export function formatKeratin(gender?: 'men' | 'women'): string {
+  if (gender === 'men') {
+    return `✨ *Men Keratin Protein Treatment* 🟢\n\n🟢 *Men Keratin Treatment:* ₹3,999 _(Member: ₹3,499)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+  if (gender === 'women') {
+    return `✨ *Women Keratin Protein (By Length)* 🟢\n\n🟢 *Small Length:* ₹3,999\n🟢 *Medium Length:* ₹5,699\n🟢 *Long Length:* ₹5,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
+  }
+  return `✨ *Keratin Treatment Options* 🟢\n\n🟢 *Men Keratin:* ₹3,999 _(Member: ₹3,499)_\n🟢 *Women Keratin:* Small ₹3,999 | Med ₹5,699 | Long ₹5,999\n\nWould you like options for *Men* or *Women*? ✨`;
+}
+
+export function formatBotox(gender?: 'men' | 'women'): string {
+  if (gender === 'men') {
+    return `✨ *Men Hair Botox Therapy* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,499)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+  if (gender === 'women') {
+    return `✨ *Women Hair Botox (By Length)* 🟢\n\n🟢 *Small Length:* ₹3,999\n🟢 *Medium Length:* ₹5,999\n🟢 *Long Length:* ₹6,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
+  }
+  return `✨ *Hair Botox Therapy Options* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,499)_\n🟢 *Women Hair Botox:* Small ₹3,999 | Med ₹5,999 | Long ₹6,999\n\nWould you like options for *Men* or *Women*? ✨`;
+}
+
+export function formatNanoplastia(): string {
+  return `✨ *Women Nanoplastia Treatment (By Length)* 🟢\n\n🟢 *Small Length:* ₹5,999\n🟢 *Medium Length:* ₹6,999\n🟢 *Long Length:* ₹7,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
 }
 
 export function formatMenChemical(): string {
@@ -247,10 +310,10 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenHairWashAndBlowDry(): string {
-  return `✨ *Women Hair Wash & Blow Dry Services* 🟢
+  return `✨ *Women Hair Wash & Blow Dry (By Length)* 🟢
 
-🟢 *Shampoo & Conditioner Wash with Blast Dry:* from ₹399 _(Member: ₹349)_
-🟢 *Shampoo & Conditioner with Blow Dry & Setting:* from ₹649 _(Member: ₹599)_
+🟢 *Wash + Blast Dry:* Small ₹399 | Med ₹449 | Long ₹529
+🟢 *Wash + Blow Dry & Setting:* Small ₹649 | Med ₹749 | Long ₹799
 🟢 *Shampoo & Conditioner Wash (Add-on):* ₹249 _(Member: ₹235)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
@@ -271,8 +334,8 @@ export function formatHairWashOverview(): string {
   return `✨ *Hair Wash & Blow Dry Services* 🟢
 
 🟢 *Men Shampoo & Conditioner Wash:* ₹129 _(Member: ₹109)_
-🟢 *Women Wash + Blast Dry:* from ₹399 _(Member: ₹349)_
-🟢 *Women Wash + Blow Dry & Setting:* from ₹649 _(Member: ₹599)_
+🟢 *Women Wash + Blast Dry:* Small ₹399 | Med ₹449 | Long ₹529
+🟢 *Women Wash + Blow Dry & Setting:* Small ₹649 | Med ₹749 | Long ₹799
 
 Would you like to see options for *Men* or *Women*? 💇`;
 }
@@ -285,7 +348,6 @@ export function formatRicaWaxing(): string {
 🟢 *Full Legs RICA:* ₹699 _(Member: ₹679)_
 🟢 *Half Legs RICA:* ₹549 _(Member: ₹529)_
 🟢 *Underarms RICA:* ₹229 _(Member: ₹209)_
-🟢 *Bikini RICA:* ₹2,699 _(Member: ₹2,510)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -299,7 +361,6 @@ export function formatBrazilianWaxing(): string {
 🟢 *Half Arms Brazilian:* ₹499 _(Member: ₹475)_
 🟢 *Full Legs Brazilian:* ₹1,199 _(Member: ₹1,115)_
 🟢 *Half Legs Brazilian:* ₹799 _(Member: ₹745)_
-🟢 *Bikini Brazilian:* ₹2,999 _(Member: ₹2,799)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -369,14 +430,95 @@ export function formatUnderarmsWaxing(): string {
 Would you like to reserve a slot today? 💛`;
 }
 
-export function formatBikiniWaxing(): string {
-  return `✨ *Bikini Waxing Options* 🟢
+export function formatBikiniOverview(): string {
+  return `✨ *Bikini Waxing Services (Women)* 🟢
 
-🟢 *Bikini RICA Waxing:* ₹2,699 _(Member: ₹2,510)_
+Yes, we offer premium Bikini Waxing for women in both Italian RICA Wax and Brazilian Wax for gentle, hygienic care. ✨
+
+Would you like options for *RICA Wax* or *Brazilian Wax*?`;
+}
+
+export function formatBikiniRica(): string {
+  return `✨ *Bikini Italian RICA Waxing* 🟢
+
+🟢 *Bikini Italian RICA Waxing:* ₹2,699 _(Member: ₹2,510)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a private slot today? 💛`;
+}
+
+export function formatBikiniBrazilian(): string {
+  return `✨ *Bikini Brazilian Waxing* 🟢
+
 🟢 *Bikini Brazilian Waxing:* ₹2,999 _(Member: ₹2,799)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a private slot today? 💛`;
+}
+
+export function formatBikiniWaxing(): string {
+  return `✨ *Bikini Waxing Options (Women)* 🟢
+
+🟢 *Bikini Italian RICA Waxing:* ₹2,699 _(Member: ₹2,510)_
+🟢 *Bikini Brazilian Waxing:* ₹2,999 _(Member: ₹2,799)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Which one would you prefer to book? 💛`;
+}
+
+export function formatOffers(): string {
+  return `🎉 *Special Offers Active at Classic Pearl!* 🟢
+
+Yes, we run exciting special offers exclusively when you visit the salon! Our stylists personalize the best package discount for your chosen services during consultation.
+
+For today's active offers, visit our salon or call our desk directly at 📞 *${SALON_INFO.phone}*!
+
+📍 *Location:* ${SALON_INFO.mapsUrl}
+🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)
 Would you like to reserve a slot today? 💛`;
+}
+
+export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'): string {
+  const kw = (serviceKeyword || '').toLowerCase();
+
+  // A. Haircut Combos
+  if (kw.includes('haircut') || kw.includes('hair cut') || kw.includes('cut')) {
+    if (gender === 'men') {
+      return `✨ *Men Haircut Value Combos* 🟢\n\n🟢 *Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n🟢 *Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Haircut + De-Tan (Face & Neck):* ₹849 _(Member: ₹799)_\n🟢 *Haircut + Hair Color + Hair Wash:* ₹1,099 _(Member: ₹999)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    if (gender === 'women') {
+      return `✨ *Women Haircut Value Combos* 🟢\n\n🟢 *Hair Spa + Haircut + Blast Dry:* ₹1,449 _(Member: ₹1,350)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    return `✨ *Popular Haircut Value Combos* 🟢\n\n🟢 *Men Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n🟢 *Men Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Women Hair Spa + Haircut + Blast Dry:* ₹1,449 _(Member: ₹1,350)_\n\nWould you like combos for *Men* or *Women*? 💇`;
+  }
+
+  // B. Hair Spa Combos
+  if (kw.includes('hair spa') || kw.includes('hairspa') || kw.includes('spa')) {
+    return `✨ *Hair Spa Value Combos* 🟢\n\n🟢 *Women Hair Spa + Haircut + Blast Dry:* ₹1,449 _(Member: ₹1,350)_\n🟢 *Men Haircut + Anti-Dandruff Spa:* ₹1,209 _(Member: ₹1,125)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // C. Waxing Combos
+  if (kw.includes('wax') || kw.includes('waxing')) {
+    return `✨ *Women Waxing Value Combos* 🟢\n\n🟢 *Full Arms + Full Legs & Underarms:* ₹1,499 _(Member: ₹1,395)_\n🟢 *Full Arms + Half Legs & Underarms:* ₹1,349 _(Member: ₹1,255)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // D. Facial / Clean Up Combos
+  if (kw.includes('facial') || kw.includes('clean up') || kw.includes('cleanup')) {
+    return `✨ *Facial & Skin Value Combos* 🟢\n\n🟢 *Clean Up + Eyebrow + Upper Lip:* ₹749 _(Member: ₹695)_\n🟢 *Clean Up + Threading + Head Massage:* ₹1,049 _(Member: ₹975)_\n🟢 *Basic Facial + Threading + Head Massage:* ₹1,599 _(Member: ₹1,485)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // E. Beard Combos
+  if (kw.includes('beard') || kw.includes('shave')) {
+    return `✨ *Men Beard Value Combos* 🟢\n\n🟢 *Men Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // F. Massage Combos
+  if (kw.includes('massage')) {
+    return `✨ *Relaxing Massage Combos* 🟢\n\n🟢 *Men Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Women Head Massage + Foot Massage:* ₹949 _(Member: ₹885)_\n🟢 *Women Head & Neck + Foot Massage:* ₹1,099 _(Member: ₹1,020)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+  }
+
+  // G. Generic Combos Inquiry
+  return `✨ *Classic Pearl Value Combos* 🟢\n\nYes! We offer customized money-saving combos on *Hair Care*, *Facials*, *Grooming* & *Waxing*!\n\nWhich service combo are you looking for?\n• *Haircut Combo* 💇\n• *Hair Spa Combo* 💆\n• *Facial & Clean Up Combo* ✨\n• *Waxing Combo* 🌸\n\nTell us your preference and we'll share the best package! 💛`;
 }
 
 
@@ -394,6 +536,10 @@ export function getSalonDeterministicReply(
   const bid = (buttonId || '').toLowerCase();
   const historyLower = (chatHistory || '').toLowerCase();
 
+  // Detect explicit gender keywords in user query
+  const isMenExplicit = /\b(men|male|gents|man|guy|for men|for male|boys|boy)\b/i.test(text);
+  const isWomenExplicit = /\b(women|female|ladies|woman|girl|for women|for female|girls)\b/i.test(text);
+
   // 1. Button Actions & Quick Replies
   if (
     bid === 'btn_offers' || 
@@ -401,7 +547,7 @@ export function getSalonDeterministicReply(
     text.includes('discount') || text.includes('discounts') || text.includes('offer') || text.includes('offers') ||
     text.includes('deal') || text.includes('deals') || text.includes('tmr is this offer') || text.includes('offer continue')
   ) {
-    return `🎉 *Special Offers & Discounts Active!* 🟢\n\nWe have exciting in-salon offers running on *Hair Care*, *Facials* & *Grooming*! Personalized discounts are applied during your stylist consultation.\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call / Hold Slot:* ${SALON_INFO.phone}\n\nWould you like to visit us today? 💛`;
+    return formatOffers();
   }
 
   if (bid === 'btn_services' || text === 'view services' || text === 'services') {
@@ -484,9 +630,29 @@ export function getSalonDeterministicReply(
     return `🕒 *We are open 10:00 AM to 9:00 PM every day (Monday to Sunday)!* 🟢\n\nWalk-ins and appointments are warmly welcome.\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}\nWhat time would you prefer to visit today? 💛`;
   }
 
-  // 7. Combos Inquiry (Strict rule: Ask what services they want to combine)
-  if (text.includes('combo') || text.includes('combos') || text.includes('package')) {
-    return `Yes! We offer customized combo packages tailored to your needs. ✨\n\nCould you please let us know which specific services you are looking to combine so we can offer you the best possible tailored package?`;
+  // 7. Combos Inquiry (Smart Matching: Return matching combos if a specific service is requested)
+  if (text.includes('combo') || text.includes('combos') || text.includes('package') || text.includes('packages')) {
+    if (text.includes('haircut') || text.includes('hair cut') || text.includes('cut')) {
+      if (isMenExplicit && !isWomenExplicit) return formatCombos('haircut', 'men');
+      if (isWomenExplicit && !isMenExplicit) return formatCombos('haircut', 'women');
+      return formatCombos('haircut');
+    }
+    if (text.includes('hair spa') || text.includes('hairspa') || text.includes('spa')) {
+      return formatCombos('spa');
+    }
+    if (text.includes('wax') || text.includes('waxing')) {
+      return formatCombos('wax');
+    }
+    if (text.includes('facial') || text.includes('clean up') || text.includes('cleanup')) {
+      return formatCombos('facial');
+    }
+    if (text.includes('beard') || text.includes('shave')) {
+      return formatCombos('beard');
+    }
+    if (text.includes('massage')) {
+      return formatCombos('massage');
+    }
+    return formatCombos();
   }
 
   // 8. STRICT DOMAIN BOUNDARY: BODY SPA / BODY MASSAGE REJECTION & REDIRECTION
@@ -516,10 +682,6 @@ export function getSalonDeterministicReply(
   if (isExplicitBodyMassageOrBodySpa) {
     return `✨ *Classic Pearl Unisex Salon* 🟢\n\nPlease note: We are a unisex salon focused on hair and skin aesthetics — we *do not offer body massages* or body spa.\n\n💆 *For deep relaxation, we recommend:*\n🟢 *Relaxing Head Massage* (Almond/Olive) – from *₹349*\n🟢 *Therapeutic Hair Spa* (Nourishing/Repair) – from *₹579*\n🟢 *Chocolate Crystal Pedicure* – *₹1,099*\n\n📞 *Call / Booking:* ${SALON_INFO.phone}\nWould you like to try our relaxing Head Massage or Hair Spa? 💛`;
   }
-
-  // Detect explicit gender keywords in user query
-  const isMenExplicit = /\b(men|male|gents|man|guy|for men|for male|boys|boy)\b/i.test(text);
-  const isWomenExplicit = /\b(women|female|ladies|woman|girl|for women|for female|girls)\b/i.test(text);
 
   // 10. STRICT MEN-EXCLUSIVE SERVICES (NEVER ask Men or Women)
   // A. Men Head Shave
@@ -591,7 +753,27 @@ export function getSalonDeterministicReply(
     return formatThreading();
   }
 
-  // C. Specific Body Part Waxing (Underarms, Arms, Legs, Bikini)
+  // C. Bikini Waxing (STRICT PRIVACY: ONLY when explicitly asked!)
+  if (text.includes('bikini')) {
+    if (text.includes('rica')) {
+      return formatBikiniRica();
+    }
+    if (text.includes('brazilian')) {
+      return formatBikiniBrazilian();
+    }
+    if (
+      text.includes('price') || 
+      text.includes('cost') || 
+      text.includes('rate') || 
+      text.includes('how much') ||
+      text.includes('options')
+    ) {
+      return formatBikiniWaxing();
+    }
+    return formatBikiniOverview();
+  }
+
+  // D. Specific Body Part Waxing (Underarms, Arms, Legs)
   if (text.includes('underarm') || text.includes('under arm') || text.includes('under-arm')) {
     return formatUnderarmsWaxing();
   }
@@ -601,33 +783,39 @@ export function getSalonDeterministicReply(
   if (text.includes('full leg') || text.includes('half leg') || (text.includes('leg') && text.includes('wax'))) {
     return formatLegsWaxing();
   }
-  if (text.includes('bikini')) {
-    return formatBikiniWaxing();
-  }
 
-  // D. RICA Waxing (Specific or Choice)
+  // E. RICA Waxing (Specific or Contextual)
   if (
-    text.includes('rica wax') || 
-    text.includes('rica waxing') || 
-    text.includes('italian rica') || 
     text === 'rica' || 
-    text === 'rica wax'
+    text === 'rica wax' || 
+    text === 'rica waxing' || 
+    text === 'italian rica' ||
+    text.includes('rica wax') ||
+    text.includes('italian rica')
   ) {
+    const lastContext = getLastInquiryContext(chatHistory);
+    if (lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
+      return formatBikiniRica();
+    }
     return formatRicaWaxing();
   }
 
-  // E. Brazilian Waxing (Specific or Choice)
+  // F. Brazilian Waxing (Specific or Contextual)
   if (
-    text.includes('brazilian wax') || 
-    text.includes('brazilian waxing') || 
-    text.includes('brazilian') || 
     text === 'brazilian' || 
-    text === 'brazilian wax'
+    text === 'brazilian wax' || 
+    text === 'brazilian waxing' || 
+    text.includes('brazilian wax') ||
+    text.includes('brazilian waxing')
   ) {
+    const lastContext = getLastInquiryContext(chatHistory);
+    if (lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
+      return formatBikiniBrazilian();
+    }
     return formatBrazilianWaxing();
   }
 
-  // F. General Waxing Inquiry -> Ask RICA or Brazilian
+  // G. General Waxing Inquiry -> Ask RICA or Brazilian (Strictly NO Bikini!)
   if (
     text.includes('waxing') || 
     text.includes('wax') ||
@@ -770,11 +958,20 @@ export function getSalonDeterministicReply(
     if (lastContext === 'hair_wash') {
       return formatMenHairWash();
     }
+    if (lastContext === 'combo') {
+      return formatCombos('haircut', 'men');
+    }
     return `✨ *Classic Pearl Services for Men* 🟢\n\n🟢 *Haircut & Styling* (Men Cut & Little Champ)\n🟢 *Beard Shave, Trimming & Styling*\n🟢 *Relaxing Head Massage* (Almond & Olive)\n🟢 *Deep Nourishing Hair Spa*\n🟢 *Facials, De-Tan & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
   }
 
   if (isShortWomenReply) {
     const lastContext = getLastInquiryContext(chatHistory);
+    if (lastContext === 'bikini_wax') {
+      return formatBikiniOverview();
+    }
+    if (lastContext === 'waxing') {
+      return formatWaxingOverview();
+    }
     if (lastContext === 'haircut') {
       return formatWomenHaircuts();
     }
@@ -793,7 +990,10 @@ export function getSalonDeterministicReply(
     if (lastContext === 'hair_wash') {
       return formatWomenHairWashAndBlowDry();
     }
-    return `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
+    if (lastContext === 'combo') {
+      return formatCombos('haircut', 'women');
+    }
+    return `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa (By Length)* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia (By Length)*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
   }
 
   // 14. SPECIFIC SUB-SERVICE QUERIES (Instant direct matching)
@@ -861,8 +1061,50 @@ export function getSalonDeterministicReply(
     return `✨ *Haircut & Styling at Classic Pearl* 🟢\n\nWe offer professional haircut and styling for both men and women!\n\nWould you like to see options for *Men* or *Women*? 💇`;
   }
 
-  // B. Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
+  // B. Specific Hair Spa Sub-Types (Deep Nourishing, Damage Repair, Anti-Dandruff, Deluxe)
+  if (text.includes('deep nourishing')) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return `✨ *Men Deep Nourishing Hair Spa* 🟢\n\n🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    return `✨ *Deep Nourishing Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹699 _(Member: ₹665)_\n🟢 *Medium Length:* ₹849 _(Member: ₹790)_\n🟢 *Long Length:* ₹999 _(Member: ₹930)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+  }
+
+  if (text.includes('damage repair')) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return `✨ *Men Damage Repair Hair Spa* 🟢\n\n🟢 *Damage Repair Hair Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    return `✨ *Damage Repair Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹899 _(Member: ₹835)_\n🟢 *Medium Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Long Length:* ₹1,399 _(Member: ₹1,300)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+  }
+
+  if (text.includes('anti dandruff') || text.includes('anti-dandruff') || text.includes('hair fall') || text.includes('hairfall')) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return `✨ *Men Anti-Dandruff Hair Spa* 🟢\n\n🟢 *Anti-Dandruff / Hair Fall Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    return `✨ *Anti-Dandruff / Hair Fall Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,399 _(Member: ₹1,300)_\n🟢 *Long Length:* ₹1,599 _(Member: ₹1,485)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+  }
+
+  if (text.includes('deluxe hair spa') || text.includes('deluxe spa')) {
+    if (isMenExplicit && !isWomenExplicit) {
+      return `✨ *Men Deluxe Hair Spa* 🟢\n\n🟢 *Deluxe Hair Spa:* ₹769 _(Member: ₹699)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    }
+    return `✨ *Deluxe Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,499 _(Member: ₹1,395)_\n🟢 *Long Length:* ₹1,799 _(Member: ₹1,675)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+  }
+
+  // B2. Hair Spa General (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
   if (text.includes('hair spa') || text.includes('hairspa') || (text.includes('spa') && !text.includes('body'))) {
+    if (text.includes('small') || text.includes('short')) {
+      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
+      return formatWomenHairSpaByLength('small');
+    }
+    if (text.includes('medium') || text.includes('med') || text.includes('shoulder')) {
+      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
+      return formatWomenHairSpaByLength('medium');
+    }
+    if (text.includes('long') || text.includes('waist')) {
+      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
+      return formatWomenHairSpaByLength('long');
+    }
+
     if (isMenExplicit && !isWomenExplicit) {
       return formatMenHairSpa();
     }
@@ -895,14 +1137,23 @@ export function getSalonDeterministicReply(
   }
 
   // E. Chemical Treatments / Advanced Hair Treatments (Botox, Keratin, Nanoplastia)
-  if (text.includes('keratin') || text.includes('botox') || text.includes('nanoplastia') || text.includes('smoothen') || text.includes('straighten')) {
-    if (isMenExplicit && !isWomenExplicit) {
-      return formatMenChemical();
-    }
-    if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenChemical();
-    }
-    return `✨ *Advanced Hair Treatments (Keratin / Botox / Nanoplastia)* 🟢\n\nWe offer restorative protein treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? ✨`;
+  if (text.includes('nanoplastia')) {
+    return formatNanoplastia();
+  }
+  if (text.includes('keratin')) {
+    if (isMenExplicit && !isWomenExplicit) return formatKeratin('men');
+    if (isWomenExplicit && !isMenExplicit) return formatKeratin('women');
+    return formatKeratin();
+  }
+  if (text.includes('botox')) {
+    if (isMenExplicit && !isWomenExplicit) return formatBotox('men');
+    if (isWomenExplicit && !isMenExplicit) return formatBotox('women');
+    return formatBotox();
+  }
+  if (text.includes('smoothen') || text.includes('straighten')) {
+    if (isMenExplicit && !isWomenExplicit) return formatMenChemical();
+    if (isWomenExplicit && !isMenExplicit) return formatWomenChemical();
+    return formatWomenChemical();
   }
 
   // Generic greeting or default fallback (Short & Crisp)
@@ -967,10 +1218,11 @@ RULE 3: STRICT WOMEN-EXCLUSIVE SERVICES (NEVER ASK "MEN OR WOMEN?"):
   • Waxing (Italian Rica Waxing, Brazilian Waxing, Face Waxing)
   • Threading (Eyebrows, Upper Lip, Forehead, Chin, Full Face Threading)
   • Hair Styling & Makeovers (Perming, Tongs, Ironing, Crimping, Blow Dry with Setting)
-- WAXING INTELLIGENCE:
-  • If asked generally about Waxing: Ask whether they want Italian RICA Waxing or Brazilian Waxing!
-  • If asked for RICA Wax (or customer replies RICA): Provide Italian RICA Waxing services (Full Arms: ₹549/₹529, Half Arms: ₹319/₹299, Full Legs: ₹699/₹679, Half Legs: ₹549/₹529, Underarms: ₹229/₹209, Bikini: ₹2699/₹2510) with exact prices!
-  • If asked for Brazilian Wax (or customer replies Brazilian): Provide Brazilian Waxing services (Underarms: ₹349/₹329, Full Arms: ₹799/₹745, Half Arms: ₹499/₹475, Full Legs: ₹1199/₹1115, Half Legs: ₹799/₹745, Bikini: ₹2999/₹2799) with exact prices!
+- WAXING INTELLIGENCE & STRICT BIKINI PRIVACY:
+  • If asked generally about Waxing: Ask whether they want Italian RICA Waxing or Brazilian Waxing! (NEVER mention Bikini!)
+  • If asked for RICA Wax (or customer replies RICA): Provide Italian RICA Waxing services (Full Arms: ₹549/₹529, Half Arms: ₹319/₹299, Full Legs: ₹699/₹679, Half Legs: ₹549/₹529, Underarms: ₹229/₹209). DO NOT mention Bikini in RICA waxing lists!
+  • If asked for Brazilian Wax (or customer replies Brazilian): Provide Brazilian Waxing services (Underarms: ₹349/₹329, Full Arms: ₹799/₹745, Half Arms: ₹499/₹475, Full Legs: ₹1199/₹1115, Half Legs: ₹799/₹745). DO NOT mention Bikini in Brazilian waxing lists!
+  • BIKINI WAXING STRICT PRIVACY: NEVER mention Bikini Waxing until and unless the client explicitly asks for "bikini". When asked, confirm politely and offer Italian RICA (₹2,699 / Member: ₹2,510) or Brazilian (₹2,999 / Member: ₹2,799)!
   • If asked for Face Waxing (Full Face, Chin, Upper Lip, Side Locks): Provide Face Waxing services (Full Face: ₹449/₹399, Upper Lip: ₹99/₹79, Chin: ₹109/₹99, Side Locks: ₹149/₹139)!
   • If asked for Threading (Eyebrows, Upper Lip, Full Face): Provide Threading services (Eyebrows: ₹55/₹49, Full Face: ₹399/₹369)!
 
@@ -985,7 +1237,7 @@ RULE 4: BOTH / UNISEX SERVICES (NEVER ASK "MEN OR WOMEN?"):
   DO NOT ask "Men or Women?".
   Directly list the available options with Regular Price and Member Price!
 
-RULE 5: TRUE DUAL-GENDER SERVICES ONLY (CONTEXT-AWARE & PURE SERVICES ONLY):
+RULE 5: TRUE DUAL-GENDER SERVICES & LENGTH-BASED PRICING:
 - Genuinely dual services with distinct Men and Women offerings:
   • Haircut / Hair Trim
   • Hair Spa (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
@@ -997,10 +1249,17 @@ RULE 5: TRUE DUAL-GENDER SERVICES ONLY (CONTEXT-AWARE & PURE SERVICES ONLY):
   • When a customer asks about Haircut, list ONLY haircut options. NEVER mix Hair Spa, Keratin, Botox, or Nanoplastia into Haircut replies!
   • Women Haircuts: Women Basic Haircut (Wash + Blast Dry: ₹399/₹349), Women Basic Haircut (Wash + Blow Dry & Setting: ₹599/₹549), Women Advance Haircut (Wash + Blast Dry: ₹749/₹695), Women Advance Haircut (Wash + Blow Dry & Setting: ₹899/₹835), Girl Basic Haircut (₹329/₹299), Girl Advanced Haircut (₹399/₹369).
   • Men Haircuts: Men Hair Cut (₹249/₹219), Men Hair Cut with Wash & Blast Dry (₹349/₹329), Little Champ Hair Cut (₹249/₹219), Little Champ with Wash & Blast Dry (₹349/₹299). DO NOT include head shaves, beard, or chemical treatments in Men haircut replies!
+- LENGTH-BASED PRICING FOR WOMEN HAIR SERVICES:
+  • For Women Hair Spa, Hair Color, Chemical Treatments (Botox, Keratin, Nanoplastia), and Blow Dry / Blast Dry, pricing varies by hair length (Small, Medium, Long).
+  • NEVER quote only "Small" length as a single flat rate, because customers feel misled when charged more for long hair in the salon.
+  • ALWAYS present the length-wise breakdown: Small ₹X | Med ₹Y | Long ₹Z.
+  • Women Hair Spa: Deep Nourishing (Small ₹699 | Med ₹849 | Long ₹999), Damage Repair (Small ₹899 | Med ₹1,199 | Long ₹1,399), Anti-Dandruff (Small ₹1,199 | Med ₹1,399 | Long ₹1,599), Deluxe (Small ₹1,199 | Med ₹1,499 | Long ₹1,799).
+  • Women Chemical: Hair Botox (Small ₹3,999 | Med ₹5,999 | Long ₹6,999), Keratin (Small ₹3,999 | Med ₹5,699 | Long ₹5,999), Nanoplastia (Small ₹5,999 | Med ₹6,999 | Long ₹7,999).
+  • Women Color: Global Ammonia-Free (Small ₹2,999 | Med ₹3,999 | Long ₹4,999), Global With Ammonia (Small ₹2,999 | Med ₹3,999 | Long ₹4,999), Balayage (Small ₹5,999 | Med ₹6,999 | Long ₹7,999).
 - STRICT CONTEXT TRACKING ON GENDER REPLIES ("men" or "women"):
   • When a customer replies with "men" or "women", inspect the most recent previous question!
   • If the previous turn was about Haircut, return ONLY that gender's haircut options!
-  • If the previous turn was about Hair Spa, return ONLY that gender's hair spa options!
+  • If the previous turn was about Hair Spa, return ONLY that gender's hair spa options with length-wise breakdown!
   • If the previous turn was about Head Massage, return ONLY that gender's head massage options!
   • NEVER confuse Haircut with Hair Spa!
 - IF GENDER IS NOT SPECIFIED in the query or recent context (e.g. "how much for hair spa?", "haircut price"):
@@ -1020,18 +1279,17 @@ RULE 6: CASUAL & HIGH-INTENT CONVERSATIONAL QUESTIONS:
 - "When can I come?" / "Closing time?" / "What time open?":
   Confirm we are open all 7 days from 10:00 AM to 9:00 PM. Both walk-ins and appointments are welcome. Ask what time they plan to visit!
 - "Is there any offer going on?" / "Any discounts?":
-  Special discounts and exclusive offers are always running at Classic Pearl! The exact discount details and personalized packages are provided when you visit the salon so our stylists can suggest the best offer for your chosen services. Warmly invite them to visit.
+  Yes, we run exciting special offers exclusively when you visit the salon! Our stylists personalize the best package discount for your chosen services during consultation. For details, invite them to visit or call ${SALON_INFO.phone}.
 
 RULE 7: CRISP & FOCUSED RESPONSES (DO NOT CLUTTER WITH UNRELATED UPSELLS):
 - Focus 100% on answering what the customer asked for.
 - Do NOT clutter replies with long promotional paragraphs about Keratin or other treatments when they only asked for Haircut or Hair Spa.
 - Keep answers ultra-clean so what they asked for is immediately visible!
 
-RULE 8: ACCURATE PRICING & SINGLE SERVICES ONLY (STRICT NO COMBOS):
+RULE 8: ACCURATE PRICING & SMART VALUE COMBOS:
 - ALWAYS display both *Regular Price* and *Member Price* in ₹ (e.g. 🟢 *Service:* ₹XXX _(Member: ₹YYY)_).
 - NEVER hallucinate prices.
-- Do NOT list combo packages automatically. If explicitly asked "Do you have combos?", reply:
-  "Yes! We offer customized combo packages tailored to your needs. What specific services are you looking to combine so we can offer you the best tailored package?"
+- Do NOT list combo packages automatically. If explicitly asked about combos (e.g. "haircut combo", "hair spa combo", "waxing combo"), search and return ONLY the combos matching that specific service. If generally asked "do you have combos?", ask which specific service they want a combo for.
 
 RULE 9: SHORT, CRISP & GREEN-HIGHLIGHTED FORMATTING:
 - Format text cleanly and compactly for WhatsApp:
@@ -1052,7 +1310,8 @@ Reply as Pearl Assistant to keep the customer engaged and convert them:`;
 
 /**
  * Main AI Engine Entrypoint:
- * Tries Gemini first, falls back gracefully to the Deterministic Engine.
+ * Runs deterministic knowledge engine first for 100% accuracy,
+ * falling back gracefully to Gemini 2.5 Flash for open-ended conversational questions.
  */
 export async function generateSalonReply(params: {
   apiKey?: string;
@@ -1063,7 +1322,13 @@ export async function generateSalonReply(params: {
 }): Promise<string> {
   const { apiKey, contactName, inboundText, buttonId, chatHistory = '' } = params;
 
-  // If Gemini key is available, attempt Gemini generation via direct REST API
+  // 1. Check deterministic salon knowledge engine first (0ms, 100% catalog-accurate, enforces length-based pricing, privacy & combo rules)
+  const deterministicReply = getSalonDeterministicReply(inboundText, chatHistory, buttonId);
+  if (deterministicReply) {
+    return deterministicReply;
+  }
+
+  // 2. If not caught by deterministic patterns, use Gemini 2.5 Flash for conversational handling
   if (apiKey && apiKey.length > 5) {
     try {
       const prompt = buildGeminiPrompt(contactName, chatHistory, inboundText);
@@ -1108,11 +1373,10 @@ export async function generateSalonReply(params: {
         console.error('Gemini API HTTP Error:', res.status, errJson);
       }
     } catch (err) {
-      console.error('Gemini AI Generation Error, using deterministic fallback:', err);
+      console.error('Gemini AI Generation Error, using fallback:', err);
     }
   }
 
-  // Deterministic Engine Fallback (Guaranteed 100% 24/7 reliability)
-  const deterministicReply = getSalonDeterministicReply(inboundText, chatHistory, buttonId);
-  return deterministicReply || `✨ *Welcome to Classic Pearl Unisex Salon!* ✨\n\nHow can we pamper you today? Please let us know which service you are interested in (Haircut, Hair Spa, Facials, Pedicure, Waxing, etc.) or if you'd like to book an appointment!\n\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Call Us:* ${SALON_INFO.phone} 💛`;
+  // Fallback greeting if neither matched
+  return `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`;
 }
