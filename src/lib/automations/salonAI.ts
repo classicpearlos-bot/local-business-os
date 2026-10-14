@@ -24,6 +24,75 @@ export const SALON_INFO = {
   bookingPhone: '+91 83107 30322',
 };
 
+export interface SalonReplyButton {
+  id: string;
+  title: string; // Meta WhatsApp strictly enforces max 20 chars
+}
+
+export interface SalonReplyResult {
+  reply: string;
+  buttons?: SalonReplyButton[];
+}
+
+export const SALON_BUTTONS = {
+  GENDER: [
+    { id: 'btn_men', title: '👨 Men' },
+    { id: 'btn_women', title: '👩 Women' },
+  ],
+  WAXING: [
+    { id: 'btn_rica', title: '🌿 Italian RICA' },
+    { id: 'btn_brazilian', title: '✨ Brazilian Wax' },
+  ],
+  BIKINI: [
+    { id: 'btn_bikini_rica', title: '🌿 RICA Bikini' },
+    { id: 'btn_bikini_brazilian', title: '✨ Brazilian Bikini' },
+  ],
+  COMBOS: [
+    { id: 'btn_combo_haircut', title: '💇 Haircut Combo' },
+    { id: 'btn_combo_spa', title: '💆 Hair Spa Combo' },
+    { id: 'btn_combo_wax', title: '🌸 Waxing Combo' },
+  ],
+  HAIR_SPA_LENGTH: [
+    { id: 'btn_spa_small', title: '✨ Small Length' },
+    { id: 'btn_spa_med', title: '✨ Medium Length' },
+    { id: 'btn_spa_long', title: '✨ Long Length' },
+  ],
+  ACTION: [
+    { id: 'btn_book', title: '📅 Book Slot' },
+    { id: 'btn_offers', title: '🎉 Active Offers' },
+  ],
+  WELCOME: [
+    { id: 'btn_services', title: '📋 Our Services' },
+    { id: 'btn_offers', title: '🎉 Today\'s Offers' },
+    { id: 'btn_book', title: '📅 Book Slot' },
+  ],
+};
+
+/**
+ * Normalizes customer text by fixing common spelling errors and typos
+ */
+export function normalizeSalonText(input: string): string {
+  let s = (input || '').toLowerCase().trim();
+  s = s.replace(/[?.,!/\\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  s = s.replace(/\b(hairct|haricut|haircutt|hrcut|hairkut|harkut|haicutt|haircurt)\b/g, 'haircut');
+  s = s.replace(/\b(hairspa|hair\\s*sap|har\\s*spa|hair\\s*spaa|harspa|hspa)\b/g, 'hair spa');
+  s = s.replace(/\b(waxng|waxin|vaxing|vax|wzxing|waxting|waksing)\b/g, 'waxing');
+  s = s.replace(/\b(rika|reca|ricaa|riqa)\b/g, 'rica');
+  s = s.replace(/\b(brazilan|brazillian|brazilien)\b/g, 'brazilian');
+  s = s.replace(/\b(bikni|bekini|bikny|biknii)\b/g, 'bikini');
+  s = s.replace(/\b(wmn|womn|wmen|womem|ladis|grl|femal)\b/g, 'women');
+  s = s.replace(/\b(gnts|mael)\b/g, 'men');
+  s = s.replace(/\b(facil|fecial|faical|fashial|faceal)\b/g, 'facial');
+  s = s.replace(/\b(pedicre|pedicur|pedicue|padicure)\b/g, 'pedicure');
+  s = s.replace(/\b(manicre|manicur|manicue)\b/g, 'manicure');
+  s = s.replace(/\b(cmbo|comobo|pakage|pakages|packeg|packege|pacage)\b/g, 'combo');
+  s = s.replace(/\b(berd|beared|beerd|bred)\b/g, 'beard');
+  s = s.replace(/\b(keratine|kreatin|kratin|keretin)\b/g, 'keratin');
+  s = s.replace(/\b(botoc|botoxx|botx)\b/g, 'botox');
+  s = s.replace(/\b(nanoplasta|nanoplasia|nanoplastica|nano\s*plastia)\b/g, 'nanoplastia');
+  return s;
+}
+
 export function formatPriceList(title: string, items: ServiceItem[], note?: string, maxItems: number = 6): string {
   const displayItems = items.slice(0, maxItems);
   let text = `✨ *${title}* 🟢\n\n`;
@@ -55,7 +124,7 @@ export function getLastInquiryContext(
     : chatHistory.split(/\n\s*\n/).map(l => l.trim()).filter(Boolean).reverse();
 
   for (const turn of turns) {
-    const lower = turn.toLowerCase();
+    const lower = normalizeSalonText(turn);
 
     // Skip generic greetings/menus that mention multiple categories together
     if (
@@ -74,7 +143,17 @@ export function getLastInquiryContext(
       return 'bikini_wax';
     }
 
-    // 1. Haircut
+    // 1. Combos & Packages (Check BEFORE single services because combo prompts list 'Haircut Combo', 'Waxing Combo' etc.)
+    if (
+      lower.includes('combo') || 
+      lower.includes('package') || 
+      lower.includes('value combo') ||
+      lower.includes('value combos')
+    ) {
+      return 'combo';
+    }
+
+    // 2. Haircut
     if (
       lower.includes('haircut') ||
       lower.includes('hair cut') ||
@@ -88,17 +167,17 @@ export function getLastInquiryContext(
       return 'haircut';
     }
 
-    // 2. Hair Spa
+    // 3. Hair Spa
     if (lower.includes('hair spa') || (lower.includes('spa') && !lower.includes('body'))) {
       return 'hair_spa';
     }
 
-    // 3. Head Massage
+    // 4. Head Massage
     if (lower.includes('head massage') || (lower.includes('massage') && !lower.includes('body'))) {
       return 'head_massage';
     }
 
-    // 4. Hair Color
+    // 5. Hair Color
     if (
       lower.includes('color') ||
       lower.includes('colour') ||
@@ -109,7 +188,7 @@ export function getLastInquiryContext(
       return 'hair_color';
     }
 
-    // 5. Chemical Treatments
+    // 6. Chemical Treatments
     if (
       lower.includes('keratin') ||
       lower.includes('botox') ||
@@ -120,7 +199,7 @@ export function getLastInquiryContext(
       return 'chemical';
     }
 
-    // 6. Hair Wash / Blow Dry
+    // 7. Hair Wash / Blow Dry
     if (
       lower.includes('hair wash') ||
       lower.includes('blow dry') ||
@@ -130,7 +209,7 @@ export function getLastInquiryContext(
       return 'hair_wash';
     }
 
-    // 7. General Waxing
+    // 8. General Waxing
     if (
       lower.includes('waxing') ||
       lower.includes('wax') ||
@@ -138,11 +217,6 @@ export function getLastInquiryContext(
       lower.includes('brazilian')
     ) {
       return 'waxing';
-    }
-
-    // 8. Combos & Packages
-    if (lower.includes('combo') || lower.includes('package')) {
-      return 'combo';
     }
   }
 
@@ -296,7 +370,14 @@ export function formatBotox(gender?: 'men' | 'women'): string {
 }
 
 export function formatNanoplastia(): string {
-  return `✨ *Women Nanoplastia Treatment (By Length)* 🟢\n\n🟢 *Small Length:* ₹5,999\n🟢 *Medium Length:* ₹6,999\n🟢 *Long Length:* ₹7,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
+  return `✨ *Women Nanoplastia Treatment (By Length)* 🟢
+
+🟢 *Small Length:* ₹5,999
+🟢 *Medium Length:* ₹6,999
+🟢 *Long Length:* ₹7,999
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+What is your hair length? 💛`;
 }
 
 export function formatMenChemical(): string {
@@ -371,7 +452,7 @@ export function formatWaxingOverview(): string {
 
 We offer premium Italian RICA Waxing and Brazilian Waxing for silky smooth skin!
 
-Would you like to see options for *RICA Wax* or *Brazilian Wax*? ✨`;
+Would you prefer *Italian RICA Waxing* or *Brazilian Waxing*? ✨`;
 }
 
 export function formatFaceWaxing(): string {
@@ -435,7 +516,7 @@ export function formatBikiniOverview(): string {
 
 Yes, we offer premium Bikini Waxing for women in both Italian RICA Wax and Brazilian Wax for gentle, hygienic care. ✨
 
-Would you like options for *RICA Wax* or *Brazilian Wax*?`;
+Would you prefer *Italian RICA Wax* or *Brazilian Wax*?`;
 }
 
 export function formatBikiniRica(): string {
@@ -482,7 +563,7 @@ export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'):
   const kw = (serviceKeyword || '').toLowerCase();
 
   // A. Haircut Combos
-  if (kw.includes('haircut') || kw.includes('hair cut') || kw.includes('cut')) {
+  if (kw.includes('haircut') || kw.includes('hair cut') || /\bcut\b/.test(kw)) {
     if (gender === 'men') {
       return `✨ *Men Haircut Value Combos* 🟢\n\n🟢 *Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n🟢 *Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Haircut + De-Tan (Face & Neck):* ₹849 _(Member: ₹799)_\n🟢 *Haircut + Hair Color + Hair Wash:* ₹1,099 _(Member: ₹999)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
     }
@@ -521,24 +602,90 @@ export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'):
   return `✨ *Classic Pearl Value Combos* 🟢\n\nYes! We offer customized money-saving combos on *Hair Care*, *Facials*, *Grooming* & *Waxing*!\n\nWhich service combo are you looking for?\n• *Haircut Combo* 💇\n• *Hair Spa Combo* 💆\n• *Facial & Clean Up Combo* ✨\n• *Waxing Combo* 🌸\n\nTell us your preference and we'll share the best package! 💛`;
 }
 
-
 /**
- * Deterministic Salon Knowledge Engine:
- * Handles direct, casual, and nuanced queries with high conversion accuracy.
- * Kept short, crisp, and highlighted with green bullets.
+ * Deterministic Salon Knowledge Engine with Interactive Button Support:
+ * Handles direct, casual, and nuanced queries with 100% catalog accuracy.
+ * Kept short, crisp, highlighted with green bullets, and equipped with native WhatsApp one-tap buttons.
  */
-export function getSalonDeterministicReply(
+export function getSalonDeterministicResponse(
   inboundText: string,
   chatHistory: string = '',
   buttonId?: string
-): string | null {
-  const text = (inboundText || '').trim().toLowerCase();
-  const bid = (buttonId || '').toLowerCase();
-  const historyLower = (chatHistory || '').toLowerCase();
+): SalonReplyResult | null {
+  const normalized = normalizeSalonText(inboundText);
+  const text = normalized;
+  const bid = (buttonId || '').toLowerCase().trim();
+  const historyLower = normalizeSalonText(chatHistory);
+  const lastContext = getLastInquiryContext(chatHistory);
 
   // Detect explicit gender keywords in user query
   const isMenExplicit = /\b(men|male|gents|man|guy|for men|for male|boys|boy)\b/i.test(text);
   const isWomenExplicit = /\b(women|female|ladies|woman|girl|for women|for female|girls)\b/i.test(text);
+
+  // 0. DIRECT BUTTON DISPATCH & SPECIFIC ROUTING
+  if (bid === 'btn_men') {
+    if (lastContext === 'haircut') return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_spa') return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'head_massage') return { reply: formatMenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_color') return { reply: formatMenHairColor(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'chemical') return { reply: formatMenChemical(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_wash') return { reply: formatMenHairWash(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'combo') return { reply: formatCombos('haircut', 'men'), buttons: SALON_BUTTONS.ACTION };
+    return {
+      reply: `✨ *Classic Pearl Services for Men* 🟢\n\n🟢 *Haircut & Styling* (Men Cut & Little Champ)\n🟢 *Beard Shave, Trimming & Styling*\n🟢 *Relaxing Head Massage* (Almond & Olive)\n🟢 *Deep Nourishing Hair Spa*\n🟢 *Facials, De-Tan & Pedicure*\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
+  }
+
+  if (bid === 'btn_women') {
+    if (lastContext === 'bikini_wax') return { reply: formatBikiniOverview(), buttons: SALON_BUTTONS.BIKINI };
+    if (lastContext === 'waxing') return { reply: formatWaxingOverview(), buttons: SALON_BUTTONS.WAXING };
+    if (lastContext === 'haircut') return { reply: formatWomenHaircuts(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_spa') return { reply: formatWomenHairSpa(), buttons: SALON_BUTTONS.HAIR_SPA_LENGTH };
+    if (lastContext === 'head_massage') return { reply: formatWomenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_color') return { reply: formatWomenHairColor(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'chemical') return { reply: formatWomenChemical(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_wash') return { reply: formatWomenHairWashAndBlowDry(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'combo') return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
+    return {
+      reply: `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa (By Length)* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia (By Length)*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
+  }
+
+  if (bid === 'btn_rica' || bid === 'btn_bikini_rica') {
+    if (bid === 'btn_bikini_rica' || lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
+      return { reply: formatBikiniRica(), buttons: SALON_BUTTONS.ACTION };
+    }
+    return { reply: formatRicaWaxing(), buttons: SALON_BUTTONS.ACTION };
+  }
+
+  if (bid === 'btn_brazilian' || bid === 'btn_bikini_brazilian') {
+    if (bid === 'btn_bikini_brazilian' || lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
+      return { reply: formatBikiniBrazilian(), buttons: SALON_BUTTONS.ACTION };
+    }
+    return { reply: formatBrazilianWaxing(), buttons: SALON_BUTTONS.ACTION };
+  }
+
+  if (bid === 'btn_combo_haircut') {
+    return { reply: formatCombos('haircut'), buttons: SALON_BUTTONS.ACTION };
+  }
+  if (bid === 'btn_combo_spa') {
+    return { reply: formatCombos('spa'), buttons: SALON_BUTTONS.ACTION };
+  }
+  if (bid === 'btn_combo_wax') {
+    return { reply: formatCombos('wax'), buttons: SALON_BUTTONS.ACTION };
+  }
+
+  if (bid === 'btn_spa_small') {
+    return { reply: formatWomenHairSpaByLength('small'), buttons: SALON_BUTTONS.ACTION };
+  }
+  if (bid === 'btn_spa_med') {
+    return { reply: formatWomenHairSpaByLength('medium'), buttons: SALON_BUTTONS.ACTION };
+  }
+  if (bid === 'btn_spa_long') {
+    return { reply: formatWomenHairSpaByLength('long'), buttons: SALON_BUTTONS.ACTION };
+  }
 
   // 1. Button Actions & Quick Replies
   if (
@@ -547,15 +694,65 @@ export function getSalonDeterministicReply(
     text.includes('discount') || text.includes('discounts') || text.includes('offer') || text.includes('offers') ||
     text.includes('deal') || text.includes('deals') || text.includes('tmr is this offer') || text.includes('offer continue')
   ) {
-    return formatOffers();
+    return {
+      reply: formatOffers(),
+      buttons: [
+        { id: 'btn_book', title: '📅 Book Slot' },
+        { id: 'btn_services', title: '📋 Our Services' }
+      ]
+    };
   }
 
   if (bid === 'btn_services' || text === 'view services' || text === 'services') {
-    return `✨ *Classic Pearl Unisex Salon Menu* 🟢\n\n🟢 *Hair Care & Hair Spa* (Haircut, Spa, Keratin, Color)\n🟢 *Relaxing Head Massage* (Almond, Olive, Coconut)\n🟢 *Luxury Facials & Cleanups* (O3+, Korean Glass, Hydra)\n🟢 *Manicure & Pedicure* (Crystal, Lotus, De-Tan)\n🟢 *Waxing, Threading & Beard Styling*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details on? 😊`;
+    return {
+      reply: `✨ *Classic Pearl Unisex Salon Menu* 🟢\n\n🟢 *Hair Care & Hair Spa* (Haircut, Spa, Keratin, Color)\n🟢 *Relaxing Head Massage* (Almond, Olive, Coconut)\n🟢 *Luxury Facials & Cleanups* (O3+, Korean Glass, Hydra)\n🟢 *Manicure & Pedicure* (Crystal, Lotus, De-Tan)\n🟢 *Waxing, Threading & Beard Styling*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details on? 😊`,
+      buttons: [
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' },
+        { id: 'btn_book', title: '📅 Book Slot' }
+      ]
+    };
   }
 
   if (bid === 'btn_book' || text === 'book appointment') {
-    return `📅 *Book Your Slot at Classic Pearl!* 🟢\n\nPlease share:\n1️⃣ *Preferred Service* (e.g. Hair Spa, Facial, Haircut)\n2️⃣ *Preferred Date & Time*\n3️⃣ *Name & Number of Guests*\n\nOr call us directly at 📞 *${SALON_INFO.phone}* for instant slot reservation! 💛`;
+    return {
+      reply: `📅 *Book Your Slot at Classic Pearl!* 🟢\n\nPlease share:\n1️⃣ *Preferred Service* (e.g. Hair Spa, Facial, Haircut)\n2️⃣ *Preferred Date & Time*\n3️⃣ *Name & Number of Guests*\n\nOr call us directly at 📞 *${SALON_INFO.phone}* for instant slot reservation! 💛`,
+      buttons: [
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' },
+        { id: 'btn_services', title: '📋 Our Services' }
+      ]
+    };
+  }
+
+  // 1.5 CONVERSATIONAL COMBO CONTEXT OVERRIDE:
+  // If the conversation is currently in combo context, single words like "waxing", "haircut", "spa"
+  // MUST resolve to their respective Value Combo, NOT single services!
+  if (lastContext === 'combo') {
+    if (text.includes('wax') || text.includes('waxing')) {
+      return { reply: formatCombos('wax'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (text.includes('haircut') || text.includes('hair cut') || /\bcut\b/.test(text)) {
+      if (isMenExplicit && !isWomenExplicit) return { reply: formatCombos('haircut', 'men'), buttons: SALON_BUTTONS.ACTION };
+      if (isWomenExplicit && !isMenExplicit) return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
+      return { reply: formatCombos('haircut'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (text.includes('hair spa') || text.includes('spa')) {
+      return { reply: formatCombos('spa'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (text.includes('facial') || text.includes('clean up') || text.includes('cleanup')) {
+      return { reply: formatCombos('facial'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (text.includes('beard') || text.includes('shave')) {
+      return { reply: formatCombos('beard'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (text.includes('massage')) {
+      return { reply: formatCombos('massage'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (isMenExplicit && !isWomenExplicit) {
+      return { reply: formatCombos('haircut', 'men'), buttons: SALON_BUTTONS.ACTION };
+    }
+    if (isWomenExplicit && !isMenExplicit) {
+      return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
+    }
   }
 
   // 2. High-Intent Questions: "Is it free now?" / "Are you free right now?" / "Can I come now?"
@@ -571,7 +768,10 @@ export function getSalonDeterministicReply(
     text.includes('slot free') ||
     (text.includes('free') && (text.includes('today') || text.includes('now')))
   ) {
-    return `🟢 *Yes, walk-ins are warmly welcome!* 🕒\n\nTo hold your stylist with *zero waiting time*, please call our desk right now at 📞 *${SALON_INFO.phone}*. We'll keep a chair ready for you! 💛`;
+    return {
+      reply: `🟢 *Yes, walk-ins are warmly welcome!* 🕒\n\nTo hold your stylist with *zero waiting time*, please call our desk right now at 📞 *${SALON_INFO.phone}*. We'll keep a chair ready for you! 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 3. Salon Name / Identity: "What is your salon name?" / "Who is this?" / "May I know you?"
@@ -584,7 +784,10 @@ export function getSalonDeterministicReply(
     text.includes('may i know you') ||
     text.includes('which salon')
   ) {
-    return `✨ *Classic Pearl Unisex Salon* 🟢\n\nWe are a premium salon specializing in luxury *Hair Care*, *Skin Aesthetics*, *Pedicure* & *Grooming*.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call:* ${SALON_INFO.phone}\nHow can we pamper you today? 💛`;
+    return {
+      reply: `✨ *Classic Pearl Unisex Salon* 🟢\n\nWe are a premium salon specializing in luxury *Hair Care*, *Skin Aesthetics*, *Pedicure* & *Grooming*.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* ${SALON_INFO.hours}\n📞 *Call:* ${SALON_INFO.phone}\nHow can we pamper you today? 💛`,
+      buttons: SALON_BUTTONS.WELCOME
+    };
   }
 
   // 4. Location & Directions: "Where is your salon?" / "Where are you located?" / "Location?" / "Where to come?" / "Address?"
@@ -599,7 +802,10 @@ export function getSalonDeterministicReply(
     text.includes('which place') ||
     text.includes('where located')
   ) {
-    return `📍 *Classic Pearl Unisex Salon Location:* 🟢\n${SALON_INFO.mapsUrl}\n\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call for Route Guidance:* ${SALON_INFO.phone}\n\nWould you like us to reserve a slot for your visit? 💛`;
+    return {
+      reply: `📍 *Classic Pearl Unisex Salon Location:* 🟢\n${SALON_INFO.mapsUrl}\n\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call for Route Guidance:* ${SALON_INFO.phone}\n\nWould you like us to reserve a slot for your visit? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 5. How to reach / route guidance: "How can I reach?" / "Can someone guide me?" / "How do I get there?"
@@ -612,7 +818,10 @@ export function getSalonDeterministicReply(
     text.includes('route') || 
     text.includes('landmark')
   ) {
-    return `📍 *Navigate via Google Maps:* 🟢\n${SALON_INFO.mapsUrl}\n\nFor live landmark guidance, call our front desk directly at 📞 *${SALON_INFO.phone}* and our team will guide you step-by-step! 💛`;
+    return {
+      reply: `📍 *Navigate via Google Maps:* 🟢\n${SALON_INFO.mapsUrl}\n\nFor live landmark guidance, call our front desk directly at 📞 *${SALON_INFO.phone}* and our team will guide you step-by-step! 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 6. Timing & When to come: "When can I come?" / "Closing time?" / "What time open?" / "Can I come today?"
@@ -627,38 +836,41 @@ export function getSalonDeterministicReply(
     text.includes('timings') ||
     text.includes('timing')
   ) {
-    return `🕒 *We are open 10:00 AM to 9:00 PM every day (Monday to Sunday)!* 🟢\n\nWalk-ins and appointments are warmly welcome.\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}\nWhat time would you prefer to visit today? 💛`;
+    return {
+      reply: `🕒 *We are open 10:00 AM to 9:00 PM every day (Monday to Sunday)!* 🟢\n\nWalk-ins and appointments are warmly welcome.\n📍 *Location:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}\nWhat time would you prefer to visit today? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 7. Combos Inquiry (Smart Matching: Return matching combos if a specific service is requested)
   if (text.includes('combo') || text.includes('combos') || text.includes('package') || text.includes('packages')) {
-    if (text.includes('haircut') || text.includes('hair cut') || text.includes('cut')) {
-      if (isMenExplicit && !isWomenExplicit) return formatCombos('haircut', 'men');
-      if (isWomenExplicit && !isMenExplicit) return formatCombos('haircut', 'women');
-      return formatCombos('haircut');
+    if (text.includes('haircut') || text.includes('hair cut') || /\bcut\b/.test(text)) {
+      if (isMenExplicit && !isWomenExplicit) return { reply: formatCombos('haircut', 'men'), buttons: SALON_BUTTONS.ACTION };
+      if (isWomenExplicit && !isMenExplicit) return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
+      return { reply: formatCombos('haircut'), buttons: SALON_BUTTONS.ACTION };
     }
-    if (text.includes('hair spa') || text.includes('hairspa') || text.includes('spa')) {
-      return formatCombos('spa');
+    if (text.includes('hair spa') || text.includes('spa')) {
+      return { reply: formatCombos('spa'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('wax') || text.includes('waxing')) {
-      return formatCombos('wax');
+      return { reply: formatCombos('wax'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('facial') || text.includes('clean up') || text.includes('cleanup')) {
-      return formatCombos('facial');
+      return { reply: formatCombos('facial'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('beard') || text.includes('shave')) {
-      return formatCombos('beard');
+      return { reply: formatCombos('beard'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('massage')) {
-      return formatCombos('massage');
+      return { reply: formatCombos('massage'), buttons: SALON_BUTTONS.ACTION };
     }
-    return formatCombos();
+    return {
+      reply: formatCombos(),
+      buttons: SALON_BUTTONS.COMBOS
+    };
   }
 
   // 8. STRICT DOMAIN BOUNDARY: BODY SPA / BODY MASSAGE REJECTION & REDIRECTION
-  // Classic Pearl is a unisex salon, NOT a body spa/massage parlor.
-  // We NEVER offer body massage, body spa, full body massage, back massage, or hand massage.
-  // We ONLY offer relaxing HEAD Massages and therapeutic HAIR Spa treatments.
   const isExplicitBodyMassageOrBodySpa = 
     text.includes('body spa') || 
     text.includes('body massage') || 
@@ -680,24 +892,30 @@ export function getSalonDeterministicReply(
     (text.includes('spa') && !text.includes('hair') && (text.includes('body') || text.includes('full')));
 
   if (isExplicitBodyMassageOrBodySpa) {
-    return `✨ *Classic Pearl Unisex Salon* 🟢\n\nPlease note: We are a unisex salon focused on hair and skin aesthetics — we *do not offer body massages* or body spa.\n\n💆 *For deep relaxation, we recommend:*\n🟢 *Relaxing Head Massage* (Almond/Olive) – from *₹349*\n🟢 *Therapeutic Hair Spa* (Nourishing/Repair) – from *₹579*\n🟢 *Chocolate Crystal Pedicure* – *₹1,099*\n\n📞 *Call / Booking:* ${SALON_INFO.phone}\nWould you like to try our relaxing Head Massage or Hair Spa? 💛`;
+    return {
+      reply: `✨ *Classic Pearl Unisex Salon* 🟢\n\nPlease note: We are a unisex salon focused on hair and skin aesthetics — we *do not offer body massages* or body spa.\n\n💆 *For deep relaxation, we recommend:*\n🟢 *Relaxing Head Massage* (Almond/Olive) – from *₹349*\n🟢 *Therapeutic Hair Spa* (Nourishing/Repair) – from *₹579*\n🟢 *Chocolate Crystal Pedicure* – *₹1,099*\n\n📞 *Call / Booking:* ${SALON_INFO.phone}\nWould you like to try our relaxing Head Massage or Hair Spa? 💛`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // 10. STRICT MEN-EXCLUSIVE SERVICES (NEVER ask Men or Women)
   // A. Men Head Shave
   if (text.includes('head shave') || text.includes('head shaving')) {
     const headShaveItem = salonCatalog.men.filter(s => s.Service.toLowerCase().includes('head shave'));
-    return formatPriceList(
-      'Men Head Shave Services',
-      headShaveItem.length > 0 ? headShaveItem : [{
-        ID: 5,
-        Service: 'Men Head Shave',
-        Category: 'Men - Haircut',
-        'Regular Price': 249,
-        'Member Price': 219
-      }],
-      '💡 *Complete Grooming:* Pair your head shave with our soothing *Men Almond / Olive Head Massage (₹399)* or *Men Beard Styling (₹119)* for complete refreshment!'
-    );
+    return {
+      reply: formatPriceList(
+        'Men Head Shave Services',
+        headShaveItem.length > 0 ? headShaveItem : [{
+          ID: 5,
+          Service: 'Men Head Shave',
+          Category: 'Men - Haircut',
+          'Regular Price': 249,
+          'Member Price': 219
+        }],
+        '💡 *Complete Grooming:* Pair your head shave with our soothing *Men Almond / Olive Head Massage (₹399)* or *Men Beard Styling (₹119)* for complete refreshment!'
+      ),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // B. Men Beard Grooming, Shaving & Trimming
@@ -712,11 +930,14 @@ export function getSalonDeterministicReply(
     text.includes('shaving')
   ) {
     const menBeard = salonCatalog.men.filter(s => s.Category === 'Men - Beard');
-    return formatPriceList(
-      'Men Beard Grooming & Shaving Services',
-      menBeard,
-      '💡 *Sharp Grooming Upgrade:* Add a sharp *Men Hair Cut (₹249)* or relaxing *Almond Head Massage (₹399)* to complete your look!'
-    );
+    return {
+      reply: formatPriceList(
+        'Men Beard Grooming & Shaving Services',
+        menBeard,
+        '💡 *Sharp Grooming Upgrade:* Add a sharp *Men Hair Cut (₹249)* or relaxing *Almond Head Massage (₹399)* to complete your look!'
+      ),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 11. STRICT WOMEN-EXCLUSIVE SERVICES (NEVER ask Men or Women)
@@ -738,7 +959,7 @@ export function getSalonDeterministicReply(
     text.includes('facial wax') ||
     text.includes('full face wax')
   ) {
-    return formatFaceWaxing();
+    return { reply: formatFaceWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // B. Threading (Eyebrows, Upper Lip, Chin, Full Face)
@@ -750,16 +971,16 @@ export function getSalonDeterministicReply(
     text.includes('forehead threading') ||
     text.includes('face threading')
   ) {
-    return formatThreading();
+    return { reply: formatThreading(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // C. Bikini Waxing (STRICT PRIVACY: ONLY when explicitly asked!)
   if (text.includes('bikini')) {
     if (text.includes('rica')) {
-      return formatBikiniRica();
+      return { reply: formatBikiniRica(), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('brazilian')) {
-      return formatBikiniBrazilian();
+      return { reply: formatBikiniBrazilian(), buttons: SALON_BUTTONS.ACTION };
     }
     if (
       text.includes('price') || 
@@ -768,20 +989,20 @@ export function getSalonDeterministicReply(
       text.includes('how much') ||
       text.includes('options')
     ) {
-      return formatBikiniWaxing();
+      return { reply: formatBikiniWaxing(), buttons: SALON_BUTTONS.BIKINI };
     }
-    return formatBikiniOverview();
+    return { reply: formatBikiniOverview(), buttons: SALON_BUTTONS.BIKINI };
   }
 
   // D. Specific Body Part Waxing (Underarms, Arms, Legs)
   if (text.includes('underarm') || text.includes('under arm') || text.includes('under-arm')) {
-    return formatUnderarmsWaxing();
+    return { reply: formatUnderarmsWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
   if (text.includes('full arm') || text.includes('half arm') || (text.includes('arm') && text.includes('wax'))) {
-    return formatArmsWaxing();
+    return { reply: formatArmsWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
   if (text.includes('full leg') || text.includes('half leg') || (text.includes('leg') && text.includes('wax'))) {
-    return formatLegsWaxing();
+    return { reply: formatLegsWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // E. RICA Waxing (Specific or Contextual)
@@ -793,11 +1014,10 @@ export function getSalonDeterministicReply(
     text.includes('rica wax') ||
     text.includes('italian rica')
   ) {
-    const lastContext = getLastInquiryContext(chatHistory);
     if (lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
-      return formatBikiniRica();
+      return { reply: formatBikiniRica(), buttons: SALON_BUTTONS.ACTION };
     }
-    return formatRicaWaxing();
+    return { reply: formatRicaWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // F. Brazilian Waxing (Specific or Contextual)
@@ -808,11 +1028,10 @@ export function getSalonDeterministicReply(
     text.includes('brazilian wax') ||
     text.includes('brazilian waxing')
   ) {
-    const lastContext = getLastInquiryContext(chatHistory);
     if (lastContext === 'bikini_wax' || historyLower.includes('bikini')) {
-      return formatBikiniBrazilian();
+      return { reply: formatBikiniBrazilian(), buttons: SALON_BUTTONS.ACTION };
     }
-    return formatBrazilianWaxing();
+    return { reply: formatBrazilianWaxing(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // G. General Waxing Inquiry -> Ask RICA or Brazilian (Strictly NO Bikini!)
@@ -821,7 +1040,7 @@ export function getSalonDeterministicReply(
     text.includes('wax') ||
     text.includes('body wax')
   ) {
-    return formatWaxingOverview();
+    return { reply: formatWaxingOverview(), buttons: SALON_BUTTONS.WAXING };
   }
 
   // C. Styling & Makeovers (Perming, Tongs, Ironing, Curls)
@@ -833,53 +1052,68 @@ export function getSalonDeterministicReply(
     text.includes('curls')
   ) {
     const womenStyling = salonCatalog.women.filter(s => s.Category === 'Women - Styling & Makeover');
-    return formatPriceList(
-      'Women Hair Styling Services',
-      womenStyling
-    );
+    return {
+      reply: formatPriceList('Women Hair Styling Services', womenStyling),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 12. BOTH / UNISEX SERVICES (No gender question asked!)
   // Pedicure
   if (text.includes('pedicure') || text.includes('pedi')) {
     const pedicures = salonCatalog.both.filter(s => s.Category === 'Both - Pedicure');
-    return formatPriceList(
-      'Pedicure Services (For Both Men & Women)',
-      pedicures,
-      '💡 *Pampering Upgrade:* For tired or tanned feet, try our *Chocolate Crystal Pedicure (₹1,099)* or *De-Tan Pedicure (₹799)* for deep exfoliation and massage!'
-    );
+    return {
+      reply: formatPriceList(
+        'Pedicure Services (For Both Men & Women)',
+        pedicures,
+        '💡 *Pampering Upgrade:* For tired or tanned feet, try our *Chocolate Crystal Pedicure (₹1,099)* or *De-Tan Pedicure (₹799)* for deep exfoliation and massage!'
+      ),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Manicure
   if (text.includes('manicure') || text.includes('mani')) {
     const manicures = salonCatalog.both.filter(s => s.Category === 'Both - Manicure');
-    return formatPriceList('Manicure Services (For Both Men & Women)', manicures);
+    return {
+      reply: formatPriceList('Manicure Services (For Both Men & Women)', manicures),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Facial
   if (text.includes('facial') || text.includes('facials')) {
     const facials = salonCatalog.both.filter(s => s.Category === 'Both - Facial');
-    return formatPriceList(
-      'Facial Treatments (For Both Men & Women)',
-      facials,
-      '💡 *Celebrity Favorites:* Experience our *Korean Glass Facial (₹2,199)* or *Hydra Facial (₹2,899)* for immediate glass-skin radiance and deep pore cleansing!'
-    );
+    return {
+      reply: formatPriceList(
+        'Facial Treatments (For Both Men & Women)',
+        facials,
+        '💡 *Celebrity Favorites:* Experience our *Korean Glass Facial (₹2,199)* or *Hydra Facial (₹2,899)* for immediate glass-skin radiance and deep pore cleansing!'
+      ),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Clean Up
   if (text.includes('clean up') || text.includes('cleanup')) {
     const cleanups = salonCatalog.both.filter(s => s.Category === 'Both - Clean Up');
-    return formatPriceList(
-      'Clean Up Services (For Both Men & Women)',
-      cleanups,
-      '💡 *Glow Upgrade:* For deeper pore hydration and lasting glass radiance, ask about our signature Korean Glass Facial when you visit!'
-    );
+    return {
+      reply: formatPriceList(
+        'Clean Up Services (For Both Men & Women)',
+        cleanups,
+        '💡 *Glow Upgrade:* For deeper pore hydration and lasting glass radiance, ask about our signature Korean Glass Facial when you visit!'
+      ),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // De-Tan
   if (text.includes('detan') || text.includes('de-tan') || text.includes('tan')) {
     const detans = salonCatalog.both.filter(s => s.Category === 'Both - De-Tan');
-    return formatPriceList('De-Tan Services (For Both Men & Women)', detans);
+    return {
+      reply: formatPriceList('De-Tan Services (For Both Men & Women)', detans),
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 13. CONTEXTUAL REPLIES (Single-word answer "men" or "women" following a question)
@@ -911,7 +1145,8 @@ export function getSalonDeterministicReply(
     text.includes('champ');
 
   const isShortMenReply = 
-    !hasServiceKeyword && (
+    bid === 'btn_men' ||
+    (!hasServiceKeyword && (
       text === 'men' || 
       text === 'for men' || 
       text === 'gents' || 
@@ -922,10 +1157,11 @@ export function getSalonDeterministicReply(
       text === 'boy' || 
       text === 'boys' || 
       (isMenExplicit && !isWomenExplicit && text.length <= 15)
-    );
+    ));
 
   const isShortWomenReply = 
-    !hasServiceKeyword && (
+    bid === 'btn_women' ||
+    (!hasServiceKeyword && (
       text === 'women' || 
       text === 'for women' || 
       text === 'ladies' || 
@@ -936,91 +1172,81 @@ export function getSalonDeterministicReply(
       text === 'girl' || 
       text === 'girls' || 
       (isWomenExplicit && !isMenExplicit && text.length <= 15)
-    );
+    ));
 
   if (isShortMenReply) {
-    const lastContext = getLastInquiryContext(chatHistory);
-    if (lastContext === 'haircut') {
-      return formatMenHaircuts();
-    }
-    if (lastContext === 'hair_spa') {
-      return formatMenHairSpa();
-    }
-    if (lastContext === 'head_massage') {
-      return formatMenHeadMassage();
-    }
-    if (lastContext === 'hair_color') {
-      return formatMenHairColor();
-    }
-    if (lastContext === 'chemical') {
-      return formatMenChemical();
-    }
-    if (lastContext === 'hair_wash') {
-      return formatMenHairWash();
-    }
-    if (lastContext === 'combo') {
-      return formatCombos('haircut', 'men');
-    }
-    return `✨ *Classic Pearl Services for Men* 🟢\n\n🟢 *Haircut & Styling* (Men Cut & Little Champ)\n🟢 *Beard Shave, Trimming & Styling*\n🟢 *Relaxing Head Massage* (Almond & Olive)\n🟢 *Deep Nourishing Hair Spa*\n🟢 *Facials, De-Tan & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
+    if (lastContext === 'haircut') return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_spa') return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'head_massage') return { reply: formatMenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_color') return { reply: formatMenHairColor(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'chemical') return { reply: formatMenChemical(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_wash') return { reply: formatMenHairWash(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'combo') return { reply: formatCombos('haircut', 'men'), buttons: SALON_BUTTONS.ACTION };
+    return {
+      reply: `✨ *Classic Pearl Services for Men* 🟢\n\n🟢 *Haircut & Styling* (Men Cut & Little Champ)\n🟢 *Beard Shave, Trimming & Styling*\n🟢 *Relaxing Head Massage* (Almond & Olive)\n🟢 *Deep Nourishing Hair Spa*\n🟢 *Facials, De-Tan & Pedicure*\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   if (isShortWomenReply) {
-    const lastContext = getLastInquiryContext(chatHistory);
-    if (lastContext === 'bikini_wax') {
-      return formatBikiniOverview();
-    }
-    if (lastContext === 'waxing') {
-      return formatWaxingOverview();
-    }
-    if (lastContext === 'haircut') {
-      return formatWomenHaircuts();
-    }
-    if (lastContext === 'hair_spa') {
-      return formatWomenHairSpa();
-    }
-    if (lastContext === 'head_massage') {
-      return formatWomenHeadMassage();
-    }
-    if (lastContext === 'hair_color') {
-      return formatWomenHairColor();
-    }
-    if (lastContext === 'chemical') {
-      return formatWomenChemical();
-    }
-    if (lastContext === 'hair_wash') {
-      return formatWomenHairWashAndBlowDry();
-    }
-    if (lastContext === 'combo') {
-      return formatCombos('haircut', 'women');
-    }
-    return `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa (By Length)* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia (By Length)*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📞 *Call / Book:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`;
+    if (lastContext === 'bikini_wax') return { reply: formatBikiniOverview(), buttons: SALON_BUTTONS.BIKINI };
+    if (lastContext === 'waxing') return { reply: formatWaxingOverview(), buttons: SALON_BUTTONS.WAXING };
+    if (lastContext === 'haircut') return { reply: formatWomenHaircuts(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_spa') return { reply: formatWomenHairSpa(), buttons: SALON_BUTTONS.HAIR_SPA_LENGTH };
+    if (lastContext === 'head_massage') return { reply: formatWomenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_color') return { reply: formatWomenHairColor(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'chemical') return { reply: formatWomenChemical(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'hair_wash') return { reply: formatWomenHairWashAndBlowDry(), buttons: SALON_BUTTONS.ACTION };
+    if (lastContext === 'combo') return { reply: formatCombos('haircut', 'women'), buttons: SALON_BUTTONS.ACTION };
+    return {
+      reply: `✨ *Classic Pearl Services for Women* 🟢\n\n🟢 *Haircut & Styling* (Basic & Advance with Blow Dry)\n🟢 *Therapeutic Hair Spa (By Length)* (Nourishing & Repair)\n🟢 *Keratin, Botox & Nanoplastia (By Length)*\n🟢 *Italian Rica Waxing & Threading*\n🟢 *Luxury Facials, Cleanups & Pedicure*\n\n📍 *Classic Pearl* | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details or prices for? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // 14. SPECIFIC SUB-SERVICE QUERIES (Instant direct matching)
   // Little Champ (Kids) Haircut
   if (text.includes('little champ')) {
-    return `✨ *Little Champ Haircut (Kids)* 🟢\n\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n🟢 *Little Champ with Wash & Blast Dry:* ₹349 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return {
+      reply: `✨ *Little Champ Haircut (Kids)* 🟢\n\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n🟢 *Little Champ with Wash & Blast Dry:* ₹349 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Girls Haircut
   if (text.includes('girl haircut') || text.includes('girls haircut') || text.includes('girl basic') || text.includes('girl advance')) {
-    return `✨ *Girl Haircut Services (Below 10 yrs)* 🟢\n\n🟢 *Girl Basic Hair Cut:* ₹329 _(Member: ₹299)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return {
+      reply: `✨ *Girl Haircut Services (Below 10 yrs)* 🟢\n\n🟢 *Girl Basic Hair Cut:* ₹329 _(Member: ₹299)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Advance Haircut
   if (text.includes('advance haircut') || text.includes('advanced haircut') || text.includes('advance cut') || text.includes('advanced cut')) {
-    return `✨ *Advance Haircut Services* 🟢\n\n🟢 *Women Advance Haircut (Wash + Blast Dry):* ₹749 _(Member: ₹695)_\n🟢 *Women Advance Haircut (Wash + Blow Dry & Setting):* ₹899 _(Member: ₹835)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return {
+      reply: `✨ *Advance Haircut Services* 🟢\n\n🟢 *Women Advance Haircut (Wash + Blast Dry):* ₹749 _(Member: ₹695)_\n🟢 *Women Advance Haircut (Wash + Blow Dry & Setting):* ₹899 _(Member: ₹835)_\n🟢 *Girl Advanced Hair Cut:* ₹399 _(Member: ₹369)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+      buttons: SALON_BUTTONS.ACTION
+    };
   }
 
   // Basic Haircut
   if (text.includes('basic haircut') || text.includes('basic cut')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return `✨ *Men Basic Haircut* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Men Basic Haircut* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_\n🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return `✨ *Women Basic Haircut* 🟢\n\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Girl Basic Hair Cut (Below 10 yrs):* ₹329 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Women Basic Haircut* 🟢\n\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Girl Basic Hair Cut (Below 10 yrs):* ₹329 _(Member: ₹299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
-    return `✨ *Basic Haircut Options* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Little Champ Hair Cut:* ₹249 _(Member: ₹219)_\n\nWould you like options for *Men* or *Women*? 💇`;
+    return {
+      reply: `✨ *Basic Haircut Options* 🟢\n\n🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_\n🟢 *Women Basic Haircut (Wash + Blast Dry):* ₹399 _(Member: ₹349)_\n🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_\n🟢 *Little Champ Hair Cut:* ₹249 _(Member: ₹219)_\n\nWould you like options for *Men* or *Women*? 💇`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // Hair Wash, Blow Dry & Blast Dry
@@ -1034,12 +1260,12 @@ export function getSalonDeterministicReply(
     text.includes('wash & blow dry')
   ) {
     if (isMenExplicit && !isWomenExplicit) {
-      return formatMenHairWash();
+      return { reply: formatMenHairWash(), buttons: SALON_BUTTONS.ACTION };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenHairWashAndBlowDry();
+      return { reply: formatWomenHairWashAndBlowDry(), buttons: SALON_BUTTONS.ACTION };
     }
-    return formatHairWashOverview();
+    return { reply: formatHairWashOverview(), buttons: SALON_BUTTONS.GENDER };
   }
 
   // 15. TRUE DUAL-GENDER SERVICES (Ask Men or Women ONLY when gender unstated)
@@ -1053,111 +1279,162 @@ export function getSalonDeterministicReply(
     /\bcut\b/.test(text)
   ) {
     if (isMenExplicit && !isWomenExplicit) {
-      return formatMenHaircuts();
+      return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenHaircuts();
+      return { reply: formatWomenHaircuts(), buttons: SALON_BUTTONS.ACTION };
     }
-    return `✨ *Haircut & Styling at Classic Pearl* 🟢\n\nWe offer professional haircut and styling for both men and women!\n\nWould you like to see options for *Men* or *Women*? 💇`;
+    return {
+      reply: `✨ *Haircut & Styling at Classic Pearl* 🟢\n\nWe offer professional haircut and styling for both men and women!\n\nWould you like to see options for *Men* or *Women*? 💇`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // B. Specific Hair Spa Sub-Types (Deep Nourishing, Damage Repair, Anti-Dandruff, Deluxe)
   if (text.includes('deep nourishing')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return `✨ *Men Deep Nourishing Hair Spa* 🟢\n\n🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Men Deep Nourishing Hair Spa* 🟢\n\n🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
-    return `✨ *Deep Nourishing Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹699 _(Member: ₹665)_\n🟢 *Medium Length:* ₹849 _(Member: ₹790)_\n🟢 *Long Length:* ₹999 _(Member: ₹930)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+    return {
+      reply: `✨ *Deep Nourishing Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹699 _(Member: ₹665)_\n🟢 *Medium Length:* ₹849 _(Member: ₹790)_\n🟢 *Long Length:* ₹999 _(Member: ₹930)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`,
+      buttons: SALON_BUTTONS.HAIR_SPA_LENGTH
+    };
   }
 
   if (text.includes('damage repair')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return `✨ *Men Damage Repair Hair Spa* 🟢\n\n🟢 *Damage Repair Hair Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Men Damage Repair Hair Spa* 🟢\n\n🟢 *Damage Repair Hair Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
-    return `✨ *Damage Repair Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹899 _(Member: ₹835)_\n🟢 *Medium Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Long Length:* ₹1,399 _(Member: ₹1,300)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+    return {
+      reply: `✨ *Damage Repair Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹899 _(Member: ₹835)_\n🟢 *Medium Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Long Length:* ₹1,399 _(Member: ₹1,300)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`,
+      buttons: SALON_BUTTONS.HAIR_SPA_LENGTH
+    };
   }
 
   if (text.includes('anti dandruff') || text.includes('anti-dandruff') || text.includes('hair fall') || text.includes('hairfall')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return `✨ *Men Anti-Dandruff Hair Spa* 🟢\n\n🟢 *Anti-Dandruff / Hair Fall Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Men Anti-Dandruff Hair Spa* 🟢\n\n🟢 *Anti-Dandruff / Hair Fall Spa:* ₹659 _(Member: ₹599)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
-    return `✨ *Anti-Dandruff / Hair Fall Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,399 _(Member: ₹1,300)_\n🟢 *Long Length:* ₹1,599 _(Member: ₹1,485)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+    return {
+      reply: `✨ *Anti-Dandruff / Hair Fall Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,399 _(Member: ₹1,300)_\n🟢 *Long Length:* ₹1,599 _(Member: ₹1,485)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`,
+      buttons: SALON_BUTTONS.HAIR_SPA_LENGTH
+    };
   }
 
   if (text.includes('deluxe hair spa') || text.includes('deluxe spa')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return `✨ *Men Deluxe Hair Spa* 🟢\n\n🟢 *Deluxe Hair Spa:* ₹769 _(Member: ₹699)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return {
+        reply: `✨ *Men Deluxe Hair Spa* 🟢\n\n🟢 *Deluxe Hair Spa:* ₹769 _(Member: ₹699)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`,
+        buttons: SALON_BUTTONS.ACTION
+      };
     }
-    return `✨ *Deluxe Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,499 _(Member: ₹1,395)_\n🟢 *Long Length:* ₹1,799 _(Member: ₹1,675)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`;
+    return {
+      reply: `✨ *Deluxe Hair Spa (Women)* 🟢\n\n🟢 *Small Length:* ₹1,199 _(Member: ₹1,115)_\n🟢 *Medium Length:* ₹1,499 _(Member: ₹1,395)_\n🟢 *Long Length:* ₹1,799 _(Member: ₹1,675)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat length is your hair? 💛`,
+      buttons: SALON_BUTTONS.HAIR_SPA_LENGTH
+    };
   }
 
   // B2. Hair Spa General (Anti-Dandruff, Damage Repair, Deep Nourishing, Deluxe)
   if (text.includes('hair spa') || text.includes('hairspa') || (text.includes('spa') && !text.includes('body'))) {
     if (text.includes('small') || text.includes('short')) {
-      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
-      return formatWomenHairSpaByLength('small');
+      if (isMenExplicit && !isWomenExplicit) return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
+      return { reply: formatWomenHairSpaByLength('small'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('medium') || text.includes('med') || text.includes('shoulder')) {
-      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
-      return formatWomenHairSpaByLength('medium');
+      if (isMenExplicit && !isWomenExplicit) return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
+      return { reply: formatWomenHairSpaByLength('medium'), buttons: SALON_BUTTONS.ACTION };
     }
     if (text.includes('long') || text.includes('waist')) {
-      if (isMenExplicit && !isWomenExplicit) return formatMenHairSpa();
-      return formatWomenHairSpaByLength('long');
+      if (isMenExplicit && !isWomenExplicit) return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
+      return { reply: formatWomenHairSpaByLength('long'), buttons: SALON_BUTTONS.ACTION };
     }
 
     if (isMenExplicit && !isWomenExplicit) {
-      return formatMenHairSpa();
+      return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenHairSpa();
+      return { reply: formatWomenHairSpa(), buttons: SALON_BUTTONS.HAIR_SPA_LENGTH };
     }
-    return `✨ *Hair Spa at Classic Pearl* 🟢\n\nWe offer therapeutic hair spa treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? 😊`;
+    return {
+      reply: `✨ *Hair Spa at Classic Pearl* 🟢\n\nWe offer therapeutic hair spa treatments for both men and women!\n\nWould you like to see options for *Men* or *Women*? 😊`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // C. Head Massage
   if (text.includes('head massage') || text.includes('head oil massage')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return formatMenHeadMassage();
+      return { reply: formatMenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenHeadMassage();
+      return { reply: formatWomenHeadMassage(), buttons: SALON_BUTTONS.ACTION };
     }
-    return `✨ *Relaxing Head Massage* 🟢\n\nWe offer soothing head massages with nourishing oils for both men and women!\n\nWould you like options for *Men* or *Women*? 💆`;
+    return {
+      reply: `✨ *Relaxing Head Massage* 🟢\n\nWe offer soothing head massages with nourishing oils for both men and women!\n\nWould you like options for *Men* or *Women*? 💆`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // D. Hair Color
   if (text.includes('color') || text.includes('colour') || text.includes('highlights') || text.includes('streaks') || text.includes('balayage')) {
     if (isMenExplicit && !isWomenExplicit) {
-      return formatMenHairColor();
+      return { reply: formatMenHairColor(), buttons: SALON_BUTTONS.ACTION };
     }
     if (isWomenExplicit && !isMenExplicit) {
-      return formatWomenHairColor();
+      return { reply: formatWomenHairColor(), buttons: SALON_BUTTONS.ACTION };
     }
-    return `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium global color and highlights for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`;
+    return {
+      reply: `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium global color and highlights for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`,
+      buttons: SALON_BUTTONS.GENDER
+    };
   }
 
   // E. Chemical Treatments / Advanced Hair Treatments (Botox, Keratin, Nanoplastia)
   if (text.includes('nanoplastia')) {
-    return formatNanoplastia();
+    return { reply: formatNanoplastia(), buttons: SALON_BUTTONS.ACTION };
   }
   if (text.includes('keratin')) {
-    if (isMenExplicit && !isWomenExplicit) return formatKeratin('men');
-    if (isWomenExplicit && !isMenExplicit) return formatKeratin('women');
-    return formatKeratin();
+    if (isMenExplicit && !isWomenExplicit) return { reply: formatKeratin('men'), buttons: SALON_BUTTONS.ACTION };
+    if (isWomenExplicit && !isMenExplicit) return { reply: formatKeratin('women'), buttons: SALON_BUTTONS.ACTION };
+    return { reply: formatKeratin(), buttons: SALON_BUTTONS.GENDER };
   }
   if (text.includes('botox')) {
-    if (isMenExplicit && !isWomenExplicit) return formatBotox('men');
-    if (isWomenExplicit && !isMenExplicit) return formatBotox('women');
-    return formatBotox();
+    if (isMenExplicit && !isWomenExplicit) return { reply: formatBotox('men'), buttons: SALON_BUTTONS.ACTION };
+    if (isWomenExplicit && !isMenExplicit) return { reply: formatBotox('women'), buttons: SALON_BUTTONS.ACTION };
+    return { reply: formatBotox(), buttons: SALON_BUTTONS.GENDER };
   }
   if (text.includes('smoothen') || text.includes('straighten')) {
-    if (isMenExplicit && !isWomenExplicit) return formatMenChemical();
-    if (isWomenExplicit && !isMenExplicit) return formatWomenChemical();
-    return formatWomenChemical();
+    if (isMenExplicit && !isWomenExplicit) return { reply: formatMenChemical(), buttons: SALON_BUTTONS.ACTION };
+    if (isWomenExplicit && !isMenExplicit) return { reply: formatWomenChemical(), buttons: SALON_BUTTONS.ACTION };
+    return { reply: formatWomenChemical(), buttons: SALON_BUTTONS.ACTION };
   }
 
   // Generic greeting or default fallback (Short & Crisp)
-  return `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`;
+  return {
+    reply: `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`,
+    buttons: SALON_BUTTONS.WELCOME
+  };
+}
+
+/**
+ * Backward-compatible helper returning reply string directly
+ */
+export function getSalonDeterministicReply(
+  inboundText: string,
+  chatHistory: string = '',
+  buttonId?: string
+): string | null {
+  const res = getSalonDeterministicResponse(inboundText, chatHistory, buttonId);
+  return res ? res.reply : null;
 }
 
 /**
@@ -1309,23 +1586,21 @@ Reply as Pearl Assistant to keep the customer engaged and convert them:`;
 }
 
 /**
- * Main AI Engine Entrypoint:
- * Runs deterministic knowledge engine first for 100% accuracy,
- * falling back gracefully to Gemini 2.5 Flash for open-ended conversational questions.
+ * Main AI Engine Entrypoint returning structured reply + interactive buttons
  */
-export async function generateSalonReply(params: {
+export async function generateSalonResponse(params: {
   apiKey?: string;
   contactName: string;
   inboundText: string;
   buttonId?: string;
   chatHistory?: string;
-}): Promise<string> {
+}): Promise<SalonReplyResult> {
   const { apiKey, contactName, inboundText, buttonId, chatHistory = '' } = params;
 
-  // 1. Check deterministic salon knowledge engine first (0ms, 100% catalog-accurate, enforces length-based pricing, privacy & combo rules)
-  const deterministicReply = getSalonDeterministicReply(inboundText, chatHistory, buttonId);
-  if (deterministicReply) {
-    return deterministicReply;
+  // 1. Check deterministic salon knowledge engine first (0ms, 100% catalog-accurate, enforces length-based pricing, privacy, buttons & combo rules)
+  const deterministic = getSalonDeterministicResponse(inboundText, chatHistory, buttonId);
+  if (deterministic) {
+    return deterministic;
   }
 
   // 2. If not caught by deterministic patterns, use Gemini 2.5 Flash for conversational handling
@@ -1355,7 +1630,10 @@ export async function generateSalonReply(params: {
           let reply = text.trim();
 
           if (reply.includes('HUMAN_HANDOVER')) {
-            return `I'm connecting you with our salon team right away. You can also reach us directly at *${SALON_INFO.phone}*! 💛`;
+            return {
+              reply: `I'm connecting you with our salon team right away. You can also reach us directly at *${SALON_INFO.phone}*! 💛`,
+              buttons: SALON_BUTTONS.ACTION
+            };
           }
 
           // WhatsApp markdown formatting cleanup
@@ -1366,7 +1644,10 @@ export async function generateSalonReply(params: {
             .replace(/##\s*(.*)/g, '*$1*') // H2 -> *Header*
             .replace(/#\s*(.*)/g, '*$1*'); // H1 -> *Header*
 
-          return reply;
+          return {
+            reply,
+            buttons: SALON_BUTTONS.ACTION
+          };
         }
       } else {
         const errJson = await res.json().catch(() => ({}));
@@ -1378,5 +1659,22 @@ export async function generateSalonReply(params: {
   }
 
   // Fallback greeting if neither matched
-  return `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`;
+  return {
+    reply: `✨ *Welcome to Classic Pearl Unisex Salon!* 🟢\n\nHow can we pamper you today? Our popular services:\n🟢 *Hair Spa & Haircuts*\n🟢 *Keratin & Botox Treatments*\n🟢 *Luxury Facials & Cleanups*\n🟢 *Pedicure & Head Massage*\n\n📍 ${SALON_INFO.mapsUrl} | 📞 *Call:* ${SALON_INFO.phone}\nWhich service would you like details on? 💛`,
+    buttons: SALON_BUTTONS.WELCOME
+  };
+}
+
+/**
+ * Backward-compatible helper returning reply string directly
+ */
+export async function generateSalonReply(params: {
+  apiKey?: string;
+  contactName: string;
+  inboundText: string;
+  buttonId?: string;
+  chatHistory?: string;
+}): Promise<string> {
+  const res = await generateSalonResponse(params);
+  return res.reply;
 }

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../supabaseAdmin';
-import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation } from '../meta/whatsapp';
+import { sendWhatsAppText, sendWhatsAppTemplate, sendWhatsAppLocation, sendWhatsAppInteractive } from '../meta/whatsapp';
 import { FlowExecutionEngine } from '../flows/engine';
-import { generateSalonReply } from './salonAI';
+import { generateSalonResponse } from './salonAI';
 
 export async function evaluateAutomations(
   orgId: string, 
@@ -119,14 +119,17 @@ export async function evaluateAutomations(
       }).join('\n');
     }
 
-    // Generate intelligent response using Gemini 2.5 Flash + Deterministic Knowledge Fallback
-    const finalReply = await generateSalonReply({
+    // Generate intelligent response with interactive button support
+    const aiResult = await generateSalonResponse({
       apiKey: process.env.GEMINI_API_KEY,
       contactName,
       inboundText: rawInput,
       buttonId,
       chatHistory
     });
+
+    const finalReply = aiResult.reply;
+    const buttons = aiResult.buttons;
 
     if (finalReply) {
       // Fetch WhatsApp Account info (with automatic fallback to ensure 100% dispatch reliability)
@@ -149,11 +152,50 @@ export async function evaluateAutomations(
       }
 
       if (account?.phone_number_id && account?.access_token) {
-        const waRes = await sendWhatsAppText({
-          phoneNumberId: account.phone_number_id,
-          accessToken: account.access_token,
-          to: contactPhone
-        }, finalReply);
+        let waRes: any = null;
+        let isInteractiveSent = false;
+
+        // Dispatch Native Interactive WhatsApp Buttons if buttons are provided (1 to 3 buttons supported by Meta)
+        if (buttons && buttons.length >= 1 && buttons.length <= 3) {
+          try {
+            const interactivePayload = {
+              type: 'button',
+              body: {
+                text: finalReply
+              },
+              action: {
+                buttons: buttons.map(b => ({
+                  type: 'reply',
+                  reply: {
+                    id: b.id.substring(0, 256),
+                    title: b.title.substring(0, 20)
+                  }
+                }))
+              }
+            };
+
+            waRes = await sendWhatsAppInteractive({
+              phoneNumberId: account.phone_number_id,
+              accessToken: account.access_token,
+              to: contactPhone
+            }, interactivePayload);
+
+            if (waRes?.messages?.[0]) {
+              isInteractiveSent = true;
+            }
+          } catch (interactiveErr) {
+            console.warn('[Salon AI Concierge] Interactive buttons send failed, falling back to text:', interactiveErr);
+          }
+        }
+
+        // Graceful Fallback: If interactive send was not attempted or failed, send plain text message
+        if (!isInteractiveSent || !waRes?.messages?.[0]) {
+          waRes = await sendWhatsAppText({
+            phoneNumberId: account.phone_number_id,
+            accessToken: account.access_token,
+            to: contactPhone
+          }, finalReply);
+        }
 
         if (waRes.messages && waRes.messages[0]) {
           await supabaseAdmin.from('messages').insert({
@@ -162,8 +204,14 @@ export async function evaluateAutomations(
             contact_id: contactId,
             wam_id: waRes.messages[0].id,
             direction: 'OUTBOUND',
-            type: 'text',
-            content: { text: { body: finalReply } },
+            type: isInteractiveSent ? 'interactive' : 'text',
+            content: isInteractiveSent ? {
+              interactive: {
+                type: 'button',
+                body: { text: finalReply },
+                action: { buttons }
+              }
+            } : { text: { body: finalReply } },
             status: 'SENT'
           });
 
@@ -171,7 +219,7 @@ export async function evaluateAutomations(
             last_message_at: new Date().toISOString() 
           }).eq('id', conversationId);
 
-          console.log(`[Salon AI Concierge] Successfully sent reply to ${contactPhone} (WAM ID: ${waRes.messages[0].id})`);
+          console.log(`[Salon AI Concierge] Successfully sent ${isInteractiveSent ? 'interactive' : 'text'} reply to ${contactPhone} (WAM ID: ${waRes.messages[0].id})`);
         } else {
           console.error('[Salon AI Concierge] Meta API error sending reply:', waRes);
         }

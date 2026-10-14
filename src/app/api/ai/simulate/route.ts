@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateSalonReply, getSalonDeterministicReply, SALON_INFO } from '@/lib/automations/salonAI';
+import { generateSalonResponse, getSalonDeterministicResponse, SALON_INFO } from '@/lib/automations/salonAI';
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -94,19 +94,23 @@ export async function POST(req: NextRequest) {
     // Call the production AI reply engine
     let engineUsed = 'Deterministic Salon Knowledge Engine (0ms Hallucination)';
     let reply = '';
+    let buttons: any[] = [];
 
-    const deterministic = getSalonDeterministicReply(message, chatHistory, buttonId);
+    const deterministic = getSalonDeterministicResponse(message, chatHistory, buttonId);
     if (deterministic) {
-      reply = deterministic;
+      reply = deterministic.reply;
+      buttons = deterministic.buttons || [];
     } else {
       engineUsed = process.env.GEMINI_API_KEY ? 'Google Gemini 2.5 Flash' : 'Deterministic Fallback Engine';
-      reply = await generateSalonReply({
+      const aiRes = await generateSalonResponse({
         apiKey: process.env.GEMINI_API_KEY,
         contactName: 'Sandbox Tester',
         inboundText: message,
         buttonId,
         chatHistory
       });
+      reply = aiRes.reply;
+      buttons = aiRes.buttons || [];
     }
 
     const latencyMs = Date.now() - startTime;
@@ -115,6 +119,7 @@ export async function POST(req: NextRequest) {
       success: true,
       data: {
         reply,
+        buttons,
         detectedIntent,
         engineUsed,
         latencyMs,
