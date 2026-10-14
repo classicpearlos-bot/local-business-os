@@ -59,6 +59,7 @@ export default function CampaignFullReportPage({
   const [campaign, setCampaign] = useState<any | null>(null);
   const [template, setTemplate] = useState<any | null>(null);
   const [recipients, setRecipients] = useState<any[]>([]);
+  const [dailyLimitDetails, setDailyLimitDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
   const [search, setSearch] = useState('');
@@ -74,6 +75,7 @@ export default function CampaignFullReportPage({
         setCampaign(data.campaign || null);
         setTemplate(data.template || null);
         setRecipients(data.recipients || []);
+        setDailyLimitDetails(data.daily_limit_details || null);
       }
     } catch (err) {
       console.error('Failed to load campaign report:', err);
@@ -104,10 +106,16 @@ export default function CampaignFullReportPage({
     };
   }, [campaignId, fetchReport]);
 
-  // Auto-drive worker if campaign still has queued/processing items
+  // Auto-drive worker only if campaign has active PENDING / PROCESSING items or due SCHEDULED items
   useEffect(() => {
-    const hasPending = recipients.some(r => ['PENDING', 'SCHEDULED', 'PROCESSING'].includes(r.status));
-    if (!hasPending) return;
+    const nowMs = Date.now();
+    const hasActiveQueue = recipients.some(r => {
+      if (r.status === 'PENDING' || r.status === 'PROCESSING') return true;
+      if (r.status === 'SCHEDULED' && r.scheduled_at && new Date(r.scheduled_at).getTime() <= nowMs) return true;
+      return false;
+    });
+
+    if (!hasActiveQueue) return;
 
     const timer = setInterval(() => {
       fetch('/api/whatsapp/campaigns/worker', { headers: { 'x-ui-bypass': 'true' } })
@@ -159,15 +167,51 @@ export default function CampaignFullReportPage({
       }
     });
 
-  // Retry Failed / Unsent Handler
-  const handleRetryFailed = async () => {
+  // Immediate Resume / Retry Handler
+  const handleResumeNow = async () => {
     setRetrying(true);
     try {
       const res = await fetch(`/api/whatsapp/campaigns/${campaignId}/recipients`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'RESUME_NOW' })
       });
       if (res.ok) {
         await fetch('/api/whatsapp/campaigns/worker', { headers: { 'x-ui-bypass': 'true' } });
+        await fetchReport();
+      }
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  // Schedule / Reschedule Auto-Resume
+  const handleScheduleAutoResume = async (customResumeAt?: string) => {
+    setRetrying(true);
+    try {
+      const res = await fetch(`/api/whatsapp/campaigns/${campaignId}/recipients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SCHEDULE_AUTO_RESUME', resume_at: customResumeAt })
+      });
+      if (res.ok) {
+        await fetchReport();
+      }
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  // Cancel Auto-Resume
+  const handleCancelAutoResume = async () => {
+    setRetrying(true);
+    try {
+      const res = await fetch(`/api/whatsapp/campaigns/${campaignId}/recipients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'CANCEL_AUTO_RESUME' })
+      });
+      if (res.ok) {
         await fetchReport();
       }
     } finally {
@@ -314,11 +358,11 @@ export default function CampaignFullReportPage({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={handleRetryFailed}
+                  onClick={handleResumeNow}
                   isLoading={retrying}
                   leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
                 >
-                  Retry Failed / Unsent ({failedTotal + queuedTotal})
+                  Resume / Retry ({failedTotal + queuedTotal})
                 </Button>
               )}
 
@@ -335,38 +379,93 @@ export default function CampaignFullReportPage({
         />
 
         <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
-          {/* Daily Limit Alert Banner */}
-          {dailyLimitCount > 0 && (
-            <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-300 shadow-sm flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                <AlertTriangle className="w-5 h-5 text-amber-700" />
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-bold text-amber-950">
-                    Broadcast Stopped Automatically: Meta 24-Hour Daily Limit Reached
-                  </p>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black uppercase tracking-wider">
-                    {dailyLimitCount} Contacts Held Back
-                  </span>
+          {/* Daily Limit Auto-Resume & Circuit Breaker Banner */}
+          {(dailyLimitCount > 0 || dailyLimitDetails || campaign?.status === 'SCHEDULED' || campaign?.description?.includes('daily limit')) && (
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-50/95 via-orange-50/80 to-amber-50 border-2 border-amber-300 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-300/80 flex items-center justify-center shrink-0 shadow-inner">
+                    <Clock className="w-6 h-6 text-amber-900 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-extrabold text-amber-950">
+                        Meta 24-Hour Limit Reached • Auto-Resume Scheduled
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-950 text-[10px] font-black uppercase tracking-wider border border-amber-300">
+                        {dailyLimitDetails?.heldBackCount || dailyLimitCount} Held Back Safely
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-900/90 font-medium mt-0.5 leading-relaxed">
+                      Broadcast paused the moment Meta Tier 1 daily quota was hit. Zero remaining contacts were spammed.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-amber-900/90 leading-relaxed">
-                  WhatsApp Business Tier 1 limits accounts to 250 unique business-initiated marketing conversations in a rolling 24-hour window. We successfully delivered to <strong>{sentTotal}</strong> clients before reaching this quota. To protect your phone number reputation and prevent spam blocks, the remaining <strong>{dailyLimitCount}</strong> contacts were held back safely.
-                </p>
-                <div className="pt-2 flex flex-wrap items-center gap-3">
+
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={handleRetryFailed}
+                    onClick={handleResumeNow}
                     isLoading={retrying}
                     leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
                   >
-                    Resume Remaining ({dailyLimitCount}) Tomorrow
+                    Resume Now (Override)
                   </Button>
-                  <p className="text-[11px] text-amber-800 font-medium">
-                    💡 Tip: As you continue sending with high quality, Meta will automatically upgrade your account to Tier 2 (1,000 messages/day).
-                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancelAutoResume}
+                    disabled={retrying}
+                    className="border-amber-300 text-amber-950 hover:bg-amber-100/80"
+                  >
+                    Cancel Auto-Resume
+                  </Button>
                 </div>
+              </div>
+
+              {/* 4 Execution Metric Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-amber-200/90">
+                <div className="p-3.5 rounded-xl bg-white/90 border border-amber-200 shadow-2xs">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">1. Stopped At</p>
+                  <p className="text-sm font-bold text-amber-950 mt-1">
+                    {dailyLimitDetails?.displayStopped || 'Earlier today'}
+                  </p>
+                  <p className="text-[11px] text-amber-700/80 mt-0.5">Meta 250 quota reached</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white/90 border border-amber-200 shadow-2xs">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">2. Auto-Resume Target</p>
+                  <p className="text-sm font-bold text-amber-950 mt-1">
+                    {dailyLimitDetails?.displayResume || 'Tomorrow at 8:00 AM'}
+                  </p>
+                  <p className="text-[11px] text-amber-700/80 mt-0.5">Rolling 24h reset window</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white/90 border border-amber-200 shadow-2xs">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">3. Live Countdown</p>
+                  <p className="text-sm font-bold text-emerald-800 mt-1">
+                    {dailyLimitDetails?.formattedCountdown || 'Due tomorrow'}
+                  </p>
+                  <p className="text-[11px] text-emerald-700/80 mt-0.5">Background runner ready</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white/90 border border-amber-200 shadow-2xs">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">4. Delivery Status</p>
+                  <p className="text-sm font-bold text-amber-950 mt-1">
+                    {sentTotal} Delivered / {dailyLimitDetails?.heldBackCount || dailyLimitCount} Held
+                  </p>
+                  <p className="text-[11px] text-amber-700/80 mt-0.5">Ready for next batch</p>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-amber-950/90 bg-amber-100/70 p-3 rounded-xl border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span>
+                  💡 <strong>100% Autonomous:</strong> You do NOT need to keep this computer or browser tab open. Our background engine triggers automatically at the reset time to send the remaining contacts.
+                </span>
+                <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest px-2 py-0.5 rounded bg-amber-200/60 border border-amber-300 shrink-0">
+                  Tier 1 Protection
+                </span>
               </div>
             </div>
           )}

@@ -490,6 +490,28 @@ export async function POST(request: Request) {
       }
     }
 
+    // Background Check: If any campaigns or recipients in SCHEDULED are now due (e.g. 24h daily limit reset reached), wake up the worker
+    try {
+      const nowIso = new Date().toISOString();
+      const { count: dueCount } = await supabaseAdmin
+        .from('campaign_recipients')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'SCHEDULED')
+        .lte('scheduled_at', nowIso);
+
+      if ((dueCount || 0) > 0) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://local-business-os-amber.vercel.app';
+        fetch(`${appUrl}/api/whatsapp/campaigns/worker`, {
+          headers: {
+            'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            'x-ui-bypass': 'true'
+          }
+        }).catch(() => {});
+      }
+    } catch {
+      // non-blocking
+    }
+
     return new NextResponse('EVENT_RECEIVED', { status: 200 });
 
   } catch (error: any) {

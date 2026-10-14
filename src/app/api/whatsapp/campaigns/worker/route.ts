@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
+import { calculateDailyLimitReset, encodeDailyLimitDescription } from '@/lib/meta/dailyLimitResume';
 
 export const maxDuration = 60; // Full 60s execution window on Vercel Serverless
 
@@ -55,7 +56,11 @@ export async function GET(request: Request) {
     // Fixes the issue where scheduled_at <= now left recipients stuck in 'SCHEDULED'
     await supabaseAdmin
       .from('campaign_recipients')
-      .update({ status: 'PENDING' })
+      .update({
+        status: 'PENDING',
+        error_code: null,
+        error_message: null
+      })
       .eq('status', 'SCHEDULED')
       .lte('scheduled_at', nowIso);
 
@@ -252,23 +257,28 @@ export async function GET(request: Request) {
               if (response.error) {
                 // 1. Check for Meta Daily Messaging Limit / Tier 1 Cap Hit
                 if (isDailyLimitError(response.error)) {
-                  console.warn(`[Campaign Worker] DAILY LIMIT REACHED on campaign ${campaign.id}! Halting broadcast immediately.`);
+                  console.warn(`[Campaign Worker] DAILY LIMIT REACHED on campaign ${campaign.id}! Halting broadcast immediately and scheduling auto-resume.`);
                   dailyLimitHitCampaigns.add(campaign.id);
 
-                  // Fail current recipient with clear daily limit error
+                  const stoppedAt = new Date().toISOString();
+                  const resetInfo = calculateDailyLimitReset(stoppedAt);
+
+                  // Pause current recipient scheduled for calculated 24h reset
                   await supabaseAdmin.from('campaign_recipients').update({
-                    status: 'FAILED',
-                    failed_at: new Date().toISOString(),
+                    status: 'SCHEDULED',
+                    scheduled_at: resetInfo.resumeAt,
+                    failed_at: null,
                     error_code: 'DAILY_LIMIT_REACHED',
-                    error_message: 'Not sent: Meta WhatsApp daily messaging limit reached for today. Will be ready to send tomorrow.'
+                    error_message: `Paused: Meta 24-hr daily limit hit at ${resetInfo.displayStopped}. Auto-resumes ${resetInfo.displayResume}.`
                   }).eq('id', recipient.id);
 
-                  // HALT BROADCAST: Immediately mark all remaining PENDING, PROCESSING, or SCHEDULED recipients as DAILY_LIMIT_REACHED
+                  // HALT BROADCAST: Immediately schedule all remaining PENDING, PROCESSING, or SCHEDULED recipients
                   await supabaseAdmin.from('campaign_recipients').update({
-                    status: 'FAILED',
-                    failed_at: new Date().toISOString(),
+                    status: 'SCHEDULED',
+                    scheduled_at: resetInfo.resumeAt,
+                    failed_at: null,
                     error_code: 'DAILY_LIMIT_REACHED',
-                    error_message: 'Not sent: Broadcast stopped immediately because Meta 24-hour daily limit was reached for today.'
+                    error_message: `Paused: Meta 24-hr daily limit hit at ${resetInfo.displayStopped}. Auto-resumes ${resetInfo.displayResume}.`
                   }).eq('campaign_id', campaign.id).in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
 
                   failureCount++;
@@ -430,14 +440,29 @@ export async function GET(request: Request) {
         updated_at: new Date().toISOString()
       };
 
-      if ((pendingCount || 0) === 0) {
+      if (dailyLimitHitCampaigns.has(campId)) {
+        const camp = campaignCache.get(campId);
+        const stoppedAt = new Date().toISOString();
+        const resetInfo = calculateDailyLimitReset(stoppedAt);
+
+        const { count: heldBackTotal } = await supabaseAdmin
+          .from('campaign_recipients')
+          .select('id', { count: 'exact', head: true })
+          .eq('campaign_id', campId)
+          .eq('status', 'SCHEDULED');
+
+        updates.status = 'SCHEDULED';
+        updates.scheduled_at = resetInfo.resumeAt;
+        updates.description = encodeDailyLimitDescription(
+          camp?.description,
+          resetInfo.stoppedAt,
+          resetInfo.resumeAt,
+          heldBackTotal || 0,
+          sentTotal || 0
+        );
+      } else if ((pendingCount || 0) === 0) {
         updates.status = 'COMPLETED';
         updates.completed_at = new Date().toISOString();
-        if (dailyLimitHitCampaigns.has(campId)) {
-          const camp = campaignCache.get(campId);
-          updates.description = (camp?.description ? camp.description.split(' • [')[0] + ' • ' : '') + 
-            `[Completed: Stopped immediately because Meta 24-hr daily limit was reached. ${sentTotal || 0} sent, remaining held back.]`;
-        }
       } else {
         updates.status = 'PROCESSING';
       }

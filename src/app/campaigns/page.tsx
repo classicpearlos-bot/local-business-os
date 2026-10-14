@@ -604,14 +604,21 @@ export default function CampaignsPage() {
                         <td className="px-6 py-4">
                           <div className="flex flex-col items-start gap-1">
                             <Badge 
-                              variant={campaign.status === 'COMPLETED' ? 'success' : campaign.status === 'PROCESSING' ? 'primary' : campaign.status === 'FAILED' ? 'danger' : 'warning'} 
+                              variant={
+                                campaign.status === 'COMPLETED' ? 'success' :
+                                campaign.status === 'PROCESSING' ? 'primary' :
+                                campaign.status === 'SCHEDULED' && campaign.description?.includes('daily limit') ? 'warning' :
+                                campaign.status === 'FAILED' ? 'danger' : 'warning'
+                              } 
                               dot
                             >
-                              {campaign.status}
+                              {campaign.status === 'SCHEDULED' && campaign.description?.includes('daily limit')
+                                ? 'PAUSED (DAILY LIMIT)'
+                                : campaign.status}
                             </Badge>
-                            {campaign.description && campaign.description.includes('daily limit') && (
-                              <span className="text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300">
-                                Daily Limit Stopped
+                            {campaign.description && (campaign.description.includes('daily limit') || campaign.description.includes('DAILY_LIMIT_PAUSED')) && (
+                              <span className="text-[9px] font-bold text-amber-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300">
+                                Auto-Resume Scheduled
                               </span>
                             )}
                           </div>
@@ -622,7 +629,20 @@ export default function CampaignsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs text-[#64748B]">
-                          {new Date(campaign.scheduled_at || campaign.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-slate-800">
+                              {new Date(campaign.scheduled_at || campaign.created_at).toLocaleString('en-IN', {
+                                timeZone: 'Asia/Kolkata',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                            {campaign.status === 'SCHEDULED' && (
+                              <span className="text-[10px] text-amber-800 font-bold">Auto-resumes (IST)</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="space-y-1">

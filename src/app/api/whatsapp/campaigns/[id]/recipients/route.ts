@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import {
+  calculateDailyLimitReset,
+  encodeDailyLimitDescription,
+  parseDailyLimitDescription,
+  formatISTTime
+} from '@/lib/meta/dailyLimitResume';
 
 export async function GET(
   request: Request,
@@ -93,7 +99,8 @@ export async function GET(
 
       if (
         totalCount > 0 &&
-        (campaign.total_sent !== sentCount ||
+        (campaign.total_recipients !== totalCount ||
+          campaign.total_sent !== sentCount ||
           campaign.total_delivered !== deliveredCount ||
           campaign.total_read !== readCount ||
           campaign.total_failed !== failedCount)
@@ -117,10 +124,42 @@ export async function GET(
       }
     }
 
+    // 6. Parse and enrich Daily Limit Auto-Resume metadata
+    const parsedDailyLimit = parseDailyLimitDescription(campaign.description);
+    let dailyLimitDetails = null;
+
+    if (parsedDailyLimit.isDailyLimitPaused || campaign.status === 'SCHEDULED' || campaign.description?.includes('daily limit')) {
+      const referenceTime = parsedDailyLimit.hitAt || campaign.started_at || campaign.completed_at || campaign.created_at;
+      const calcWindow = calculateDailyLimitReset(referenceTime);
+      const scheduledTarget = campaign.scheduled_at || calcWindow.resumeAt;
+      const targetCalc = calculateDailyLimitReset(new Date(new Date(scheduledTarget).getTime() - 24 * 60 * 60 * 1000));
+
+      const heldBackInDb = enrichedRecipients.filter((r: any) =>
+        r.error_code === 'DAILY_LIMIT_REACHED' ||
+        (r.status === 'SCHEDULED' && r.scheduled_at) ||
+        (r.error_message && r.error_message.includes('daily limit'))
+      ).length;
+
+      dailyLimitDetails = {
+        isDailyLimitPaused: true,
+        hitAt: referenceTime,
+        resumeAt: scheduledTarget,
+        displayStopped: formatISTTime(referenceTime),
+        displayResume: formatISTTime(scheduledTarget),
+        heldBackCount: heldBackInDb || parsedDailyLimit.heldBackCount,
+        sentTotal: campaign.total_sent || parsedDailyLimit.sentTotal || 0,
+        formattedCountdown: targetCalc.formattedCountdown,
+        isDue: targetCalc.isDue,
+        hoursRemaining: targetCalc.hoursRemaining,
+        minutesRemaining: targetCalc.minutesRemaining
+      };
+    }
+
     return NextResponse.json({
       campaign,
       template: template || null,
-      recipients: enrichedRecipients
+      recipients: enrichedRecipients,
+      daily_limit_details: dailyLimitDetails
     });
   } catch (err: any) {
     console.error('Error loading campaign report:', err);
@@ -128,7 +167,7 @@ export async function GET(
   }
 }
 
-// Retry failed or unsent recipients for this campaign
+// Resume, schedule auto-resume, or retry failed recipients for this campaign
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -143,7 +182,102 @@ export async function POST(
     const { id: campaignId } = await params;
     const nowIso = new Date().toISOString();
 
-    // Reset FAILED, SCHEDULED, or stuck PROCESSING recipients back to PENDING
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      // Empty body is treated as standard resume now
+    }
+
+    const action = body.action || 'RESUME_NOW';
+
+    // 1. Action: SCHEDULE_AUTO_RESUME (Schedule hold to resume automatically tomorrow at target time)
+    if (action === 'SCHEDULE_AUTO_RESUME') {
+      const targetResumeAt = body.resume_at || calculateDailyLimitReset(nowIso).resumeAt;
+      const stoppedAt = body.stopped_at || nowIso;
+
+      // Update remaining recipients to SCHEDULED
+      const { data: scheduledRecips, error: recipErr } = await supabaseAdmin
+        .from('campaign_recipients')
+        .update({
+          status: 'SCHEDULED',
+          scheduled_at: targetResumeAt,
+          next_retry_at: null,
+          error_code: 'DAILY_LIMIT_REACHED',
+          error_message: `Paused by Meta 24-hr daily limit. Auto-resumes ${formatISTTime(targetResumeAt)}.`
+        })
+        .eq('campaign_id', campaignId)
+        .in('status', ['FAILED', 'SCHEDULED', 'PENDING'])
+        .select('id');
+
+      if (recipErr) {
+        return NextResponse.json({ error: recipErr.message }, { status: 500 });
+      }
+
+      // Fetch campaign to preserve title and sent totals
+      const { data: camp } = await supabaseAdmin
+        .from('campaigns')
+        .select('description, total_sent')
+        .eq('id', campaignId)
+        .single();
+
+      const heldCount = scheduledRecips?.length || 0;
+      const newDesc = encodeDailyLimitDescription(camp?.description, stoppedAt, targetResumeAt, heldCount, camp?.total_sent || 0);
+
+      await supabaseAdmin
+        .from('campaigns')
+        .update({
+          status: 'SCHEDULED',
+          scheduled_at: targetResumeAt,
+          description: newDesc,
+          updated_at: nowIso
+        })
+        .eq('id', campaignId);
+
+      return NextResponse.json({
+        success: true,
+        scheduled: true,
+        resume_at: targetResumeAt,
+        display_resume: formatISTTime(targetResumeAt),
+        held_back_count: heldCount
+      });
+    }
+
+    // 2. Action: CANCEL_AUTO_RESUME (User stops the auto-resume and leaves campaign finished)
+    if (action === 'CANCEL_AUTO_RESUME') {
+      const { data: camp } = await supabaseAdmin
+        .from('campaigns')
+        .select('description')
+        .eq('id', campaignId)
+        .single();
+
+      const cleanDesc = (camp?.description || '')
+        .replace(/\s*•\s*\[DAILY_LIMIT_PAUSED:.*?\]/g, '')
+        .trim();
+
+      await supabaseAdmin
+        .from('campaigns')
+        .update({
+          status: 'COMPLETED',
+          scheduled_at: null,
+          description: cleanDesc ? `${cleanDesc} • [Auto-resume cancelled by user]` : '[Auto-resume cancelled by user]',
+          updated_at: nowIso
+        })
+        .eq('id', campaignId);
+
+      await supabaseAdmin
+        .from('campaign_recipients')
+        .update({
+          status: 'FAILED',
+          error_message: 'Hold cancelled: Auto-resume was cancelled by admin.'
+        })
+        .eq('campaign_id', campaignId)
+        .eq('status', 'SCHEDULED');
+
+      return NextResponse.json({ success: true, cancelled: true });
+    }
+
+    // 3. Action: RESUME_NOW (Immediate dispatch override)
     const { data: resetRows, error } = await supabaseAdmin
       .from('campaign_recipients')
       .update({
@@ -161,10 +295,22 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    const { data: camp } = await supabaseAdmin
+      .from('campaigns')
+      .select('description')
+      .eq('id', campaignId)
+      .single();
+
+    const cleanDesc = (camp?.description || '')
+      .replace(/\s*•\s*\[DAILY_LIMIT_PAUSED:.*?\]/g, '')
+      .trim();
+
     await supabaseAdmin
       .from('campaigns')
       .update({
         status: 'PROCESSING',
+        scheduled_at: null,
+        description: cleanDesc,
         updated_at: nowIso
       })
       .eq('id', campaignId);
