@@ -177,7 +177,7 @@ export async function GET(request: Request) {
       if (batchContactIds.length > 0) {
         const { data: batchContacts } = await supabaseAdmin
           .from('contacts')
-          .select('id, name, phone_number, opted_in')
+          .select('id, name, phone_number, opted_in, attributes')
           .in('id', batchContactIds);
         (batchContacts || []).forEach((c: any) => contactMap.set(c.id, c));
       }
@@ -211,12 +211,15 @@ export async function GET(request: Request) {
             }
 
             const contact = contactMap.get(recipient.contact_id);
-            if (!contact || contact.opted_in !== true) {
+            if (!contact || contact.opted_in !== true || contact.attributes?.is_blocked === true) {
+              const isBlocked = contact?.attributes?.is_blocked === true;
               await supabaseAdmin.from('campaign_recipients').update({
                 status: 'FAILED',
                 failed_at: new Date().toISOString(),
-                error_code: 'OPTED_OUT',
-                error_message: 'Contact is not opted-in for marketing broadcasts'
+                error_code: isBlocked ? 'BLOCKED_CONTACT' : 'OPTED_OUT',
+                error_message: isBlocked
+                  ? 'Skipped: Contact is on the Blocked Numbers list.'
+                  : 'Contact is not opted-in for marketing broadcasts'
               }).eq('id', recipient.id);
               skippedCount++;
               return;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getBlockedContacts, getPhoneMatchKeys } from '@/lib/contacts/blockedContacts';
 
 export async function POST(request: Request) {
   try {
@@ -31,12 +32,20 @@ export async function POST(request: Request) {
 
     const orgId = membership.organization_id;
 
-    const records = contactsToImport.map((c: any) => ({
-      organization_id: orgId,
-      name: c.name || 'Valued Customer',
-      phone_number: c.phone_number || c.normalizedPhone,
-      opted_in: c.opted_in !== undefined ? c.opted_in : true
-    }));
+    const blockedList = await getBlockedContacts(orgId);
+    const blockedLast10 = new Set(blockedList.map(b => getPhoneMatchKeys(b.phone_number).last10));
+
+    const records = contactsToImport.map((c: any) => {
+      const phone = c.phone_number || c.normalizedPhone;
+      const isBlocked = blockedLast10.has(getPhoneMatchKeys(phone).last10);
+      return {
+        organization_id: orgId,
+        name: c.name || 'Valued Customer',
+        phone_number: phone,
+        opted_in: isBlocked ? false : (c.opted_in !== undefined ? c.opted_in : true),
+        ...(isBlocked ? { attributes: { is_blocked: true, blocked_reason: 'Pre-existing blocked contact' } } : {})
+      };
+    });
 
     // Upsert using supabaseAdmin
     const { error } = await supabaseAdmin

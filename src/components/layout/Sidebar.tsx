@@ -17,7 +17,8 @@ import {
   Calendar,
   Settings,
   MoreVertical,
-  ChevronRight
+  ChevronRight,
+  UserX
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { CommandPalette } from './CommandPalette';
@@ -61,6 +62,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
     { label: 'Appointments', href: '/appointments', icon: Calendar },
     { label: 'Templates', href: '/templates', icon: FileText },
     { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { label: 'Blocked Contacts', href: '/blocked-contacts', icon: UserX },
     { label: 'Settings', href: '/whatsapp', icon: Settings }
   ];
 

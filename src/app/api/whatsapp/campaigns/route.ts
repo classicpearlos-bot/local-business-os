@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase-server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { filterOutBlockedNumbers } from '@/lib/contacts/blockedContacts';
 
 async function resolveUserOrgId(userId: string): Promise<string | null> {
   const { data: mem } = await supabaseAdmin
@@ -86,11 +87,19 @@ export async function POST(request: Request) {
       const batch = recipientIds.slice(i, i + 100);
       const { data } = await supabaseAdmin
         .from('contacts')
-        .select('id, phone_number')
+        .select('id, phone_number, attributes')
         .eq('organization_id', orgId)
         .eq('opted_in', true)
         .in('id', batch);
       if (data) contacts.push(...data);
+    }
+
+    // Exclude any blocked contacts (both by attributes and matching blocked phone list)
+    if (contacts.length > 0) {
+      contacts = contacts.filter(c => c.attributes?.is_blocked !== true);
+      const { allowed } = await filterOutBlockedNumbers(contacts.map(c => c.phone_number), orgId);
+      const allowedSet = new Set(allowed);
+      contacts = contacts.filter(c => allowedSet.has(c.phone_number));
     }
 
     if (contacts && contacts.length > 0) {

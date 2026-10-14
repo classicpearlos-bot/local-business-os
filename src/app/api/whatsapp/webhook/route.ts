@@ -208,7 +208,9 @@ export async function POST(request: Request) {
 
                 const currentAttrs = (contact.attributes as any) || {};
 
-                if (isStopCommand) {
+                if (currentAttrs.is_blocked === true) {
+                  console.log(`[Webhook] Contact ${contactPhone} is marked as BLOCKED. Suppressing all automated responses, AI bot, and workflows.`);
+                } else if (isStopCommand) {
                   // Idempotent: only process and reply if currently opted in
                   if (contact.opted_in !== false) {
                     await supabaseAdmin
