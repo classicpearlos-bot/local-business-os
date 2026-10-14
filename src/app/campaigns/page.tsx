@@ -602,12 +602,19 @@ export default function CampaignsPage() {
                           {campaign.name}
                         </td>
                         <td className="px-6 py-4">
-                          <Badge 
-                            variant={campaign.status === 'COMPLETED' ? 'success' : campaign.status === 'PROCESSING' ? 'primary' : campaign.status === 'FAILED' ? 'danger' : 'warning'} 
-                            dot
-                          >
-                            {campaign.status}
-                          </Badge>
+                          <div className="flex flex-col items-start gap-1">
+                            <Badge 
+                              variant={campaign.status === 'COMPLETED' ? 'success' : campaign.status === 'PROCESSING' ? 'primary' : campaign.status === 'FAILED' ? 'danger' : 'warning'} 
+                              dot
+                            >
+                              {campaign.status}
+                            </Badge>
+                            {campaign.description && campaign.description.includes('daily limit') && (
+                              <span className="text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300">
+                                Daily Limit Stopped
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 font-mono text-xs text-[#0F172A] font-semibold">
                           <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-[#E2E8F0]">
@@ -635,8 +642,8 @@ export default function CampaignsPage() {
                               <span className="text-slate-300">•</span>
                               <span className="text-sky-700">{campaign.total_read || 0} read</span>
                               <span className="text-slate-300">•</span>
-                              <span className={(campaign.total_failed || 0) > 0 ? 'text-rose-600 font-bold' : 'text-[#9E968D]'}>
-                                {campaign.total_failed || 0} failed
+                              <span className={(campaign.total_failed || 0) > 0 ? (campaign.description?.includes('daily limit') ? 'text-amber-800 font-bold' : 'text-rose-600 font-bold') : 'text-[#9E968D]'}>
+                                {campaign.total_failed || 0} {campaign.description?.includes('daily limit') ? 'held back' : 'failed'}
                               </span>
                             </div>
                           </div>

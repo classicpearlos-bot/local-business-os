@@ -4,6 +4,34 @@ import { sendWhatsAppTemplate } from '@/lib/meta/whatsapp';
 
 export const maxDuration = 60; // Full 60s execution window on Vercel Serverless
 
+function isDailyLimitError(err: any): boolean {
+  if (!err) return false;
+  const code = Number(err.code);
+  const msg = String(err.message || '').toLowerCase();
+  
+  // Meta Cloud API error codes when daily messaging tier limit or rate limits are reached:
+  // 131056: Rate limit hit / Business eligibility / Daily messaging tier limit
+  // 131048: Spam rate limit hit
+  // 130429: Cloud API rate limit hit
+  // 429: Too Many Requests
+  if (code === 131056 || code === 131048 || code === 130429 || code === 429) {
+    return true;
+  }
+  if (
+    msg.includes('daily limit') ||
+    msg.includes('messaging limit') ||
+    msg.includes('eligibility limit') ||
+    msg.includes('tier limit') ||
+    msg.includes('rate limit') ||
+    msg.includes('too many messages') ||
+    msg.includes('spam rate limit') ||
+    msg.includes('quota')
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   const isUiBypass = request.headers.get('x-ui-bypass') === 'true';
@@ -18,6 +46,7 @@ export async function GET(request: Request) {
   let failureCount = 0;
   let skippedCount = 0;
   const processedCampaignIds = new Set<string>();
+  const dailyLimitHitCampaigns = new Set<string>();
 
   try {
     const nowIso = new Date().toISOString();
@@ -157,6 +186,11 @@ export async function GET(request: Request) {
             const campaign = campaignCache.get(recipient.campaign_id);
             if (!campaign) return;
 
+            // Circuit Breaker: If this campaign already hit Meta daily limit, halt processing immediately
+            if (dailyLimitHitCampaigns.has(campaign.id)) {
+              return;
+            }
+
             if (campaign.status === 'CANCELLED' || campaign.status === 'PAUSED') {
               await supabaseAdmin.from('campaign_recipients').update({
                 status: 'CANCELLED',
@@ -216,8 +250,34 @@ export async function GET(request: Request) {
               }, campaign.template_name, campaign.template_language, dynamicComponents);
 
               if (response.error) {
-                const isRetryable = response.error.code === 429 || response.error.code === 131056;
-                if (isRetryable && (recipient.attempts || 0) < 5) {
+                // 1. Check for Meta Daily Messaging Limit / Tier 1 Cap Hit
+                if (isDailyLimitError(response.error)) {
+                  console.warn(`[Campaign Worker] DAILY LIMIT REACHED on campaign ${campaign.id}! Halting broadcast immediately.`);
+                  dailyLimitHitCampaigns.add(campaign.id);
+
+                  // Fail current recipient with clear daily limit error
+                  await supabaseAdmin.from('campaign_recipients').update({
+                    status: 'FAILED',
+                    failed_at: new Date().toISOString(),
+                    error_code: 'DAILY_LIMIT_REACHED',
+                    error_message: 'Not sent: Meta WhatsApp daily messaging limit reached for today. Will be ready to send tomorrow.'
+                  }).eq('id', recipient.id);
+
+                  // HALT BROADCAST: Immediately mark all remaining PENDING, PROCESSING, or SCHEDULED recipients as DAILY_LIMIT_REACHED
+                  await supabaseAdmin.from('campaign_recipients').update({
+                    status: 'FAILED',
+                    failed_at: new Date().toISOString(),
+                    error_code: 'DAILY_LIMIT_REACHED',
+                    error_message: 'Not sent: Broadcast stopped immediately because Meta 24-hour daily limit was reached for today.'
+                  }).eq('campaign_id', campaign.id).in('status', ['PENDING', 'PROCESSING', 'SCHEDULED']);
+
+                  failureCount++;
+                  return;
+                }
+
+                // 2. Standard retryable error handling
+                const isRetryable = response.error.code === 500 || response.error.code === 503;
+                if (isRetryable && (recipient.attempts || 0) < 3) {
                   const delaySec = Math.pow(2, recipient.attempts || 1) * 5;
                   const nextRetry = new Date(Date.now() + delaySec * 1000).toISOString();
                   await supabaseAdmin.from('campaign_recipients').update({
@@ -373,6 +433,11 @@ export async function GET(request: Request) {
       if ((pendingCount || 0) === 0) {
         updates.status = 'COMPLETED';
         updates.completed_at = new Date().toISOString();
+        if (dailyLimitHitCampaigns.has(campId)) {
+          const camp = campaignCache.get(campId);
+          updates.description = (camp?.description ? camp.description.split(' • [')[0] + ' • ' : '') + 
+            `[Completed: Stopped immediately because Meta 24-hr daily limit was reached. ${sentTotal || 0} sent, remaining held back.]`;
+        }
       } else {
         updates.status = 'PROCESSING';
       }

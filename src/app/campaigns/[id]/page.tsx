@@ -133,6 +133,10 @@ export default function CampaignFullReportPage({
   const readPct = reachedDeliveredTotal > 0 ? Math.round((readSeenTotal / reachedDeliveredTotal) * 100) : 0;
   const failedPct = totalRecipients > 0 ? Math.round((failedTotal / totalRecipients) * 100) : 0;
 
+  const dailyLimitCount = recipients.filter(
+    r => r.error_code === 'DAILY_LIMIT_REACHED' || (r.error_message && r.error_message.includes('daily limit'))
+  ).length;
+
   // Group Failed Recipients by Diagnosis Category
   const failureGroups: Record<
     string,
@@ -186,6 +190,8 @@ export default function CampaignFullReportPage({
             ? 'DELIVERED (Reached Phone)'
             : r.status === 'SENT'
             ? 'SENT (In Transit to Handset)'
+            : r.error_code === 'DAILY_LIMIT_REACHED'
+            ? 'HELD BACK (Meta Daily Limit Reached)'
             : r.status === 'FAILED'
             ? 'FAILED (Not Delivered)'
             : 'QUEUED / PENDING',
@@ -329,6 +335,42 @@ export default function CampaignFullReportPage({
         />
 
         <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+          {/* Daily Limit Alert Banner */}
+          {dailyLimitCount > 0 && (
+            <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-300 shadow-sm flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                <AlertTriangle className="w-5 h-5 text-amber-700" />
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-bold text-amber-950">
+                    Broadcast Stopped Automatically: Meta 24-Hour Daily Limit Reached
+                  </p>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black uppercase tracking-wider">
+                    {dailyLimitCount} Contacts Held Back
+                  </span>
+                </div>
+                <p className="text-xs text-amber-900/90 leading-relaxed">
+                  WhatsApp Business Tier 1 limits accounts to 250 unique business-initiated marketing conversations in a rolling 24-hour window. We successfully delivered to <strong>{sentTotal}</strong> clients before reaching this quota. To protect your phone number reputation and prevent spam blocks, the remaining <strong>{dailyLimitCount}</strong> contacts were held back safely.
+                </p>
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleRetryFailed}
+                    isLoading={retrying}
+                    leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+                  >
+                    Resume Remaining ({dailyLimitCount}) Tomorrow
+                  </Button>
+                  <p className="text-[11px] text-amber-800 font-medium">
+                    💡 Tip: As you continue sending with high quality, Meta will automatically upgrade your account to Tier 2 (1,000 messages/day).
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 1. Executive Delivery KPIs (6 Granular Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Total Audience */}
@@ -421,7 +463,7 @@ export default function CampaignFullReportPage({
               <p className="text-[11px] text-amber-800 font-medium mt-0.5">Awaiting phone online</p>
             </div>
 
-            {/* Failed / Not Sent */}
+            {/* Failed / Not Sent / Held Back */}
             <div
               onClick={() => { setStatusFilter('FAILED'); setCategoryFilter(null); }}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
@@ -431,14 +473,18 @@ export default function CampaignFullReportPage({
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800">6. Failed / Not Sent</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800">
+                  {dailyLimitCount > 0 ? '6. Limit Held Back' : '6. Failed / Not Sent'}
+                </span>
                 <XCircle className="w-4 h-4 text-rose-600" />
               </div>
               <div className="flex items-baseline gap-2 mt-1.5">
                 <p className="text-2xl font-extrabold text-rose-950">{failedTotal}</p>
                 <span className="text-xs font-bold text-rose-700">({failedPct}%)</span>
               </div>
-              <p className="text-[11px] text-rose-800 font-medium mt-0.5">Click to view failure reasons</p>
+              <p className="text-[11px] text-rose-800 font-medium mt-0.5">
+                {dailyLimitCount > 0 ? `${dailyLimitCount} held back by daily limit` : 'Click to view failure reasons'}
+              </p>
             </div>
           </div>
 

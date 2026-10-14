@@ -16,6 +16,29 @@ export function diagnoseMetaError(errorCode?: string | number | null, errorMessa
   const codeStr = String(errorCode || '').trim();
   const msgLower = String(errorMessage || '').toLowerCase();
 
+  // 0. Meta 24-Hour Daily Messaging Limit / Tier 1 Cap Hit
+  if (
+    codeStr === 'DAILY_LIMIT_REACHED' ||
+    codeStr === '131056' ||
+    msgLower.includes('daily limit') ||
+    msgLower.includes('messaging limit') ||
+    msgLower.includes('eligibility limit') ||
+    msgLower.includes('tier limit') ||
+    msgLower.includes('daily messaging')
+  ) {
+    return {
+      code: 'DAILY_LIMIT_REACHED',
+      category: 'Daily Limit Reached (Tier 1)',
+      categoryBadgeVariant: 'warning',
+      humanTitle: 'Meta 24-Hour Daily Messaging Limit Reached',
+      explanation:
+        'Meta restricts accounts in Tier 1 to 250 unique business-initiated marketing conversations per rolling 24 hours. The broadcast was stopped automatically to protect your account standing.',
+      actionableRemedy:
+        'Wait for the rolling 24-hour limit to reset tomorrow, then click "Retry Failed / Unsent" to dispatch the remaining contacts. As you maintain a high messaging quality rating, Meta will automatically upgrade your account limit to 1,000/day!',
+      canRetryImmediately: false
+    };
+  }
+
   // 1. Meta Ecosystem Protection / Per-User Marketing Frequency Cap (131049)
   if (
     codeStr === '131049' ||
