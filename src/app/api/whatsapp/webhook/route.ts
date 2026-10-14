@@ -320,7 +320,9 @@ export async function POST(request: Request) {
                       messageId,
                       textBody,
                       contactPhone,
-                      buttonId
+                      buttonId,
+                      phoneNumberId && accessToken ? { phoneNumberId, accessToken } : undefined,
+                      contact ? { contactId: contact.id, contactName: change.value.contacts?.[0]?.profile?.name || 'Customer' } : undefined
                     );
                   }
                 }

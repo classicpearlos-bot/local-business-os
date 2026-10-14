@@ -127,7 +127,7 @@ export function extractArrivalTime(input: string): string | null {
   return null;
 }
 
-export function formatPriceList(title: string, items: ServiceItem[], note?: string, maxItems: number = 6): string {
+export function formatPriceList(title: string, items: ServiceItem[], note?: string, maxItems: number = 25): string {
   const displayItems = items.slice(0, maxItems);
   let text = `✨ *${title}* 🟢\n\n`;
   for (const item of displayItems) {
@@ -264,6 +264,7 @@ export function formatWomenHaircuts(): string {
 🟢 *Women Basic Haircut (Wash + Blow Dry & Setting):* ₹599 _(Member: ₹549)_
 🟢 *Women Advance Haircut (Wash + Blast Dry):* ₹749 _(Member: ₹695)_
 🟢 *Women Advance Haircut (Wash + Blow Dry & Setting):* ₹899 _(Member: ₹835)_
+🟢 *Front Bangs:* ₹150 _(Member: ₹140)_
 🟢 *Girl Basic Haircut (Below 10 yrs):* ₹329 _(Member: ₹299)_
 🟢 *Girl Advanced Haircut (Below 10 yrs):* ₹399 _(Member: ₹369)_
 
@@ -276,7 +277,8 @@ export function formatMenHaircuts(): string {
 
 🟢 *Men Hair Cut:* ₹249 _(Member: ₹219)_
 🟢 *Men Hair Cut with Wash & Blast Dry:* ₹349 _(Member: ₹329)_
-🟢 *Basic Hair Cut for Little Champ:* ₹249 _(Member: ₹219)_
+🟢 *Men Head Shave:* ₹249 _(Member: ₹219)_
+🟢 *Little Champ Basic Haircut:* ₹249 _(Member: ₹219)_
 🟢 *Little Champ with Wash & Blast Dry:* ₹349 _(Member: ₹299)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
@@ -318,10 +320,10 @@ Would you like to reserve a slot today? 💛`;
 export function formatMenHairSpa(): string {
   return `✨ *Men Hair Spa Services* 🟢
 
-🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹521)_
-🟢 *Damage Repair Hair Spa:* ₹659 _(Member: ₹599)_
-🟢 *Anti-Dandruff Hair Spa:* ₹659 _(Member: ₹599)_
-🟢 *Deluxe Hair Spa:* ₹769 _(Member: ₹699)_
+🟢 *Deep Nourishing Hair Spa:* ₹579 _(Member: ₹549)_
+🟢 *Damage Repair Hair Spa:* ₹779 _(Member: ₹729)_
+🟢 *Anti-Dandruff / Hair Fall Spa:* ₹999 _(Member: ₹949)_
+🟢 *Deluxe Hair Spa:* ₹949 _(Member: ₹899)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -330,8 +332,8 @@ Would you like to reserve a slot today? 💛`;
 export function formatWomenHeadMassage(): string {
   return `✨ *Women Head Massage Services* 🟢
 
-🟢 *Almond / Olive Head Massage:* ₹399 _(Member: ₹379)_
-🟢 *Navarathna / Coconut Head Massage:* ₹399 _(Member: ₹379)_
+🟢 *Almond / Olive Head Massage:* ₹499 _(Member: ₹449)_
+🟢 *Coconut / Navarathna Head Massage:* ₹499 _(Member: ₹449)_
 🟢 *Shampoo & Conditioner Wash (Add-on):* ₹249 _(Member: ₹235)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
@@ -341,21 +343,32 @@ Would you like to reserve a slot today? 💛`;
 export function formatMenHeadMassage(): string {
   return `✨ *Men Head Massage Services* 🟢
 
-🟢 *Navarathna / Coconut Head Massage:* ₹349 _(Member: ₹319)_
-🟢 *Almond / Olive Head Massage:* ₹399 _(Member: ₹369)_
+🟢 *Navarathna / Coconut Oil Massage:* ₹349 _(Member: ₹329)_
+🟢 *Almond / Olive Oil Massage:* ₹399 _(Member: ₹369)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenHairColor(): string {
-  return `✨ *Women Hair Color & Highlights (By Length)* 🟢
+  return `✨ *Women Hair Color Services (By Length)* 🟢
 
+*🌈 Global Color:*
 🟢 *Global Ammonia-Free:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
 🟢 *Global With Ammonia:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
+🟢 *Creative Hair Color:* Small ₹4,999 | Med ₹5,999 | Long ₹6,999
+
+*✨ Highlights & Balayage:*
 🟢 *Balayage / Ombre:* Small ₹5,999 | Med ₹6,999 | Long ₹7,999
-🟢 *Full Highlights (16 Streaks):* ₹3,999 _(Partial 8: ₹1,999)_
-🟢 *Root Touch-Up:* from ₹1,149 _(Member: ₹1,070)_
+🟢 *Full Highlights (16 Streaks):* ₹3,999 _(Member: ₹3,499)_
+🟢 *Partial Highlights (8 Streaks):* ₹1,999 _(Member: ₹1,860)_
+🟢 *Advanced Streaks (per streak):* ₹349 _(Member: ₹329)_
+🟢 *Streaks (per streak):* ₹249 _(Member: ₹219)_
+
+*💆 Root Touch-Up:*
+🟢 *Root Touch-Up With Ammonia:* ₹1,149 _(Member: ₹1,070)_
+🟢 *Premium Root Touch-Up Ammonia-Free:* ₹1,249 _(Member: ₹1,199)_
+🟢 *Deluxe Root Touch-Up Ammonia-Free:* ₹1,499 _(Member: ₹1,449)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 What is your hair length (Small / Medium / Long)? 💛`;
@@ -364,9 +377,10 @@ What is your hair length (Small / Medium / Long)? 💛`;
 export function formatMenHairColor(): string {
   return `✨ *Men Hair Color Services* 🟢
 
-🟢 *Men Beard Color:* ₹249 _(Member: ₹229)_
-🟢 *Men Hair Color (Standard):* ₹549 _(Member: ₹499)_
-🟢 *Men Streaks Color:* ₹699 _(Member: ₹649)_
+🟢 *Ammonia-Free Premium:* ₹799 _(Member: ₹749)_
+🟢 *Ammonia-Free Deluxe:* ₹899 _(Member: ₹849)_
+🟢 *Beard Color:* ₹299 _(Member: ₹249)_
+🟢 *Cap Highlights:* ₹1,499 _(Member: ₹1,399)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -385,22 +399,22 @@ What is your hair length (Small / Medium / Long)? 💛`;
 
 export function formatKeratin(gender?: 'men' | 'women'): string {
   if (gender === 'men') {
-    return `✨ *Men Keratin Protein Treatment* 🟢\n\n🟢 *Men Keratin Treatment:* ₹3,999 _(Member: ₹3,499)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return `✨ *Men Keratin Protein Treatment* 🟢\n\n🟢 *Men Keratin Treatment:* ₹3,499 _(Member: ₹3,299)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
   }
   if (gender === 'women') {
     return `✨ *Women Keratin Protein (By Length)* 🟢\n\n🟢 *Small Length:* ₹3,999\n🟢 *Medium Length:* ₹5,699\n🟢 *Long Length:* ₹5,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
   }
-  return `✨ *Keratin Treatment Options* 🟢\n\n🟢 *Men Keratin:* ₹3,999 _(Member: ₹3,499)_\n🟢 *Women Keratin:* Small ₹3,999 | Med ₹5,699 | Long ₹5,999\n\nWould you like options for *Men* or *Women*? ✨`;
+  return `✨ *Keratin Treatment Options* 🟢\n\n🟢 *Men Keratin:* ₹3,499 _(Member: ₹3,299)_\n🟢 *Women Keratin:* Small ₹3,999 | Med ₹5,699 | Long ₹5,999\n\nWould you like options for *Men* or *Women*? ✨`;
 }
 
 export function formatBotox(gender?: 'men' | 'women'): string {
   if (gender === 'men') {
-    return `✨ *Men Hair Botox Therapy* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,499)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return `✨ *Men Hair Botox Therapy* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,799)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
   }
   if (gender === 'women') {
     return `✨ *Women Hair Botox (By Length)* 🟢\n\n🟢 *Small Length:* ₹3,999\n🟢 *Medium Length:* ₹5,999\n🟢 *Long Length:* ₹6,999\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWhat is your hair length? 💛`;
   }
-  return `✨ *Hair Botox Therapy Options* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,499)_\n🟢 *Women Hair Botox:* Small ₹3,999 | Med ₹5,999 | Long ₹6,999\n\nWould you like options for *Men* or *Women*? ✨`;
+  return `✨ *Hair Botox Therapy Options* 🟢\n\n🟢 *Men Hair Botox:* ₹3,999 _(Member: ₹3,799)_\n🟢 *Women Hair Botox:* Small ₹3,999 | Med ₹5,999 | Long ₹6,999\n\nWould you like options for *Men* or *Women*? ✨`;
 }
 
 export function formatNanoplastia(): string {
@@ -417,11 +431,32 @@ What is your hair length? 💛`;
 export function formatMenChemical(): string {
   return `✨ *Men Advanced Hair Treatments* 🟢
 
-🟢 *Men Keratin Treatment:* ₹3,999 _(Member: ₹3,499)_
-🟢 *Men Hair Botox Therapy:* ₹3,999 _(Member: ₹3,499)_
+🟢 *Men Keratin Treatment:* ₹3,499 _(Member: ₹3,299)_
+🟢 *Men Hair Botox Therapy:* ₹3,999 _(Member: ₹3,799)_
+🟢 *Men Nano Plastia:* ₹4,999 _(Member: ₹4,499)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
+}
+
+export function formatMenHairTreatment(): string {
+  return `✨ *Men Hair Treatments* 🟢
+
+🟢 *Anti-Dandruff Treatment:* ₹1,099 _(Member: ₹999)_
+🟢 *Anti-Hair Fall Treatment:* ₹1,099 _(Member: ₹999)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenHairTreatment(): string {
+  return `✨ *Women Hair Treatments (By Length)* 🟢
+
+🟢 *Anti-Dandruff / Hair Fall Treatment:* Small ₹1,299 | Med ₹1,399 | Long ₹1,499
+_(Member prices: Small ₹1,249 | Med ₹1,349 | Long ₹1,449)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+What is your hair length (Small / Medium / Long)? 💛`;
 }
 
 export function formatWomenHairWashAndBlowDry(): string {
@@ -463,6 +498,10 @@ export function formatRicaWaxing(): string {
 🟢 *Full Legs RICA:* ₹699 _(Member: ₹679)_
 🟢 *Half Legs RICA:* ₹549 _(Member: ₹529)_
 🟢 *Underarms RICA:* ₹229 _(Member: ₹209)_
+🟢 *Stomach RICA:* ₹549 _(Member: ₹519)_
+🟢 *Full Back RICA:* ₹599 _(Member: ₹570)_
+🟢 *Full Body RICA:* ₹3,999 _(Member: ₹3,799)_
+🟢 *Bikini RICA Waxing:* ₹2,699 _(Member: ₹2,510)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -476,6 +515,9 @@ export function formatBrazilianWaxing(): string {
 🟢 *Half Arms Brazilian:* ₹499 _(Member: ₹475)_
 🟢 *Full Legs Brazilian:* ₹1,199 _(Member: ₹1,115)_
 🟢 *Half Legs Brazilian:* ₹799 _(Member: ₹745)_
+🟢 *Stomach Brazilian:* ₹699 _(Member: ₹665)_
+🟢 *Full Back Brazilian:* ₹799 _(Member: ₹745)_
+🟢 *Bikini Brazilian Waxing:* ₹2,999 _(Member: ₹2,799)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -492,10 +534,11 @@ Would you prefer *Italian RICA Waxing* or *Brazilian Waxing*? ✨`;
 export function formatFaceWaxing(): string {
   return `✨ *Women Face Waxing Services* 🟢
 
-🟢 *Full Face Waxing:* ₹449 _(Member: ₹399)_
 🟢 *Upper Lip Waxing:* ₹99 _(Member: ₹79)_
+🟢 *Lower Lip Waxing:* ₹55 _(Member: ₹49)_
 🟢 *Chin Waxing:* ₹109 _(Member: ₹99)_
 🟢 *Side Locks Waxing:* ₹149 _(Member: ₹139)_
+🟢 *Full Face Waxing:* ₹449 _(Member: ₹399)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -581,6 +624,117 @@ export function formatBikiniWaxing(): string {
 Which one would you prefer to book? 💛`;
 }
 
+export function formatRootTouchUp(): string {
+  return `✨ *Root Touch-Up Services (Women)* 🟢
+
+🟢 *Root Touch-Up With Ammonia:* ₹1,149 _(Member: ₹1,070)_
+🟢 *Premium Root Touch-Up Ammonia-Free:* ₹1,249 _(Member: ₹1,199)_
+🟢 *Deluxe Root Touch-Up Ammonia-Free:* ₹1,499 _(Member: ₹1,449)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatWomenStyling(): string {
+  return `✨ *Women Hair Styling & Makeovers* 🟢
+
+🟢 *Hair Perming:* ₹5,999 _(Member: ₹4,999)_
+🟢 *Ironing / Tongs:* Small ₹699 | Med ₹899 | Long ₹999
+🟢 *Wash + Blast Dry:* Small ₹399 | Med ₹449 | Long ₹529
+🟢 *Wash + Blow Dry & Setting:* Small ₹649 | Med ₹749 | Long ₹799
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+What styling service would you like to book? 💛`;
+}
+
+export function formatMenBeard(): string {
+  return `✨ *Men Beard Grooming & Shaving* 🟢
+
+🟢 *Men Beard Shave:* ₹109 _(Member: ₹99)_
+🟢 *Men Beard Shave Twice:* ₹149 _(Member: ₹129)_
+🟢 *Men Beard Styling:* ₹119 _(Member: ₹99)_
+🟢 *Men Beard Color:* ₹299 _(Member: ₹249)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatFacials(): string {
+  return `✨ *Facial Treatments (Men & Women)* 🟢
+
+*🌟 Signature & Radiance:*
+🟢 *Fruit Facial:* ₹1,399 _(Member: ₹1,300)_
+🟢 *Gold Facial:* ₹1,649 _(Member: ₹1,535)_
+🟢 *Korean Glass Facial:* ₹2,199 _(Member: ₹2,045)_
+🟢 *Advance Whitening Facial:* ₹2,249 _(Member: ₹2,090)_
+🟢 *Hydra Facial:* ₹2,899 _(Member: ₹2,695)_
+
+*👑 Luxury & Bridal:*
+🟢 *Raaga Facial:* ₹2,899 _(Member: ₹2,695)_
+🟢 *O3+ Whitening Facial:* ₹3,549 _(Member: ₹3,370)_
+🟢 *O3+ Bridal Facial:* ₹4,149 _(Member: ₹3,940)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Which facial would you like to experience? 💛`;
+}
+
+export function formatCleanUp(): string {
+  return `✨ *Clean Up Services (Men & Women)* 🟢
+
+🟢 *Fruit Clean Up:* ₹699 _(Member: ₹679)_
+🟢 *Clean Up + Eyebrow + Upper Lip (Combo):* ₹749 _(Member: ₹695)_
+🟢 *Clean Up + Threading + Head Massage (Combo):* ₹1,049 _(Member: ₹975)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatDeTan(): string {
+  return `✨ *De-Tan Services (Men & Women)* 🟢
+
+🟢 *Face De-Tan:* ₹349 _(Member: ₹329)_
+🟢 *Face & Neck De-Tan:* ₹599 _(Member: ₹549)_
+🟢 *Underarms De-Tan:* ₹219 _(Member: ₹210)_
+🟢 *Foot De-Tan:* ₹339 _(Member: ₹329)_
+🟢 *Half Arms De-Tan:* ₹579 _(Member: ₹550)_
+🟢 *Full Arms De-Tan:* ₹899 _(Member: ₹835)_
+🟢 *Half Legs De-Tan:* ₹689 _(Member: ₹655)_
+🟢 *Full Legs De-Tan:* ₹1,099 _(Member: ₹1,020)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Which area would you like to de-tan? 💛`;
+}
+
+export function formatManicure(): string {
+  return `✨ *Manicure Services (Men & Women)* 🟢
+
+🟢 *Cut, File & Polish:* ₹249 _(Member: ₹229)_
+🟢 *Basic Manicure:* ₹449 _(Member: ₹435)_
+🟢 *Sara Rose Manicure:* ₹499 _(Member: ₹475)_
+🟢 *Aroma Magic Manicure:* ₹549 _(Member: ₹499)_
+🟢 *De-Tan Manicure:* ₹549 _(Member: ₹519)_
+🟢 *Lotus Manicure:* ₹649 _(Member: ₹619)_
+🟢 *Chocolate Crystal Manicure:* ₹699 _(Member: ₹665)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
+export function formatPedicure(): string {
+  return `✨ *Pedicure Services (Men & Women)* 🟢
+
+🟢 *Cut, File & Polish:* ₹249 _(Member: ₹199)_
+🟢 *Basic Pedicure:* ₹649 _(Member: ₹629)_
+🟢 *Sara Rose Pedicure:* ₹749 _(Member: ₹699)_
+🟢 *De-Tan Pedicure:* ₹799 _(Member: ₹745)_
+🟢 *Aroma Magic Pedicure:* ₹849 _(Member: ₹799)_
+🟢 *Lotus Pedicure:* ₹999 _(Member: ₹949)_
+🟢 *Chocolate Crystal Pedicure:* ₹1,099 _(Member: ₹999)_
+
+📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
+Would you like to reserve a slot today? 💛`;
+}
+
 export function formatOffers(): string {
   return `🎉 *Special Offers Active at Classic Pearl!* 🟢
 
@@ -599,7 +753,7 @@ export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'):
   // A. Haircut Combos
   if (kw.includes('haircut') || kw.includes('hair cut') || /\bcut\b/.test(kw)) {
     if (gender === 'men') {
-      return `✨ *Men Haircut Value Combos* 🟢\n\n🟢 *Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n🟢 *Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Haircut + De-Tan (Face & Neck):* ₹849 _(Member: ₹799)_\n🟢 *Haircut + Hair Color + Hair Wash:* ₹1,099 _(Member: ₹999)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+      return `✨ *Men Haircut Value Combos* 🟢\n\n🟢 *Haircut + Beard + Hair Wash:* ₹439 _(Member: ₹399)_\n🟢 *Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Haircut + De-Tan (Face & Neck):* ₹849 _(Member: ₹799)_\n🟢 *Haircut + Hair Color + Hair Wash:* ₹1,099 _(Member: ₹999)_\n🟢 *Haircut + Head & Neck + Foot Massage:* ₹1,099 _(Member: ₹999)_\n🟢 *Haircut + Anti-Dandruff Spa:* ₹1,209 _(Member: ₹1,125)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
     }
     if (gender === 'women') {
       return `✨ *Women Haircut Value Combos* 🟢\n\n🟢 *Hair Spa + Haircut + Blast Dry:* ₹1,449 _(Member: ₹1,350)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
@@ -629,7 +783,7 @@ export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'):
 
   // F. Massage Combos
   if (kw.includes('massage')) {
-    return `✨ *Relaxing Massage Combos* 🟢\n\n🟢 *Men Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Women Head Massage + Foot Massage:* ₹949 _(Member: ₹885)_\n🟢 *Women Head & Neck + Foot Massage:* ₹1,099 _(Member: ₹1,020)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
+    return `✨ *Relaxing Massage Combos* 🟢\n\n🟢 *Men Haircut + Head Massage + Hair Wash:* ₹659 _(Member: ₹599)_\n🟢 *Men Haircut + Head & Neck + Foot Massage:* ₹1,099 _(Member: ₹999)_\n🟢 *Men Head & Neck + Shoulder + Foot Massage:* ₹1,319 _(Member: ₹1,199)_\n🟢 *Women Head Massage + Foot Massage:* ₹949 _(Member: ₹885)_\n🟢 *Women Head & Neck + Foot Massage:* ₹1,099 _(Member: ₹1,020)_\n🟢 *Women Head & Neck + Shoulder + Foot Massage:* ₹1,319 _(Member: ₹1,225)_\n\n📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}\nWould you like to reserve a slot today? 💛`;
   }
 
   // G. Generic Combos Inquiry
@@ -1006,18 +1160,18 @@ export function getSalonDeterministicResponse(
     text.includes('shave') ||
     text.includes('shaving')
   ) {
-    const menBeard = salonCatalog.men.filter(s => s.Category === 'Men - Beard');
     return {
-      reply: formatPriceList(
-        'Men Beard Grooming & Shaving Services',
-        menBeard,
-        '💡 *Sharp Grooming Upgrade:* Add a sharp *Men Hair Cut (₹249)* or relaxing *Almond Head Massage (₹399)* to complete your look!'
-      ),
+      reply: formatMenBeard(),
       buttons: SALON_BUTTONS.ACTION
     };
   }
 
   // 11. STRICT WOMEN-EXCLUSIVE SERVICES (NEVER ask Men or Women)
+  // Root Touch-Up Specific
+  if (text.includes('root touch') || text.includes('touch up') || text.includes('touchup') || text.includes('touch-up')) {
+    return { reply: formatRootTouchUp(), buttons: SALON_BUTTONS.ACTION };
+  }
+
   // A. Specific Face Waxing (Full Face, Chin, Upper Lip, Sidelocks, Forehead)
   if (
     text.includes('face wax') || 
@@ -1126,69 +1280,69 @@ export function getSalonDeterministicResponse(
     text.includes('tongs') || 
     text.includes('ironing') || 
     text.includes('crimping') || 
-    text.includes('curls')
+    text.includes('curls') ||
+    text.includes('styling')
   ) {
-    const womenStyling = salonCatalog.women.filter(s => s.Category === 'Women - Styling & Makeover');
     return {
-      reply: formatPriceList('Women Hair Styling Services', womenStyling),
+      reply: formatWomenStyling(),
       buttons: SALON_BUTTONS.ACTION
+    };
+  }
+
+  // 11.5 HAIR TREATMENTS (Anti-Dandruff / Anti-Hairfall)
+  if (
+    text.includes('anti dandruff treatment') || 
+    text.includes('hair fall treatment') || 
+    text.includes('hairfall treatment') ||
+    text.includes('hair loss treatment') || 
+    text.includes('dandruff treatment') ||
+    (text.includes('treatment') && (text.includes('hair') || text.includes('fall') || text.includes('dandruff')))
+  ) {
+    if (isMenExplicit && !isWomenExplicit) return { reply: formatMenHairTreatment(), buttons: SALON_BUTTONS.ACTION };
+    if (isWomenExplicit && !isMenExplicit) return { reply: formatWomenHairTreatment(), buttons: SALON_BUTTONS.ACTION };
+    return {
+      reply: `✨ *Specialized Hair Treatments* 🟢\n\n🟢 *Men Anti-Dandruff / Hair Fall:* ₹1,099 _(Member: ₹999)_\n🟢 *Women Anti-Dandruff / Hair Fall:* Small ₹1,299 | Med ₹1,399 | Long ₹1,499\n\nWould you like options for *Men* or *Women*? 💆`,
+      buttons: SALON_BUTTONS.GENDER
     };
   }
 
   // 12. BOTH / UNISEX SERVICES (No gender question asked!)
   // Pedicure
   if (text.includes('pedicure') || text.includes('pedi')) {
-    const pedicures = salonCatalog.both.filter(s => s.Category === 'Both - Pedicure');
     return {
-      reply: formatPriceList(
-        'Pedicure Services (For Both Men & Women)',
-        pedicures,
-        '💡 *Pampering Upgrade:* For tired or tanned feet, try our *Chocolate Crystal Pedicure (₹1,099)* or *De-Tan Pedicure (₹799)* for deep exfoliation and massage!'
-      ),
+      reply: formatPedicure(),
       buttons: SALON_BUTTONS.ACTION
     };
   }
 
   // Manicure
   if (text.includes('manicure') || text.includes('mani')) {
-    const manicures = salonCatalog.both.filter(s => s.Category === 'Both - Manicure');
     return {
-      reply: formatPriceList('Manicure Services (For Both Men & Women)', manicures),
+      reply: formatManicure(),
       buttons: SALON_BUTTONS.ACTION
     };
   }
 
   // Facial
   if (text.includes('facial') || text.includes('facials')) {
-    const facials = salonCatalog.both.filter(s => s.Category === 'Both - Facial');
     return {
-      reply: formatPriceList(
-        'Facial Treatments (For Both Men & Women)',
-        facials,
-        '💡 *Celebrity Favorites:* Experience our *Korean Glass Facial (₹2,199)* or *Hydra Facial (₹2,899)* for immediate glass-skin radiance and deep pore cleansing!'
-      ),
+      reply: formatFacials(),
       buttons: SALON_BUTTONS.ACTION
     };
   }
 
   // Clean Up
   if (text.includes('clean up') || text.includes('cleanup')) {
-    const cleanups = salonCatalog.both.filter(s => s.Category === 'Both - Clean Up');
     return {
-      reply: formatPriceList(
-        'Clean Up Services (For Both Men & Women)',
-        cleanups,
-        '💡 *Glow Upgrade:* For deeper pore hydration and lasting glass radiance, ask about our signature Korean Glass Facial when you visit!'
-      ),
+      reply: formatCleanUp(),
       buttons: SALON_BUTTONS.ACTION
     };
   }
 
   // De-Tan
   if (text.includes('detan') || text.includes('de-tan') || text.includes('tan')) {
-    const detans = salonCatalog.both.filter(s => s.Category === 'Both - De-Tan');
     return {
-      reply: formatPriceList('De-Tan Services (For Both Men & Women)', detans),
+      reply: formatDeTan(),
       buttons: SALON_BUTTONS.ACTION
     };
   }

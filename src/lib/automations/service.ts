@@ -10,88 +10,94 @@ export async function evaluateAutomations(
   messageId: string, 
   inboundText: string,
   contactPhone: string,
-  buttonId?: string
+  buttonId?: string,
+  credentials?: { phoneNumberId: string; accessToken: string },
+  contactContext?: { contactId: string; contactName: string }
 ) {
   if (!inboundText && !buttonId) return;
 
   const rawInput = inboundText || (buttonId ? `[${buttonId}]` : '');
   const normalizedInput = rawInput.trim().toLowerCase();
 
-  // 1. Fetch Contact & Conversation context
-  const { data: convData } = await supabaseAdmin
-    .from('conversations')
-    .select('contact_id, contacts(id, name, phone_number, attributes)')
-    .eq('id', conversationId)
-    .single();
+  // 1. Resolve Contact context (use fast in-memory context if passed)
+  let contactId = contactContext?.contactId;
+  let contactName = contactContext?.contactName || 'Guest';
 
-  const contact = (convData?.contacts as any) || {};
-  const contactId = convData?.contact_id;
-  const contactName = contact.name || 'Guest';
-  const contactAttrs = contact.attributes || {};
-  const botActive = contactAttrs.bot_active !== false; // defaults to true
+  if (!contactId) {
+    const { data: convData } = await supabaseAdmin
+      .from('conversations')
+      .select('contact_id, contacts(id, name, phone_number, attributes)')
+      .eq('id', conversationId)
+      .maybeSingle();
 
-  // Zero-Annoyance Guardrail: Cancel any pending follow-up immediately
-  // because this customer is active in live conversation!
-  if (contactId) {
-    await cancelPendingFollowup(contactId);
-  }
-
-  if (!botActive) {
-    console.log(`Bot paused for conversation ${conversationId}. Human agent handling.`);
-    return;
-  }
-
-  // 2. Load active legacy automations for explicit keyword actions (if any)
-  const { data: automations } = await supabaseAdmin
-    .from('automations')
-    .select('*')
-    .eq('organization_id', orgId)
-    .eq('active', true)
-    .in('action_type', ['TEXT', 'LOCATION', 'TEMPLATE'])
-    .order('priority', { ascending: false });
-
-  for (const automation of (automations || [])) {
-    const config = automation.trigger_config as { keywords: string[] };
-    if (!config || !config.keywords) continue;
-
-    let matchedKeyword = null;
-
-    for (const kw of config.keywords) {
-      const normalizedKw = kw.trim().toLowerCase();
-      if (!normalizedKw) continue;
-      if (automation.trigger_type === 'EXACT') {
-        if (normalizedInput === normalizedKw) matchedKeyword = kw;
-      } else if (automation.trigger_type === 'CONTAINS') {
-        const regex = new RegExp(`(^|\\b|\\s|[.,!?])${normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|\\s|[.,!?]|$)`, 'i');
-        if (regex.test(normalizedInput)) matchedKeyword = kw;
-      }
-      
-      if (matchedKeyword) break;
+    const contact = (convData?.contacts as any) || {};
+    contactId = convData?.contact_id;
+    contactName = contact.name || 'Guest';
+    const contactAttrs = contact.attributes || {};
+    if (contactAttrs.bot_active === false) {
+      console.log(`Bot paused for conversation ${conversationId}. Human agent handling.`);
+      return;
     }
+  }
 
-    if (matchedKeyword) {
-      if (automation.cooldown_seconds > 0) {
-        const { data: recentExec } = await supabaseAdmin
-          .from('automation_executions')
-          .select('created_at')
-          .eq('automation_id', automation.id)
-          .eq('conversation_id', conversationId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+  // Zero-Annoyance Guardrail: Cancel any pending follow-up in the background without blocking
+  if (contactId) {
+    void cancelPendingFollowup(contactId);
+  }
 
-        if (recentExec) {
-          const lastRan = new Date(recentExec.created_at).getTime();
-          const now = Date.now();
-          if (now - lastRan < automation.cooldown_seconds * 1000) {
-            console.log(`Automation ${automation.name} blocked by cooldown.`);
-            return;
+  // 2. Load active legacy automations for explicit keyword actions (only for text messages, skip for button clicks)
+  if (!buttonId) {
+    const { data: automations } = await supabaseAdmin
+      .from('automations')
+      .select('*')
+      .eq('organization_id', orgId)
+      .eq('active', true)
+      .in('action_type', ['TEXT', 'LOCATION', 'TEMPLATE'])
+      .order('priority', { ascending: false });
+
+    for (const automation of (automations || [])) {
+      const config = automation.trigger_config as { keywords: string[] };
+      if (!config || !config.keywords) continue;
+
+      let matchedKeyword = null;
+
+      for (const kw of config.keywords) {
+        const normalizedKw = kw.trim().toLowerCase();
+        if (!normalizedKw) continue;
+        if (automation.trigger_type === 'EXACT') {
+          if (normalizedInput === normalizedKw) matchedKeyword = kw;
+        } else if (automation.trigger_type === 'CONTAINS') {
+          const regex = new RegExp(`(^|\\b|\\s|[.,!?])${normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|\\s|[.,!?]|$)`, 'i');
+          if (regex.test(normalizedInput)) matchedKeyword = kw;
+        }
+        
+        if (matchedKeyword) break;
+      }
+
+      if (matchedKeyword) {
+        if (automation.cooldown_seconds > 0) {
+          const { data: recentExec } = await supabaseAdmin
+            .from('automation_executions')
+            .select('created_at')
+            .eq('automation_id', automation.id)
+            .eq('conversation_id', conversationId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (recentExec) {
+            const lastRan = new Date(recentExec.created_at).getTime();
+            const now = Date.now();
+            if (now - lastRan < automation.cooldown_seconds * 1000) {
+              console.log(`Automation ${automation.name} blocked by cooldown.`);
+              return;
+            }
           }
         }
-      }
 
-      await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone, contactId);
-      return; 
+        await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone, contactId);
+        return; 
+      }
     }
   }
 
@@ -139,23 +145,29 @@ export async function evaluateAutomations(
     const buttons = aiResult.buttons;
 
     if (finalReply) {
-      // Fetch WhatsApp Account info (with automatic fallback to ensure 100% dispatch reliability)
-      let account = null;
-      const { data: orgAccount } = await supabaseAdmin
-        .from('whatsapp_accounts')
-        .select('phone_number_id, access_token')
-        .eq('organization_id', orgId)
-        .maybeSingle();
+      // Fetch WhatsApp Account info (fast path: use passed in-memory credentials if available)
+      let account: { phone_number_id: string; access_token: string } | null = 
+        credentials?.phoneNumberId && credentials?.accessToken 
+          ? { phone_number_id: credentials.phoneNumberId, access_token: credentials.accessToken } 
+          : null;
 
-      if (orgAccount?.phone_number_id && orgAccount?.access_token) {
-        account = orgAccount;
-      } else {
-        const { data: fallbackAccount } = await supabaseAdmin
+      if (!account) {
+        const { data: orgAccount } = await supabaseAdmin
           .from('whatsapp_accounts')
           .select('phone_number_id, access_token')
-          .limit(1)
+          .eq('organization_id', orgId)
           .maybeSingle();
-        account = fallbackAccount;
+
+        if (orgAccount?.phone_number_id && orgAccount?.access_token) {
+          account = orgAccount;
+        } else {
+          const { data: fallbackAccount } = await supabaseAdmin
+            .from('whatsapp_accounts')
+            .select('phone_number_id, access_token')
+            .limit(1)
+            .maybeSingle();
+          account = fallbackAccount;
+        }
       }
 
       if (account?.phone_number_id && account?.access_token) {
@@ -260,7 +272,7 @@ export async function evaluateAutomations(
               else if (normalizedInput.includes('pedicure')) detectedService = 'pedicure';
               else if (normalizedInput.includes('combo')) detectedService = 'value combo';
 
-              await scheduleInquiryFollowup({
+              void scheduleInquiryFollowup({
                 contactId,
                 organizationId: orgId,
                 phone: contactPhone,
