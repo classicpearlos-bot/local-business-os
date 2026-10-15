@@ -40,9 +40,16 @@ export async function evaluateAutomations(
     }
   }
 
-  // Zero-Annoyance Guardrail: Cancel any pending follow-up in the background without blocking
-  if (contactId) {
-    void cancelPendingFollowup(contactId);
+  // Zero-Annoyance Guardrail: Only cancel if explicit opt-out or booking/visit confirmation
+  if (contactId && (
+    normalizedInput.includes('stop') ||
+    normalizedInput.includes('unsubscribe') ||
+    normalizedInput.includes('cancel') ||
+    normalizedInput === 'already visited' ||
+    buttonId === 'btn_followup_visited' ||
+    buttonId === 'btn_followup_later'
+  )) {
+    void cancelPendingFollowup(contactId, 'opt_out_or_completed');
   }
 
   // 2. Load active legacy automations for explicit keyword actions (only for text messages, skip for button clicks)
@@ -241,10 +248,11 @@ export async function evaluateAutomations(
           console.log(`[Salon AI Concierge] Successfully sent ${isInteractiveSent ? 'interactive' : 'text'} reply to ${contactPhone} (WAM ID: ${waRes.messages[0].id})`);
 
           // Autonomous Smart Follow-up Scheduling:
-          // If high-intent inquiry (location, services, pricing, booking, or arrival time), schedule a single gentle check-in
-          // (strictly enforcing frequency cap of 1, quiet hours blackout, 24h Meta window, and atomic invalidation).
-          const isFollowupAction = ['btn_followup_later', 'btn_followup_visited', 'btn_followup_coming', 'btn_followup_route'].includes(buttonId || '');
-          if (contactId && !isFollowupAction && !normalizedInput.includes('stop') && !normalizedInput.includes('cancel') && !normalizedInput.includes('unsubscribe')) {
+          // Jarvis tracks every customer interaction that opens a 24-hour Meta customer service window.
+          // Enforces strict frequency cap of 1, quiet hours blackout, and zero annoyance.
+          if (buttonId === 'btn_followup_visited' || buttonId === 'btn_followup_later') {
+            void cancelPendingFollowup(contactId, buttonId === 'btn_followup_visited' ? 'already_visited' : 'deferred_by_client');
+          } else if (contactId && !normalizedInput.includes('stop') && !normalizedInput.includes('cancel') && !normalizedInput.includes('unsubscribe')) {
             const arrivalTime = extractArrivalTime(rawInput);
             
             const isLocationInquiry = 
@@ -261,7 +269,8 @@ export async function evaluateAutomations(
               normalizedInput.includes('route') || 
               buttonId === 'btn_location' || 
               buttonId === 'btn_menu_location' || 
-              buttonId === 'btn_maps';
+              buttonId === 'btn_maps' ||
+              buttonId === 'btn_followup_route';
 
             const isPricingInquiry = 
               normalizedInput.includes('price') || 
@@ -290,13 +299,24 @@ export async function evaluateAutomations(
               normalizedInput.includes('manicure') || 
               normalizedInput.includes('keratin') || 
               normalizedInput.includes('botox') || 
+              normalizedInput.includes('nanoplastia') || 
               normalizedInput.includes('color') || 
+              normalizedInput.includes('colour') || 
+              normalizedInput.includes('root touch') || 
+              normalizedInput.includes('touch up') || 
+              normalizedInput.includes('touchup') || 
+              normalizedInput.includes('ammonia') || 
+              normalizedInput.includes('highlights') || 
+              normalizedInput.includes('streaks') || 
+              normalizedInput.includes('balayage') || 
+              normalizedInput.includes('threading') || 
               normalizedInput.includes('combo') || 
               normalizedInput.includes('clean up') || 
               normalizedInput.includes('cleanup') || 
               normalizedInput.includes('bleach') || 
               normalizedInput.includes('detan') || 
               normalizedInput.includes('shave') || 
+              normalizedInput.includes('massage') || 
               !!arrivalTime;
 
             if (isLocationInquiry) {
@@ -307,7 +327,7 @@ export async function evaluateAutomations(
                 inquiryType: 'LOCATION',
                 service: 'salon location & directions',
                 tentativeTime: arrivalTime,
-                delayHours: 0.75 // Check in 45 mins after giving directions
+                delayHours: 0.75 // Gentle check-in 45 mins after directions
               });
             } else if (arrivalTime) {
               void scheduleInquiryFollowup({
@@ -325,12 +345,14 @@ export async function evaluateAutomations(
               else if (normalizedInput.includes('spa')) detectedService = 'hair spa';
               else if (normalizedInput.includes('wax')) detectedService = 'waxing';
               else if (normalizedInput.includes('beard')) detectedService = 'beard & grooming';
-              else if (normalizedInput.includes('facial')) detectedService = 'facial';
+              else if (normalizedInput.includes('facial')) detectedService = 'facial & skincare';
               else if (normalizedInput.includes('pedicure')) detectedService = 'pedicure';
               else if (normalizedInput.includes('manicure')) detectedService = 'manicure';
-              else if (normalizedInput.includes('botox')) detectedService = 'hair botox';
-              else if (normalizedInput.includes('keratin')) detectedService = 'keratin treatment';
-              else if (normalizedInput.includes('color')) detectedService = 'hair coloring';
+              else if (normalizedInput.includes('botox')) detectedService = 'hair botox therapy';
+              else if (normalizedInput.includes('keratin')) detectedService = 'keratin protein treatment';
+              else if (normalizedInput.includes('nanoplastia')) detectedService = 'nanoplastia treatment';
+              else if (normalizedInput.includes('root touch') || normalizedInput.includes('touch up')) detectedService = 'root touch-up';
+              else if (normalizedInput.includes('color') || normalizedInput.includes('ammonia') || normalizedInput.includes('highlights')) detectedService = 'hair coloring & highlights';
               else if (normalizedInput.includes('combo')) detectedService = 'value combo';
               else if (isBookingInquiry) detectedService = 'appointment booking';
               else if (isPricingInquiry) detectedService = 'pricing & offers';
@@ -344,8 +366,8 @@ export async function evaluateAutomations(
                 tentativeTime: arrivalTime,
                 delayHours: 2.5
               });
-            } else if (buttonId || rawInput.trim().length > 1) {
-              // General conversational inquiry
+            } else {
+              // Autonomous General Inbound Fallback: Every customer conversation is tracked
               void scheduleInquiryFollowup({
                 contactId,
                 organizationId: orgId,

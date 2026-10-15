@@ -297,7 +297,9 @@ export async function POST(request: Request) {
                 } else {
                   let handledByFlow = false;
                   
-                  if (buttonId) {
+                  // Fast Path: Only check custom visual flow engine if button is from a canvas flow (fl_),
+                  // native salon concierge buttons (btn_) go directly to the high-speed salon engine!
+                  if (buttonId && !buttonId.startsWith('btn_')) {
                     const { FlowExecutionEngine } = await import('@/lib/flows/engine');
                     const { data: waitingExec } = await supabaseAdmin
                       .from('flow_executions')

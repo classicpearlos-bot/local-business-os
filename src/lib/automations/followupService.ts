@@ -9,10 +9,12 @@ export interface InquiryFollowupData {
   service: string;
   intent_level: 'HIGH' | 'MEDIUM';
   inquired_at: string;
+  last_interaction_at?: string;
   tentative_time: string | null;
   followup_status: 'SCHEDULED' | 'SENT' | 'CANCELLED' | 'COMPLETED';
   followup_due_at: string;
   followup_count: number;
+  followup_sent_at?: string;
 }
 
 /**
@@ -65,6 +67,7 @@ export function calculateSafeFollowupTime(
 
 /**
  * Records or updates a customer inquiry with scheduled follow-up
+ * Intelligently merges subsequent messages without wiping high-intent context.
  */
 export async function scheduleInquiryFollowup(params: {
   contactId: string;
@@ -96,22 +99,50 @@ export async function scheduleInquiryFollowup(params: {
 
     // Strict Anti-Annoyance Rule: If follow-up was already sent in the last 24 hours, don't spam
     if (existingInquiry && existingInquiry.followup_status === 'SENT') {
-      const sentTime = new Date(existingInquiry.inquired_at).getTime();
+      const sentTime = existingInquiry.followup_sent_at 
+        ? new Date(existingInquiry.followup_sent_at).getTime()
+        : new Date(existingInquiry.inquired_at).getTime();
       if (Date.now() - sentTime < 24 * 60 * 60 * 1000) {
         return;
       }
     }
 
-    // Default delay: 45 min for location, 2.5 hours for service/general
-    const effectiveDelay = delayHours ?? (inquiryType === 'LOCATION' ? 0.75 : 2.5);
-    const dueTime = calculateSafeFollowupTime(new Date(), effectiveDelay, inquiryType);
+    // Determine final inquiry type: Preserve higher priority intent
+    // (LOCATION > SERVICE > TENTATIVE_TIME > GENERAL)
+    let finalInquiryType = inquiryType;
+    let finalService = service || 'salon';
+    let finalTentativeTime = tentativeTime || null;
+    const initialInquiryTime = existingInquiry?.inquired_at || new Date().toISOString();
+
+    if (existingInquiry && existingInquiry.followup_status === 'SCHEDULED') {
+      if (existingInquiry.inquiry_type === 'LOCATION' && inquiryType === 'GENERAL') {
+        finalInquiryType = 'LOCATION';
+        finalService = existingInquiry.service;
+      } else if (existingInquiry.inquiry_type === 'SERVICE' && inquiryType === 'GENERAL') {
+        finalInquiryType = 'SERVICE';
+        finalService = existingInquiry.service;
+      }
+      if (!finalTentativeTime && existingInquiry.tentative_time) {
+        finalTentativeTime = existingInquiry.tentative_time;
+      }
+    }
+
+    // Default delay: 45 min for location, 1h for tentative time, 2.5 hours for service/general
+    const effectiveDelay = delayHours ?? (
+      finalInquiryType === 'LOCATION' ? 0.75 : 
+      finalTentativeTime ? 1.0 : 2.5
+    );
+    
+    // Follow-up due time is calculated safely from now (last interaction), clamped to 24h Meta window
+    const dueTime = calculateSafeFollowupTime(new Date(), effectiveDelay, finalInquiryType);
 
     const inquiryPayload: InquiryFollowupData = {
-      inquiry_type: inquiryType,
-      service: service || 'salon',
+      inquiry_type: finalInquiryType,
+      service: finalService,
       intent_level: 'HIGH',
-      inquired_at: new Date().toISOString(),
-      tentative_time: tentativeTime || null,
+      inquired_at: initialInquiryTime,
+      last_interaction_at: new Date().toISOString(),
+      tentative_time: finalTentativeTime,
       followup_status: 'SCHEDULED',
       followup_due_at: dueTime.toISOString(),
       followup_count: 0
@@ -127,16 +158,16 @@ export async function scheduleInquiryFollowup(params: {
       })
       .eq('id', contactId);
 
-    console.log(`[Follow-up Engine] Scheduled ${inquiryType} follow-up for contact ${contactId} at ${dueTime.toISOString()}`);
+    console.log(`[Jarvis Follow-Up] Scheduled ${finalInquiryType} follow-up for contact ${contactId} at ${dueTime.toISOString()}`);
   } catch (err) {
-    console.error('[Follow-up Engine] Error scheduling inquiry follow-up:', err);
+    console.error('[Jarvis Follow-Up] Error scheduling inquiry follow-up:', err);
   }
 }
 
 /**
- * Cancels pending follow-up (e.g. when customer replies or takes action)
+ * Cancels pending follow-up (explicitly called on conversion, opt-out, or booking)
  */
-export async function cancelPendingFollowup(contactId: string): Promise<void> {
+export async function cancelPendingFollowup(contactId: string, reason: string = 'customer_action'): Promise<void> {
   if (!contactId) return;
   try {
     const { data: contact } = await supabaseAdmin
@@ -155,16 +186,124 @@ export async function cancelPendingFollowup(contactId: string): Promise<void> {
             ...currentAttrs,
             last_inquiry: {
               ...currentAttrs.last_inquiry,
-              followup_status: 'CANCELLED'
+              followup_status: 'CANCELLED',
+              cancellation_reason: reason
             }
           }
         })
         .eq('id', contactId);
-      console.log(`[Follow-up Engine] Cancelled pending follow-up for active contact ${contactId}`);
+      console.log(`[Jarvis Follow-Up] Cancelled pending follow-up for contact ${contactId} (Reason: ${reason})`);
     }
   } catch (err) {
-    console.error('[Follow-up Engine] Error cancelling follow-up:', err);
+    console.error('[Jarvis Follow-Up] Error cancelling follow-up:', err);
   }
+}
+
+/**
+ * Uses Gemini AI (with fallback to high-conversion salon templates) to craft a warm,
+ * personalized Jarvis follow-up message for a silent departure lead.
+ */
+export async function generateJarvisFollowupMessage(params: {
+  contactName: string;
+  inquiry: InquiryFollowupData;
+  recentChatHistory?: string;
+  isNextDay: boolean;
+}): Promise<{ text: string; buttons: Array<{ id: string; title: string }> }> {
+  const { contactName, inquiry, recentChatHistory = '', isNextDay } = params;
+  const nameSalutation = contactName && contactName !== 'Guest' && contactName !== 'Customer' ? `${contactName}! ` : '';
+
+  // Select appropriate interactive buttons based on inquiry context
+  let buttons = SALON_BUTTONS.FOLLOWUP;
+  if (inquiry.inquiry_type === 'LOCATION') {
+    buttons = [
+      { id: 'btn_followup_coming', title: isNextDay ? '🚗 Planning Today' : '🚗 On My Way' },
+      { id: 'btn_followup_visited', title: '✅ Already Visited' },
+      { id: 'btn_followup_route', title: '📍 Need Directions' }
+    ];
+  } else if (inquiry.tentative_time) {
+    buttons = [
+      { id: 'btn_followup_coming', title: '🚗 On My Way' },
+      { id: 'btn_followup_visited', title: '✅ Already Visited' },
+      { id: 'btn_followup_later', title: '📅 Another Time' }
+    ];
+  } else if (isNextDay) {
+    buttons = [
+      { id: 'btn_followup_coming', title: '🚗 Planning Today' },
+      { id: 'btn_followup_visited', title: '✅ Already Visited' },
+      { id: 'btn_followup_later', title: '📅 Another Day' }
+    ];
+  } else {
+    buttons = [
+      { id: 'btn_followup_coming', title: '🚗 Planning to Come' },
+      { id: 'btn_followup_visited', title: '✅ Already Visited' },
+      { id: 'btn_followup_later', title: '📅 Another Time' }
+    ];
+  }
+
+  // Baseline high-converting templates (proven conversion rates for Classic Pearl)
+  let fallbackText = '';
+  if (inquiry.inquiry_type === 'LOCATION') {
+    if (isNextDay) {
+      fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location yesterday!\n\nDid you manage to reach or visit us, or are you planning to come by today? 💛 Our doors are open (10:00 AM – 9:00 PM) and our top stylists would love to hold a priority chair for you!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+    } else {
+      fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location earlier!\n\nDid you manage to reach safely, or would you like any help with route directions or parking? 💛 Our stylists are ready with zero waiting time!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+    }
+  } else if (inquiry.tentative_time) {
+    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you were planning to visit around *${inquiry.tentative_time}* today!\n\nAre you still on your way? Our stylists would love to hold a chair ready for you with zero waiting time! 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+  } else if (isNextDay) {
+    fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry yesterday!\n\nOur top stylists have open chairs today. Would you like us to hold a slot ready for your consultation with zero waiting time? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+  } else {
+    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry!\n\nOur top stylists have open slots today. Would you like us to hold a chair ready for you? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+  }
+
+  // Attempt dynamic Gemini AI personalization if API key and conversation history are available
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey && apiKey.length > 5 && recentChatHistory.trim().length > 10) {
+    try {
+      const prompt = `You are Jarvis Concierge for Classic Pearl Unisex Salon (Bengaluru, Hours: 10 AM - 9 PM, Phone: ${SALON_INFO.phone}, Maps: ${SALON_INFO.mapsUrl}).
+Write a warm, polite, personal WhatsApp check-in to a customer named "${contactName || 'Valued Client'}" who inquired earlier but went silent without visiting or booking.
+Inquiry topic/service: "${inquiry.service || inquiry.inquiry_type}"
+Is next day: ${isNextDay ? 'Yes (Good morning)' : 'No (same day)'}
+
+Recent conversation snippet:
+${recentChatHistory}
+
+Rules:
+1. Maximum 2 to 3 sentences total.
+2. WhatsApp formatting (*bold* for emphasis). Never use markdown headers like ### or **.
+3. Natural, friendly, human tone — not pushy.
+4. Reference the specific service or question they asked so they know we care.
+5. End with the Maps link and phone number.
+Do not invent prices or fake discounts.`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout max
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const json = await res.json();
+        const generated = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (generated && generated.length > 20 && generated.length < 500) {
+          const cleaned = generated
+            .replace(/\*\*(.*?)\*\*/g, '*$1*')
+            .replace(/__(.*?)__/g, '_$1_')
+            .replace(/###\s*(.*)/g, '*$1*');
+          return { text: cleaned, buttons };
+        }
+      }
+    } catch {
+      // Graceful fallback to verified template
+    }
+  }
+
+  return { text: fallbackText, buttons };
 }
 
 /**
@@ -185,7 +324,7 @@ export async function processDueFollowups(
   const nowIso = now.toISOString();
 
   try {
-    // 1. Query contacts with due follow-ups
+    // 1. Query contacts with scheduled follow-ups
     let query = supabaseAdmin
       .from('contacts')
       .select('id, organization_id, phone_number, name, attributes, opted_in')
@@ -200,7 +339,7 @@ export async function processDueFollowups(
     const { data: contacts, error } = await query;
 
     if (error || !contacts) {
-      console.error('[Follow-up Worker] Query error:', error);
+      console.error('[Jarvis Follow-Up Worker] Query error:', error);
       return stats;
     }
 
@@ -213,7 +352,7 @@ export async function processDueFollowups(
       // Skip blocked contacts
       if (attrs.is_blocked === true) {
         await supabaseAdmin.from('contacts').update({
-          attributes: { ...attrs, last_inquiry: { ...inquiry, followup_status: 'CANCELLED' } }
+          attributes: { ...attrs, last_inquiry: { ...inquiry, followup_status: 'CANCELLED', cancellation_reason: 'Contact blocked' } }
         }).eq('id', contact.id);
         stats.skipped++;
         stats.details.push({ phone: contact.phone_number, status: 'SKIPPED', reason: 'Contact is blocked' });
@@ -271,68 +410,88 @@ export async function processDueFollowups(
         continue;
       }
 
-      // === GUARDRAIL 4: ACTIVITY INVALIDATION ===
-      // Check if customer sent any inbound message after inquired_at
-      const { data: recentInbound } = await supabaseAdmin
+      // === GUARDRAIL 4: INTELLIGENT SILENT DEPARTURE & ACTIVE CHAT PROTECTION ===
+      // Fetch recent conversation history to evaluate the customer's real-time state:
+      const { data: recentMessages } = await supabaseAdmin
         .from('messages')
-        .select('id, created_at')
+        .select('id, direction, type, content, created_at')
         .eq('contact_id', contact.id)
-        .eq('direction', 'INBOUND')
-        .gt('created_at', inquiry.inquired_at)
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(6);
 
-      if (recentInbound) {
-        await supabaseAdmin.from('contacts').update({
-          attributes: { ...attrs, last_inquiry: { ...inquiry, followup_status: 'CANCELLED' } }
-        }).eq('id', contact.id);
-        stats.skipped++;
-        stats.details.push({ phone: contact.phone_number, status: 'SKIPPED', reason: 'Customer sent inbound message after inquiry (invalidated)' });
-        continue;
+      const latestInbound = recentMessages?.find(m => m.direction === 'INBOUND');
+
+      if (latestInbound) {
+        let inboundText = '';
+        if (latestInbound.type === 'text') {
+          inboundText = latestInbound.content?.text?.body || '';
+        } else if (latestInbound.type === 'interactive') {
+          inboundText = latestInbound.content?.interactive?.button_reply?.title || 
+                        latestInbound.content?.interactive?.list_reply?.title || '';
+        }
+
+        const lowerInbound = inboundText.trim().toLowerCase();
+
+        // 1. Explicit Opt-Out / Stop / Disinterest
+        const isOptOut = /stop|unsubscribe|cancel|optout|opt-out|don't message|dont message|not interested|wrong number|remove me/i.test(lowerInbound);
+        if (isOptOut) {
+          await supabaseAdmin.from('contacts').update({
+            attributes: { ...attrs, last_inquiry: { ...inquiry, followup_status: 'CANCELLED', cancellation_reason: 'Customer opted out' } }
+          }).eq('id', contact.id);
+          stats.skipped++;
+          stats.details.push({ phone: contact.phone_number, status: 'SKIPPED', reason: 'Customer opted out or said stop/not interested' });
+          continue;
+        }
+
+        // 2. Confirmed Conversion (Visited or Booked)
+        const isConverted = /already visited|visited|already done|booked|confirmed slot|appointment fixed|on my way|reached|in the salon|sitting here/i.test(lowerInbound);
+        if (isConverted) {
+          await supabaseAdmin.from('contacts').update({
+            attributes: { ...attrs, last_inquiry: { ...inquiry, followup_status: 'COMPLETED', completion_reason: 'Converted/Visited' } }
+          }).eq('id', contact.id);
+          stats.skipped++;
+          stats.details.push({ phone: contact.phone_number, status: 'SKIPPED', reason: 'Customer confirmed visit or booking (converted)' });
+          continue;
+        }
+
+        // 3. Live Active Chat Protection:
+        // If customer texted within the last 15 minutes, they are currently in a live conversation! Never interrupt.
+        const latestInboundTime = new Date(latestInbound.created_at).getTime();
+        const minsSinceLastInbound = (now.getTime() - latestInboundTime) / (1000 * 60);
+        if (minsSinceLastInbound < 15 && !options?.forceNow) {
+          const deferredDue = new Date(now.getTime() + 30 * 60 * 1000);
+          await supabaseAdmin.from('contacts').update({
+            attributes: { ...attrs, last_inquiry: { ...inquiry, followup_due_at: deferredDue.toISOString() } }
+          }).eq('id', contact.id);
+          stats.skipped++;
+          stats.details.push({ phone: contact.phone_number, status: 'SKIPPED', reason: `Customer actively texting (${Math.round(minsSinceLastInbound)}m ago). Deferred by 30m.` });
+          continue;
+        }
       }
 
-      // === DISPATCH INTERACTIVE FOLLOW-UP MESSAGE ===
+      // === ASSEMBLE CONVERSATION SNIPPET & GENERATE HYPER-PERSONALIZED COPY ===
       const contactName = contact.name && contact.name !== 'Guest' && contact.name !== 'Customer' ? contact.name : '';
-      const nameSalutation = contactName ? `${contactName}! ` : '';
       const isNextDay = elapsedHours >= 8;
 
-      let followUpText = '';
-      let buttons = SALON_BUTTONS.FOLLOWUP;
-
-      if (inquiry.inquiry_type === 'LOCATION') {
-        buttons = [
-          { id: 'btn_followup_coming', title: isNextDay ? '🚗 Planning Today' : '🚗 On My Way' },
-          { id: 'btn_followup_visited', title: '✅ Already Visited' },
-          { id: 'btn_followup_route', title: '📍 Need Directions' }
-        ];
-
-        if (isNextDay) {
-          followUpText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location yesterday!\n\nDid you manage to reach or visit us, or are you planning to come by today? 💛 Our doors are open (10:00 AM – 9:00 PM) and our top stylists would love to hold a priority chair for you!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
-        } else {
-          followUpText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location earlier!\n\nDid you manage to reach safely, or would you like any help with route directions or parking? 💛 Our stylists are ready with zero waiting time!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
-        }
-      } else if (inquiry.tentative_time) {
-        followUpText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you were planning to visit around *${inquiry.tentative_time}* today!\n\nAre you still on your way? Our stylists would love to hold a chair ready for you with zero waiting time! 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
-        buttons = [
-          { id: 'btn_followup_coming', title: '🚗 On My Way' },
-          { id: 'btn_followup_visited', title: '✅ Already Visited' },
-          { id: 'btn_followup_later', title: '📅 Another Time' }
-        ];
-      } else if (isNextDay) {
-        followUpText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service}* inquiry yesterday!\n\nOur top stylists have open chairs today. Would you like us to hold a slot ready for your consultation with zero waiting time? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
-        buttons = [
-          { id: 'btn_followup_coming', title: '🚗 Planning Today' },
-          { id: 'btn_followup_visited', title: '✅ Already Visited' },
-          { id: 'btn_followup_later', title: '📅 Another Day' }
-        ];
-      } else {
-        followUpText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service}* inquiry!\n\nOur top stylists have open slots today. Would you like us to hold a chair ready for you? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
-        buttons = [
-          { id: 'btn_followup_coming', title: '🚗 Planning to Come' },
-          { id: 'btn_followup_visited', title: '✅ Already Visited' },
-          { id: 'btn_followup_later', title: '📅 Another Time' }
-        ];
+      let chatSnippet = '';
+      if (recentMessages && recentMessages.length > 0) {
+        chatSnippet = recentMessages.slice().reverse().map(m => {
+          const speaker = m.direction === 'INBOUND' ? 'Customer' : 'Assistant';
+          const txt = m.type === 'text' ? m.content?.text?.body :
+                      m.type === 'interactive' ? (m.content?.interactive?.button_reply?.title || m.content?.interactive?.body?.text) : '';
+          return `${speaker}: ${txt}`;
+        }).filter(Boolean).join('\n');
       }
+
+      const generated = await generateJarvisFollowupMessage({
+        contactName,
+        inquiry,
+        recentChatHistory: chatSnippet,
+        isNextDay
+      });
+
+      const followUpText = generated.text;
+      const buttons = generated.buttons;
 
       // Get WhatsApp account
       const { data: acct } = await supabaseAdmin
@@ -377,7 +536,7 @@ export async function processDueFollowups(
           isInteractive = true;
         }
       } catch (err: any) {
-        console.warn('[Follow-up Worker] Interactive send failed, falling back to text:', err?.message || err);
+        console.warn('[Jarvis Follow-Up] Interactive send failed, falling back to text:', err?.message || err);
       }
 
       if (!isInteractive || !waRes?.messages?.[0]) {
@@ -388,7 +547,7 @@ export async function processDueFollowups(
             to: contact.phone_number
           }, followUpText);
         } catch (textErr: any) {
-          console.error('[Follow-up Worker] Plain text fallback also failed:', textErr?.message || textErr);
+          console.error('[Jarvis Follow-Up] Plain text fallback also failed:', textErr?.message || textErr);
         }
       }
 
@@ -445,14 +604,15 @@ export async function processDueFollowups(
           wam_id: waRes.messages[0].id,
           type: inquiry.inquiry_type || 'SERVICE'
         });
-        console.log(`[Follow-up Worker] Successfully sent follow-up to ${contact.phone_number} (WAM ID: ${waRes.messages[0].id})`);
+        console.log(`[Jarvis Follow-Up] Successfully sent check-in to ${contact.phone_number} (WAM ID: ${waRes.messages[0].id})`);
       } else {
         stats.errors++;
-        stats.details.push({ phone: contact.phone_number, status: 'ERROR', reason: 'Meta Graph API call failed' });
+        stats.details.push({ phone: contact.phone_number, status: 'ERROR', reason: waRes?.error?.message || 'Meta API delivery failed' });
       }
     }
   } catch (err: any) {
-    console.error('[Follow-up Worker] Execution error:', err);
+    console.error('[Jarvis Follow-Up] Worker fatal error:', err);
+    stats.errors++;
   }
 
   return stats;

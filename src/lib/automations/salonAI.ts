@@ -211,13 +211,16 @@ export function getLastInquiryContext(
       return 'head_massage';
     }
 
-    // 5. Hair Color
+    // 5. Hair Color & Root Touch-Up
     if (
       lower.includes('color') ||
       lower.includes('colour') ||
       lower.includes('highlight') ||
       lower.includes('streaks') ||
-      lower.includes('balayage')
+      lower.includes('balayage') ||
+      lower.includes('root touch') ||
+      lower.includes('touch up') ||
+      lower.includes('touchup')
     ) {
       return 'hair_color';
     }
@@ -351,36 +354,36 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatWomenHairColor(): string {
-  return `✨ *Women Hair Color Services (By Length)* 🟢
+  return `✨ *Women Hair Color & Root Touch-Up* 🟢
 
-*🌈 Global Color:*
+*🌈 Global Hair Color (By Length):*
 🟢 *Global Ammonia-Free:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
 🟢 *Global With Ammonia:* Small ₹2,999 | Med ₹3,999 | Long ₹4,999
 🟢 *Creative Hair Color:* Small ₹4,999 | Med ₹5,999 | Long ₹6,999
+
+*💆 Root Touch-Up (3 Types):*
+🟢 *Root Touch-Up With Ammonia:* ₹1,149 _(Member: ₹1,070)_
+🟢 *Premium Root Touch-Up (Ammonia-Free):* ₹1,249 _(Member: ₹1,199)_
+🟢 *Deluxe Root Touch-Up (Ammonia-Free):* ₹1,499 _(Member: ₹1,449)_
 
 *✨ Highlights & Balayage:*
 🟢 *Balayage / Ombre:* Small ₹5,999 | Med ₹6,999 | Long ₹7,999
 🟢 *Full Highlights (16 Streaks):* ₹3,999 _(Member: ₹3,499)_
 🟢 *Partial Highlights (8 Streaks):* ₹1,999 _(Member: ₹1,860)_
-🟢 *Advanced Streaks (per streak):* ₹349 _(Member: ₹329)_
-🟢 *Streaks (per streak):* ₹249 _(Member: ₹219)_
-
-*💆 Root Touch-Up:*
-🟢 *Root Touch-Up With Ammonia:* ₹1,149 _(Member: ₹1,070)_
-🟢 *Premium Root Touch-Up Ammonia-Free:* ₹1,249 _(Member: ₹1,199)_
-🟢 *Deluxe Root Touch-Up Ammonia-Free:* ₹1,499 _(Member: ₹1,449)_
+🟢 *Streaks:* Single ₹249/₹219 | Advanced ₹349/₹329
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
-What is your hair length (Small / Medium / Long)? 💛`;
+What service or hair length would you like to book? 💛`;
 }
 
 export function formatMenHairColor(): string {
   return `✨ *Men Hair Color Services* 🟢
 
-🟢 *Ammonia-Free Premium:* ₹799 _(Member: ₹749)_
-🟢 *Ammonia-Free Deluxe:* ₹899 _(Member: ₹849)_
-🟢 *Beard Color:* ₹299 _(Member: ₹249)_
+🟢 *Ammonia-Free Premium Hair Color:* ₹799 _(Member: ₹749)_
+🟢 *Ammonia-Free Deluxe Hair Color:* ₹899 _(Member: ₹849)_
+🟢 *Men Beard Color:* ₹299 _(Member: ₹249)_
 🟢 *Cap Highlights:* ₹1,499 _(Member: ₹1,399)_
+🟢 *Value Combo (Haircut + Hair Color + Wash):* ₹1,099 _(Member: ₹999)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
 Would you like to reserve a slot today? 💛`;
@@ -627,12 +630,13 @@ Which one would you prefer to book? 💛`;
 export function formatRootTouchUp(): string {
   return `✨ *Root Touch-Up Services (Women)* 🟢
 
+We offer 3 root touch-up options (with and without ammonia):
 🟢 *Root Touch-Up With Ammonia:* ₹1,149 _(Member: ₹1,070)_
-🟢 *Premium Root Touch-Up Ammonia-Free:* ₹1,249 _(Member: ₹1,199)_
-🟢 *Deluxe Root Touch-Up Ammonia-Free:* ₹1,499 _(Member: ₹1,449)_
+🟢 *Premium Root Touch-Up (Ammonia-Free):* ₹1,249 _(Member: ₹1,199)_
+🟢 *Deluxe Root Touch-Up (Ammonia-Free):* ₹1,499 _(Member: ₹1,449)_
 
 📍 *Classic Pearl* | 📞 *Book/Call:* ${SALON_INFO.phone}
-Would you like to reserve a slot today? 💛`;
+Which root touch-up option would you prefer? 💛`;
 }
 
 export function formatWomenStyling(): string {
@@ -1626,7 +1630,14 @@ export function getSalonDeterministicResponse(
   }
 
   // D. Hair Color
-  if (text.includes('color') || text.includes('colour') || text.includes('highlights') || text.includes('streaks') || text.includes('balayage')) {
+  if (
+    text.includes('color') || 
+    text.includes('colour') || 
+    text.includes('highlights') || 
+    text.includes('streaks') || 
+    text.includes('balayage') ||
+    text.includes('ammonia')
+  ) {
     if (isMenExplicit && !isWomenExplicit) {
       return { reply: formatMenHairColor(), buttons: SALON_BUTTONS.ACTION };
     }
@@ -1634,7 +1645,7 @@ export function getSalonDeterministicResponse(
       return { reply: formatWomenHairColor(), buttons: SALON_BUTTONS.ACTION };
     }
     return {
-      reply: `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium global color and highlights for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`,
+      reply: `✨ *Hair Color & Highlights* 🟢\n\nWe offer premium ammonia-free and deluxe color for both men and women!\n\nWould you like to see options for *Men* or *Women*? 🎨`,
       buttons: SALON_BUTTONS.GENDER
     };
   }
