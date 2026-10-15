@@ -97,12 +97,16 @@ export async function scheduleInquiryFollowup(params: {
 
     const existingInquiry = currentAttrs.last_inquiry as InquiryFollowupData | undefined;
 
-    // Strict Anti-Annoyance Rule: If follow-up was already sent in the last 24 hours, don't spam
+    // Strict Anti-Annoyance Rule:
+    // If follow-up was already sent, only allow re-scheduling if the customer asks a fresh inquiry
+    // or if at least 3 hours have passed since the last follow-up was sent.
     if (existingInquiry && existingInquiry.followup_status === 'SENT') {
       const sentTime = existingInquiry.followup_sent_at 
         ? new Date(existingInquiry.followup_sent_at).getTime()
         : new Date(existingInquiry.inquired_at).getTime();
-      if (Date.now() - sentTime < 24 * 60 * 60 * 1000) {
+      const hoursSinceSent = (Date.now() - sentTime) / (1000 * 60 * 60);
+
+      if (hoursSinceSent < 3 && inquiryType === 'GENERAL') {
         return;
       }
     }
@@ -110,9 +114,11 @@ export async function scheduleInquiryFollowup(params: {
     // Determine final inquiry type: Preserve higher priority intent
     // (LOCATION > SERVICE > TENTATIVE_TIME > GENERAL)
     let finalInquiryType = inquiryType;
-    let finalService = service || 'salon';
+    let finalService = service || 'salon visit';
     let finalTentativeTime = tentativeTime || null;
-    const initialInquiryTime = existingInquiry?.inquired_at || new Date().toISOString();
+    const initialInquiryTime = (existingInquiry && existingInquiry.followup_status !== 'SENT')
+      ? existingInquiry.inquired_at
+      : new Date().toISOString();
 
     if (existingInquiry && existingInquiry.followup_status === 'SCHEDULED') {
       if (existingInquiry.inquiry_type === 'LOCATION' && inquiryType === 'GENERAL') {
@@ -251,9 +257,15 @@ export async function generateJarvisFollowupMessage(params: {
   } else if (inquiry.tentative_time) {
     fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you were planning to visit around *${inquiry.tentative_time}* today!\n\nAre you still on your way? 💛 Our stylists have kept a priority chair ready for you with zero waiting time!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Desk:* ${SALON_INFO.phone}`;
   } else if (isNextDay) {
-    fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked about *${inquiry.service || 'our salon services'}* yesterday!\n\nAre you planning to drop by today or this week? Which service would you love to pamper yourself with? 💛\n💡 *Special Weekday Offer:* Come by during the week to enjoy special package discounts! Call our desk directly at *${SALON_INFO.phone}* to claim today's top deals.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
+    const isGeneral = inquiry.inquiry_type === 'GENERAL' || !inquiry.service || inquiry.service === 'salon' || inquiry.service === 'salon visit';
+    fallbackText = isGeneral
+      ? `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you reached out to us yesterday!\n\nAre you planning to drop by today or this week? Which service would you love to pamper yourself with? 💛\n💡 *Special Weekday Offer:* Come by during the week to enjoy special package discounts! Call our desk directly at *${SALON_INFO.phone}* to claim today's top deals.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`
+      : `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked about *${inquiry.service}* yesterday!\n\nAre you planning to drop by today or this week? Which service would you love to pamper yourself with? 💛\n💡 *Special Weekday Offer:* Come by during the week to enjoy special package discounts! Call our desk directly at *${SALON_INFO.phone}* to claim today's top deals.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
   } else {
-    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry!\n\nWhich service can we prepare for you? 💛\n💡 *Special Discounts:* We have exciting weekday pampering offers & custom combo discounts running! Our top stylists have chairs open with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
+    const isGeneral = inquiry.inquiry_type === 'GENERAL' || !inquiry.service || inquiry.service === 'salon' || inquiry.service === 'salon visit';
+    fallbackText = isGeneral
+      ? `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you reached out to us earlier!\n\nWhich service can we prepare for you today? 💛\n💡 *Special Discounts:* We have exciting weekday pampering offers & custom combo discounts running! Our top stylists have chairs open with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`
+      : `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service}* inquiry!\n\nWhich service can we prepare for you? 💛\n💡 *Special Discounts:* We have exciting weekday pampering offers & custom combo discounts running! Our top stylists have chairs open with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
   }
 
   // Attempt dynamic Gemini AI personalization if API key and conversation history are available

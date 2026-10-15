@@ -103,6 +103,17 @@ export async function evaluateAutomations(
         }
 
         await executeAction(automation, orgId, conversationId, messageId, matchedKeyword, contactPhone, contactId);
+        if (contactId) {
+          void scheduleInquiryFollowup({
+            contactId,
+            organizationId: orgId,
+            phone: contactPhone,
+            inquiryType: 'GENERAL',
+            service: automation.name || 'salon visit',
+            tentativeTime: null,
+            delayHours: 2.5
+          });
+        }
         return; 
       }
     }
