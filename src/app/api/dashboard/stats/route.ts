@@ -177,6 +177,14 @@ export async function GET() {
 
     const totalWeeklyMessages = last7Days.reduce((acc, curr) => acc + curr.count, 0);
 
+    // Background Autonomous Follow-up Processing on Dashboard Access
+    try {
+      const { processDueFollowups } = await import('@/lib/automations/followupService');
+      void processDueFollowups(10);
+    } catch {
+      // non-blocking
+    }
+
     return NextResponse.json({
       success: true,
       stats: {

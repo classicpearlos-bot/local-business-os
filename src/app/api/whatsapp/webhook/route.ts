@@ -196,9 +196,27 @@ export async function POST(request: Request) {
                 let buttonId = '';
                 if (msg.type === 'text') {
                   textBody = msg.text?.body || '';
-                } else if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
-                  textBody = msg.interactive.button_reply.title || '';
-                  buttonId = msg.interactive.button_reply.id || '';
+                } else if (msg.type === 'interactive') {
+                  if (msg.interactive?.type === 'button_reply') {
+                    textBody = msg.interactive.button_reply.title || '';
+                    buttonId = msg.interactive.button_reply.id || '';
+                  } else if (msg.interactive?.type === 'list_reply') {
+                    textBody = msg.interactive.list_reply.title || msg.interactive.list_reply.description || '';
+                    buttonId = msg.interactive.list_reply.id || '';
+                  }
+                } else if (msg.type === 'button') {
+                  textBody = msg.button?.text || msg.button?.payload || '';
+                  buttonId = msg.button?.payload || '';
+                } else if (msg.type === 'location') {
+                  textBody = msg.location?.name ? `location ${msg.location.name}` : 'location directions';
+                } else if (msg.type === 'image') {
+                  textBody = msg.image?.caption || 'hair style reference photo';
+                } else if (msg.type === 'audio' || msg.type === 'voice') {
+                  textBody = 'voice inquiry';
+                } else if (msg.type === 'video') {
+                  textBody = msg.video?.caption || 'style reference video';
+                } else if (msg.type === 'document') {
+                  textBody = msg.document?.caption || msg.document?.filename || 'document';
                 }
 
                 const currentAttrs = (contact.attributes as any) || {};

@@ -288,7 +288,33 @@ export async function GET(request: Request) {
                   return;
                 }
 
-                // 2. Standard retryable error handling
+                // 2. Individual Customer Meta Daily Cap (Code 131049 / 130472)
+                // Do NOT fail permanently! Schedule this individual recipient for tomorrow at 10:30 AM IST.
+                if (Number(response.error.code) === 131049 || Number(response.error.code) === 130472) {
+                  console.log(`[Campaign Worker] Recipient ${recipient.phone_number} hit Meta user marketing cap (${response.error.code}). Rescheduling for tomorrow 10:30 AM IST.`);
+                  
+                  const now = new Date();
+                  const tomorrowIST = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                  const resumeDate = new Date(Date.UTC(
+                    tomorrowIST.getUTCFullYear(),
+                    tomorrowIST.getUTCMonth(),
+                    tomorrowIST.getUTCDate(),
+                    5, 0, 0, 0 // 10:30 AM IST = 05:00 UTC
+                  ));
+
+                  await supabaseAdmin.from('campaign_recipients').update({
+                    status: 'SCHEDULED',
+                    scheduled_at: resumeDate.toISOString(),
+                    failed_at: null,
+                    error_code: 'ECOSYSTEM_LIMIT_RETRY',
+                    error_message: 'Auto-rescheduled for tomorrow 10:30 AM IST (Meta user daily cap cooldown)'
+                  }).eq('id', recipient.id);
+
+                  dailyLimitHitCampaigns.add(campaign.id);
+                  return;
+                }
+
+                // 3. Standard retryable error handling
                 const isRetryable = response.error.code === 500 || response.error.code === 503;
                 if (isRetryable && (recipient.attempts || 0) < 3) {
                   const delaySec = Math.pow(2, recipient.attempts || 1) * 5;

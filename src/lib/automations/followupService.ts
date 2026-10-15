@@ -121,7 +121,13 @@ export async function scheduleInquiryFollowup(params: {
       : new Date().toISOString();
 
     if (existingInquiry && existingInquiry.followup_status === 'SCHEDULED') {
-      if (existingInquiry.inquiry_type === 'LOCATION' && inquiryType === 'GENERAL') {
+      if (existingInquiry.inquiry_type === 'SERVICE' && inquiryType === 'LOCATION') {
+        finalInquiryType = 'LOCATION';
+        finalService = existingInquiry.service;
+      } else if (existingInquiry.inquiry_type === 'LOCATION' && inquiryType === 'SERVICE') {
+        finalInquiryType = 'LOCATION';
+        finalService = service || existingInquiry.service;
+      } else if (existingInquiry.inquiry_type === 'LOCATION' && inquiryType === 'GENERAL') {
         finalInquiryType = 'LOCATION';
         finalService = existingInquiry.service;
       } else if (existingInquiry.inquiry_type === 'SERVICE' && inquiryType === 'GENERAL') {
@@ -336,12 +342,13 @@ export async function processDueFollowups(
   const nowIso = now.toISOString();
 
   try {
-    // 1. Query contacts with scheduled follow-ups
+    // 1. Query contacts with scheduled follow-ups (targeted scan on SCHEDULED status, sorted by due time)
     let query = supabaseAdmin
       .from('contacts')
       .select('id, organization_id, phone_number, name, attributes, opted_in')
       .eq('opted_in', true)
-      .not('attributes->last_inquiry', 'is', null)
+      .eq('attributes->last_inquiry->>followup_status', 'SCHEDULED')
+      .order('attributes->last_inquiry->>followup_due_at', { ascending: true })
       .limit(limit);
 
     if (options?.targetContactId) {

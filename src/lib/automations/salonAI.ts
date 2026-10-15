@@ -859,6 +859,28 @@ export function getSalonDeterministicResponse(
     };
   }
 
+  if (text.includes('photo') || text.includes('image') || text.includes('picture') || text.includes('pic') || text.includes('reference')) {
+    return {
+      reply: `📸 *Thank you for sharing your style reference photo!* ✨\n\nOur senior stylists can customize this exact look and cut for your face shape and hair texture during personal consultation. 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Book:* ${SALON_INFO.phone}\nWould you like to reserve a priority chair for your consultation today? 😊`,
+      buttons: [
+        { id: 'btn_book', title: '📅 Book Slot' },
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' }
+      ]
+    };
+  }
+
+  if (text.includes('voice inquiry') || text.includes('voice note') || text.includes('audio')) {
+    return {
+      reply: `🎧 *Thank you for your voice message!* ✨\n\nOur salon desk has received your inquiry. You can also view our full catalog below, or call our desk directly at 📞 *${SALON_INFO.phone}* for instant assistance! 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}`,
+      buttons: [
+        { id: 'btn_services', title: '📋 Services' },
+        { id: 'btn_offers', title: '🎉 Today\'s Offers' },
+        { id: 'btn_book', title: '📅 Book Slot' }
+      ]
+    };
+  }
+
   if (bid === 'btn_men') {
     if (lastContext === 'haircut') return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
     if (lastContext === 'hair_spa') return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };

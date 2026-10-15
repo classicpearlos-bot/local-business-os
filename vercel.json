@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/whatsapp/campaigns/worker",
-      "schedule": "30 2 * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/ai/followup",
-      "schedule": "45 4 * * *"
+      "schedule": "15 5 * * *"
     }
   ]
 }

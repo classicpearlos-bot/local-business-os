@@ -85,6 +85,14 @@ export async function GET(request: Request) {
       }
     }
 
+    // Background Autonomous Follow-up Processing on Inbox Access
+    try {
+      const { processDueFollowups } = await import('@/lib/automations/followupService');
+      void processDueFollowups(10);
+    } catch {
+      // non-blocking
+    }
+
     return NextResponse.json({ conversations: convList });
   } catch (err: any) {
     console.error('Conversations API error:', err);

@@ -328,6 +328,10 @@ export async function evaluateAutomations(
               normalizedInput.includes('detan') || 
               normalizedInput.includes('shave') || 
               normalizedInput.includes('massage') || 
+              normalizedInput.includes('photo') || 
+              normalizedInput.includes('image') || 
+              normalizedInput.includes('reference') || 
+              normalizedInput.includes('voice') || 
               !!arrivalTime;
 
             if (isLocationInquiry) {
@@ -365,6 +369,8 @@ export async function evaluateAutomations(
               else if (normalizedInput.includes('root touch') || normalizedInput.includes('touch up')) detectedService = 'root touch-up';
               else if (normalizedInput.includes('color') || normalizedInput.includes('ammonia') || normalizedInput.includes('highlights')) detectedService = 'hair coloring & highlights';
               else if (normalizedInput.includes('combo')) detectedService = 'value combo';
+              else if (normalizedInput.includes('photo') || normalizedInput.includes('reference')) detectedService = 'style reference consultation';
+              else if (normalizedInput.includes('voice')) detectedService = 'voice inquiry consultation';
               else if (isBookingInquiry) detectedService = 'appointment booking';
               else if (isPricingInquiry) detectedService = 'pricing & offers';
 
