@@ -482,12 +482,22 @@ export async function GET(request: Request) {
       .select('id', { count: 'exact', head: true })
       .in('status', ['PENDING', 'PROCESSING']);
 
+    // Autonomous Customer Care: Process any due high-intent inquiry follow-ups
+    let followupStats = null;
+    try {
+      const { processDueFollowups } = await import('@/lib/automations/followupService');
+      followupStats = await processDueFollowups(15);
+    } catch (followupErr) {
+      console.warn('[Campaign Worker] Error triggering follow-up processing:', followupErr);
+    }
+
     return NextResponse.json({
       processed: totalProcessed,
       success: successCount,
       failed: failureCount,
       skipped: skippedCount,
-      remaining: totalRemaining || 0
+      remaining: totalRemaining || 0,
+      followups: followupStats
     });
 
   } catch (error: any) {

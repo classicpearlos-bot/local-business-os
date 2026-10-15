@@ -514,6 +514,14 @@ export async function POST(request: Request) {
       // non-blocking
     }
 
+    // Background Autonomous Follow-up Processing on Webhook Events
+    try {
+      const { processDueFollowups } = await import('@/lib/automations/followupService');
+      void processDueFollowups(5);
+    } catch {
+      // non-blocking
+    }
+
     return new NextResponse('EVENT_RECEIVED', { status: 200 });
 
   } catch (error: any) {

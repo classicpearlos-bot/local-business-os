@@ -26,3 +26,14 @@ jobs:
           else
             echo "Worker ping returned HTTP $HTTP_STATUS (non-fatal)"
           fi
+
+      - name: Trigger AI Customer Follow-Up Worker
+        run: |
+          echo "Pinging WhatsApp AI follow-up worker at $(date)..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET \
+            "https://local-business-os-amber.vercel.app/api/ai/followup" \
+            --max-time 60)
+          echo "Follow-up worker response status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "Successfully pinged AI follow-up worker."
+          fi

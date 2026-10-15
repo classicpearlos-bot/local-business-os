@@ -842,6 +842,16 @@ export function getSalonDeterministicResponse(
     };
   }
 
+  if (bid === 'btn_followup_route' || text === 'need directions' || text === 'need route help' || text === 'route help') {
+    return {
+      reply: `📍 *Classic Pearl Unisex Salon Route & Location:* 🟢\n\n📌 *Google Maps:* ${SALON_INFO.mapsUrl}\n🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)\n📞 *Call for Route Guidance:* ${SALON_INFO.phone}\n\nOur salon is conveniently located with ample parking. If you need any assistance reaching us, give us a quick ring at ${SALON_INFO.phone}! 💛`,
+      buttons: [
+        { id: 'btn_followup_coming', title: '🚗 On My Way' },
+        { id: 'btn_book', title: '📅 Book Slot' }
+      ]
+    };
+  }
+
   if (bid === 'btn_men') {
     if (lastContext === 'haircut') return { reply: formatMenHaircuts(), buttons: SALON_BUTTONS.ACTION };
     if (lastContext === 'hair_spa') return { reply: formatMenHairSpa(), buttons: SALON_BUTTONS.ACTION };
