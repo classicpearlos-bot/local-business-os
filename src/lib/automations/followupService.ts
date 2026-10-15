@@ -234,9 +234,9 @@ export async function generateJarvisFollowupMessage(params: {
     ];
   } else {
     buttons = [
-      { id: 'btn_followup_coming', title: '🚗 Planning to Come' },
-      { id: 'btn_followup_visited', title: '✅ Already Visited' },
-      { id: 'btn_followup_later', title: '📅 Another Time' }
+      { id: 'btn_followup_coming', title: isNextDay ? '🚗 Planning Today' : '🚗 Planning to Come' },
+      { id: 'btn_offers', title: '🎉 Today\'s Offers' },
+      { id: 'btn_followup_later', title: isNextDay ? '📅 Another Day' : '📅 Another Time' }
     ];
   }
 
@@ -244,16 +244,16 @@ export async function generateJarvisFollowupMessage(params: {
   let fallbackText = '';
   if (inquiry.inquiry_type === 'LOCATION') {
     if (isNextDay) {
-      fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location yesterday!\n\nDid you manage to reach or visit us, or are you planning to come by today? 💛 Our doors are open (10:00 AM – 9:00 PM) and our top stylists would love to hold a priority chair for you!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+      fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location yesterday!\n\nDid you manage to reach or visit us, or are you planning to come by today? 💛\n💡 *Special Perk:* We have exclusive *weekday package discounts* running today! Our top stylists would love to hold a priority chair for you with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
     } else {
-      fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location earlier!\n\nDid you manage to reach safely, or would you like any help with route directions or parking? 💛 Our stylists are ready with zero waiting time!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+      fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked for our location earlier!\n\nDid you manage to reach safely, or would you like any help with route directions or parking? 💛\n💡 *Special Perk:* Enjoy our special pampering discounts & weekday offers! Our top stylists are ready with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
     }
   } else if (inquiry.tentative_time) {
-    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you were planning to visit around *${inquiry.tentative_time}* today!\n\nAre you still on your way? Our stylists would love to hold a chair ready for you with zero waiting time! 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you were planning to visit around *${inquiry.tentative_time}* today!\n\nAre you still on your way? 💛 Our stylists have kept a priority chair ready for you with zero waiting time!\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Desk:* ${SALON_INFO.phone}`;
   } else if (isNextDay) {
-    fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry yesterday!\n\nOur top stylists have open chairs today. Would you like us to hold a slot ready for your consultation with zero waiting time? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+    fallbackText = `Good morning ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* — you asked about *${inquiry.service || 'our salon services'}* yesterday!\n\nAre you planning to drop by today or this week? Which service would you love to pamper yourself with? 💛\n💡 *Special Weekday Offer:* Come by during the week to enjoy special package discounts! Call our desk directly at *${SALON_INFO.phone}* to claim today's top deals.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
   } else {
-    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry!\n\nOur top stylists have open slots today. Would you like us to hold a chair ready for you? 💛\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call:* ${SALON_INFO.phone}`;
+    fallbackText = `Hi ${nameSalutation}🌸 Quick check-in from *Classic Pearl Unisex Salon* regarding your *${inquiry.service || 'salon'}* inquiry!\n\nWhich service can we prepare for you? 💛\n💡 *Special Discounts:* We have exciting weekday pampering offers & custom combo discounts running! Our top stylists have chairs open with zero waiting time.\n\n📍 *Maps:* ${SALON_INFO.mapsUrl}\n📞 *Call/Offers:* ${SALON_INFO.phone}`;
   }
 
   // Attempt dynamic Gemini AI personalization if API key and conversation history are available
@@ -272,9 +272,9 @@ Rules:
 1. Maximum 2 to 3 sentences total.
 2. WhatsApp formatting (*bold* for emphasis). Never use markdown headers like ### or **.
 3. Natural, friendly, human tone — not pushy.
-4. Reference the specific service or question they asked so they know we care.
-5. End with the Maps link and phone number.
-Do not invent prices or fake discounts.`;
+4. Reference the specific service or question they asked. Ask which service they are looking for or if they plan to visit today/this week.
+5. Highlight special weekday pampering offers or custom package discounts when visiting during weekdays.
+6. Provide the Maps link (${SALON_INFO.mapsUrl}) and salon phone number (${SALON_INFO.phone}) for offers.`;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout max

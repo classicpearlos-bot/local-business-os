@@ -740,15 +740,18 @@ Would you like to reserve a slot today? 💛`;
 }
 
 export function formatOffers(): string {
-  return `🎉 *Special Offers Active at Classic Pearl!* 🟢
+  return `🎉 *Exclusive Offers Active at Classic Pearl!* 🟢
 
-Yes, we run exciting special offers exclusively when you visit the salon! Our stylists personalize the best package discount for your chosen services during consultation.
+✨ *Special Pampering Perks:*
+🟢 *Weekday Special:* Enjoy exclusive package discounts and priority chairs when you visit Monday to Friday!
+🟢 *Custom Combos:* Save big on haircut, spa, facial & grooming combos (attractive combo rates up to 20% off!).
+🟢 *Zero Waiting Consultation:* Our senior stylists personalize the best package discount on arrival.
 
-For today's active offers, visit our salon or call our desk directly at 📞 *${SALON_INFO.phone}*!
-
+📞 *Call our desk for today's top deals:* *${SALON_INFO.phone}*
 📍 *Location:* ${SALON_INFO.mapsUrl}
 🕒 *Hours:* 10:00 AM – 9:00 PM (All 7 Days)
-Would you like to reserve a slot today? 💛`;
+
+Would you like to reserve a priority chair today? 💛`;
 }
 
 export function formatCombos(serviceKeyword?: string, gender?: 'men' | 'women'): string {

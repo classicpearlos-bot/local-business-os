@@ -24,6 +24,62 @@ export function getPhoneMatchKeys(phone: string): { normalized: string; last10: 
 }
 
 /**
+ * Advanced Intent Analysis: Detects rejection, hostility, stop commands,
+ * or disinterest phrases to trigger automatic blocking and quality rating protection.
+ */
+export function detectOptOutOrHostility(input: string): { isRejected: boolean; reason: string } {
+  if (!input) return { isRejected: false, reason: '' };
+  const s = input.trim().toLowerCase();
+
+  // 1. Standalone / Exact command triggers
+  if (/^(stop|unsubscribe|cancel|optout|opt-out|remove|remove me|end|quit|block|block me|block my number|dnd|pls stop|please stop|leave me)$/i.test(s)) {
+    return { isRejected: true, reason: `Customer sent stop command: "${input.trim()}"` };
+  }
+
+  // 2. Reject / Not Interested / Don't want
+  if (/\b(not interested|not intrested|no interest|not required|don't want|dont want|never contact|not need|dont need|don't need|no need|stop messaging me|stop texting me)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer expressed disinterest: "${input.trim()}"` };
+  }
+
+  // 3. Stop messaging / Don't text me
+  if (/\b(don't message|dont message|do not message|stop messaging|stop texting|don't text|dont text|do not text|stop sending|please stop|stop it|stop it now|stop bothering|stop disturbing)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer requested to stop messages: "${input.trim()}"` };
+  }
+
+  // 4. Block requests
+  if (/\b(block me|block my number|please block|block this number|block karo)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer requested block: "${input.trim()}"` };
+  }
+
+  // 5. Intrusion / Suspicion (Who are you? Why texting me?)
+  if (/\b(who are you|who r u|who is this|why are you texting|why are you messaging|why texting me|why messaging me|why r u texting|why r u messaging|how did you get my number|how you got my number|why message me|why text me|who gave you my number)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer questioned contact: "${input.trim()}"` };
+  }
+
+  // 6. Leave alone / Wrong number / Go away
+  if (/\b(please leave|leave me alone|leave me|wrong number|wrong person|get lost|go away|don't disturb|dont disturb|do not disturb|pls leave|dont disturb me)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer requested to be left alone: "${input.trim()}"` };
+  }
+
+  // 7. Unsubscribe / Remove my number
+  if (/\b(unsubscribe|remove my number|remove me|delete my number|delete me|take me off|optout|opt-out)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer requested removal: "${input.trim()}"` };
+  }
+
+  // 8. Spam / Complaint / Threat
+  if (/\b(stop spamming|spam|scam|fraud|reporting you|will report|report spam|police|complaint|cyber crime)\b/i.test(s)) {
+    return { isRejected: true, reason: `Customer flagged spam/complaint: "${input.trim()}"` };
+  }
+
+  // 9. Hostile / Abusive / Profanity
+  if (/\b(fuck off|f\*\*\* off|fuck you|fck|bitch|bastard|idiot|shut up|nonsense|bakwaas|faltu)\b/i.test(s)) {
+    return { isRejected: true, reason: `Hostile/abusive language: "${input.trim()}"` };
+  }
+
+  return { isRejected: false, reason: '' };
+}
+
+/**
  * Fetch all blocked contacts for an organization.
  */
 export async function getBlockedContacts(orgId?: string): Promise<BlockedContactItem[]> {
